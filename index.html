@@ -1,178 +1,581 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Sepolia Wallet Holdings Check — Education Demo</title>
-<style>
-  html, body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    background: #0f1115;
-    color: #e6e6e6;
-    min-height: 100%;
-  }
-  body {
-    width: 640px;
-    max-width: 90vw;
-    margin: 60px auto;
-    padding: 0 20px 60px;
-    box-sizing: border-box;
-  }
-  * { box-sizing: border-box; }
-  h1 { font-size: 1.4rem; }
-  p.sub { color: #9aa0a6; margin-top: -8px; }
-  button {
-    background: #4f7cff;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-  }
-  button:disabled { background: #3a3d45; cursor: not-allowed; }
-  #status { margin-top: 16px; color: #9aa0a6; font-size: 0.9rem; }
-  .card {
-    background: #1a1d24;
-    border: 1px solid #2a2d35;
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-top: 20px;
-  }
-  .token-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #2a2d35;
-  }
-  .token-row:last-child { border-bottom: none; }
-  .warn {
-    background: #2b1d1d;
-    border: 1px solid #5c2b2b;
-    color: #f2b8b8;
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin-top: 20px;
-    font-size: 0.9rem;
-    line-height: 1.4;
-  }
-  code { color: #8fd1ff; }
-</style>
-</head>
-<body>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sepolia Wallet Holdings Check — Education Demo</title>
 
-<h1>What can someone see about your wallet?</h1>
-<p class="sub">Sepolia testnet demo — connect your wallet to see exactly what's publicly visible to anyone, including scammers, before you ever sign anything.</p>
-
-<button id="connectBtn">Connect Wallet</button>
-<div id="status"></div>
-
-<div id="result"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
-<script>
-  // Replace with your own free Etherscan API key (https://etherscan.io/myapikey)
-  // Note: any key placed here is visible to anyone viewing this page's source.
-  const ETHERSCAN_API_KEY = "YOUR_ETHERSCAN_API_KEY_HERE";
-  const SEPOLIA_CHAIN_ID = 11155111;
-  const BASE_URL = "https://api.etherscan.io/v2/api";
-  const RPC_URL = "https://ethereum-sepolia-rpc.publicnode.com";
-
-  const connectBtn = document.getElementById("connectBtn");
-  const statusEl = document.getElementById("status");
-  const resultEl = document.getElementById("result");
-
-  connectBtn.addEventListener("click", connectAndCheck);
-
-  async function connectAndCheck() {
-    resultEl.innerHTML = "";
-    if (!window.ethereum) {
-      statusEl.textContent = "No wallet extension found. Install MetaMask to try this demo.";
-      return;
+  <style>
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #0f1115;
+      color: #e6e6e6;
+      min-height: 100%;
+      margin: 0;
     }
 
-    try {
-      connectBtn.disabled = true;
-      statusEl.textContent = "Requesting wallet connection...";
+    body {
+      width: 640px;
+      max-width: 90vw;
+      margin: 60px auto;
+      padding: 0 20px 60px;
+      box-sizing: border-box;
+    }
 
-      // This is the actual "Connect Wallet" moment — same prompt a real
-      // phishing site would trigger, minus anything malicious after it.
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-      const address = accounts[0];
+    * {
+      box-sizing: border-box;
+    }
 
-      statusEl.textContent = `Connected: ${address}. Checking Sepolia network...`;
+    h1 {
+      font-size: 1.4rem;
+    }
 
-      // Confirm the wallet is actually on Sepolia; most MetaMask setups
-      // default to mainnet, and this demo only makes sense on testnet.
-      const chainIdHex = await window.ethereum.request({ method: "eth_chainId" });
-      if (parseInt(chainIdHex, 16) !== SEPOLIA_CHAIN_ID) {
-        statusEl.textContent = "Please switch your wallet network to Sepolia and try again.";
-        connectBtn.disabled = false;
+    p.sub {
+      color: #9aa0a6;
+      margin-top: -8px;
+      line-height: 1.5;
+    }
+
+    button {
+      background: #4f7cff;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #3a3d45;
+      cursor: not-allowed;
+    }
+
+    #status {
+      margin-top: 16px;
+      color: #9aa0a6;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .card {
+      background: #1a1d24;
+      border: 1px solid #2a2d35;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-top: 20px;
+    }
+
+    .token-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 10px 0;
+      border-bottom: 1px solid #2a2d35;
+      word-break: break-word;
+    }
+
+    .token-row:last-child {
+      border-bottom: none;
+    }
+
+    .token-name {
+      color: #e6e6e6;
+    }
+
+    .token-balance {
+      text-align: right;
+      color: #cfd3da;
+    }
+
+    .warn {
+      background: #2b1d1d;
+      border: 1px solid #5c2b2b;
+      color: #f2b8b8;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    code {
+      color: #8fd1ff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>What can someone see about your wallet?</h1>
+
+  <p class="sub">
+    Sepolia testnet demo — connect your wallet to see some of the information
+    already publicly visible to anyone before you ever sign anything.
+  </p>
+
+  <button id="connectBtn">Connect Wallet</button>
+
+  <div id="status"></div>
+
+  <div id="result"></div>
+
+
+  <!-- Ethers.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+
+  <script>
+    /*
+      ============================================
+      CONFIGURATION
+      ============================================
+
+      ETH balance is fetched directly from the RPC,
+      so it does NOT require an Etherscan API key.
+
+      Token transfer discovery below still uses
+      Etherscan's API.
+
+      Get your own API key and place it below.
+    */
+
+    const ETHERSCAN_API_KEY = "YOUR_ETHERSCAN_API_KEY_HERE";
+
+    const SEPOLIA_CHAIN_ID = 11155111;
+
+    const BASE_URL = "https://api.etherscan.io/v2/api";
+
+    const RPC_URL = "https://ethereum-sepolia-rpc.publicnode.com";
+
+
+    /*
+      ============================================
+      DOM ELEMENTS
+      ============================================
+    */
+
+    const connectBtn = document.getElementById("connectBtn");
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("result");
+
+
+    /*
+      ============================================
+      CONNECT BUTTON
+      ============================================
+    */
+
+    connectBtn.addEventListener("click", connectAndCheck);
+
+
+    /*
+      ============================================
+      CONNECT WALLET
+      ============================================
+    */
+
+    async function connectAndCheck() {
+
+      resultEl.innerHTML = "";
+
+      // Check whether an injected wallet provider exists
+      if (!window.ethereum) {
+        statusEl.textContent =
+          "No wallet extension found. Install or enable a compatible wallet and try again.";
         return;
       }
 
-      statusEl.textContent = "Looking up public on-chain data for this address...";
-      await lookupHoldings(address);
-
-      statusEl.textContent = `Done — this is everything the chain already knew about ${address} before you clicked anything.`;
-    } catch (err) {
-      statusEl.textContent = `Something went wrong: ${err.message}`;
-    } finally {
-      connectBtn.disabled = false;
-    }
-  }
-
-  async function lookupHoldings(address) {
-    const provider = new ethers.JsonRpcProvider(RPC_URL);
-    const ERC20_ABI = ["function balanceOf(address) view returns (uint256)"];
-
-    // ETH balance
-    const balUrl = `${BASE_URL}?chainid=${SEPOLIA_CHAIN_ID}&module=account&action=balance&address=${address}&tag=latest&apikey=${ETHERSCAN_API_KEY}`;
-    const balRes = await fetch(balUrl);
-    const balData = await balRes.json();
-    const ethBalance = balData.status === "1" ? ethers.formatEther(balData.result) : "unavailable";
-
-    // Every token contract that has ever sent tokens to this address
-    const tokenTxUrl = `${BASE_URL}?chainid=${SEPOLIA_CHAIN_ID}&module=account&action=tokentx&address=${address}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
-    const tokenRes = await fetch(tokenTxUrl);
-    const tokenData = await tokenRes.json();
-
-    const seen = new Map();
-    for (const tx of tokenData.result || []) {
-      if (!tx.contractAddress || tx.contractAddress === "0x0000000000000000000000000000000000000000") continue;
-      seen.set(tx.contractAddress, { symbol: tx.tokenSymbol, decimals: Number(tx.tokenDecimal) });
-    }
-
-    let tokenRowsHtml = "";
-    for (const [addr, info] of seen) {
-      const token = new ethers.Contract(addr, ERC20_ABI, provider);
-      let formatted = "?";
       try {
-        const balance = await token.balanceOf(address);
-        formatted = ethers.formatUnits(balance, info.decimals);
-      } catch (e) {
-        formatted = "unreadable";
+
+        connectBtn.disabled = true;
+
+        statusEl.textContent =
+          "Requesting wallet connection...";
+
+
+        /*
+          Request the user's public account address.
+
+          This does NOT request a transaction signature
+          or access to the user's private key.
+        */
+        const accounts = await window.ethereum.request({
+          method: "eth_requestAccounts"
+        });
+
+
+        if (!accounts || accounts.length === 0) {
+          throw new Error("No wallet account was returned.");
+        }
+
+
+        const address = accounts[0];
+
+
+        statusEl.textContent =
+          `Connected: ${address}. Checking Sepolia network...`;
+
+
+        /*
+          Check the currently selected chain
+        */
+        const chainIdHex = await window.ethereum.request({
+          method: "eth_chainId"
+        });
+
+
+        const currentChainId = parseInt(chainIdHex, 16);
+
+
+        if (currentChainId !== SEPOLIA_CHAIN_ID) {
+
+          statusEl.textContent =
+            "Please switch your wallet network to Sepolia and try again.";
+
+          return;
+        }
+
+
+        statusEl.textContent =
+          "Looking up publicly available on-chain data for this address...";
+
+
+        await lookupHoldings(address);
+
+
+        statusEl.textContent =
+          `Done — the information displayed was publicly obtainable from blockchain data associated with ${address}.`;
+
+      } catch (err) {
+
+        console.error(err);
+
+        // Give cleaner feedback when possible
+        if (err.code === 4001) {
+
+          statusEl.textContent =
+            "Wallet connection was rejected.";
+
+        } else {
+
+          statusEl.textContent =
+            `Something went wrong: ${err.message || "Unknown error"}`;
+        }
+
+      } finally {
+
+        connectBtn.disabled = false;
       }
-      tokenRowsHtml += `<div class="token-row"><span>${info.symbol}</span><span>${formatted}</span></div>`;
     }
 
-    if (!tokenRowsHtml) {
-      tokenRowsHtml = `<div class="token-row"><span colspan="2">No token transfers found for this address yet.</span></div>`;
+
+    /*
+      ============================================
+      LOOK UP PUBLIC HOLDINGS
+      ============================================
+    */
+
+    async function lookupHoldings(address) {
+
+      /*
+        Public Sepolia RPC provider
+      */
+      const provider = new ethers.JsonRpcProvider(RPC_URL);
+
+
+      /*
+        Minimal ERC-20 ABI.
+
+        Only balanceOf is needed because this demo
+        uses token metadata discovered from the
+        transfer-history response.
+      */
+      const ERC20_ABI = [
+        "function balanceOf(address owner) view returns (uint256)"
+      ];
+
+
+      /*
+        ============================================
+        ETH BALANCE
+        ============================================
+
+        Fetch directly from the Sepolia RPC.
+
+        This replaces the old Etherscan balance API
+        request and does not require an API key.
+      */
+
+      let ethBalance = "unavailable";
+
+      try {
+
+        const ethBalanceWei =
+          await provider.getBalance(address);
+
+        ethBalance =
+          ethers.formatEther(ethBalanceWei);
+
+      } catch (err) {
+
+        console.error(
+          "Failed to retrieve ETH balance:",
+          err
+        );
+      }
+
+
+      /*
+        ============================================
+        TOKEN TRANSFER HISTORY
+        ============================================
+
+        This asks Etherscan for ERC-20 transfers
+        associated with the address.
+
+        Contracts found in that history are then
+        queried directly on-chain for their current
+        balance.
+      */
+
+      const tokenTxUrl =
+        `${BASE_URL}` +
+        `?chainid=${SEPOLIA_CHAIN_ID}` +
+        `&module=account` +
+        `&action=tokentx` +
+        `&address=${encodeURIComponent(address)}` +
+        `&sort=asc` +
+        `&apikey=${encodeURIComponent(ETHERSCAN_API_KEY)}`;
+
+
+      let tokenData = null;
+
+
+      try {
+
+        const tokenRes = await fetch(tokenTxUrl);
+
+        if (!tokenRes.ok) {
+          throw new Error(
+            `Token history request failed with HTTP ${tokenRes.status}`
+          );
+        }
+
+        tokenData = await tokenRes.json();
+
+      } catch (err) {
+
+        console.error(
+          "Failed to retrieve token history:",
+          err
+        );
+      }
+
+
+      /*
+        ============================================
+        DISCOVER UNIQUE TOKEN CONTRACTS
+        ============================================
+      */
+
+      const seen = new Map();
+
+
+      if (
+        tokenData &&
+        Array.isArray(tokenData.result)
+      ) {
+
+        for (const tx of tokenData.result) {
+
+          const contractAddress =
+            tx.contractAddress?.toLowerCase();
+
+
+          if (
+            !contractAddress ||
+            contractAddress ===
+              "0x0000000000000000000000000000000000"
+          ) {
+            continue;
+          }
+
+
+          /*
+            Save one entry per token contract.
+
+            We retain symbol and decimals from the
+            Etherscan transfer metadata.
+          */
+          seen.set(contractAddress, {
+
+            symbol:
+              tx.tokenSymbol ||
+              "Unknown Token",
+
+            decimals:
+              Number(tx.tokenDecimal ?? 18)
+
+          });
+        }
+      }
+
+
+      /*
+        ============================================
+        QUERY CURRENT TOKEN BALANCES
+        ============================================
+      */
+
+      let tokenRowsHtml = "";
+
+
+      for (const [tokenAddress, info] of seen) {
+
+        const token = new ethers.Contract(
+          tokenAddress,
+          ERC20_ABI,
+          provider
+        );
+
+
+        let formatted = "unreadable";
+
+
+        try {
+
+          const balance =
+            await token.balanceOf(address);
+
+
+          formatted =
+            ethers.formatUnits(
+              balance,
+              info.decimals
+            );
+
+        } catch (err) {
+
+          console.warn(
+            `Could not read balance for ${tokenAddress}:`,
+            err
+          );
+        }
+
+
+        /*
+          Escape symbol before placing it into
+          innerHTML.
+
+          This prevents token metadata returned by
+          the external API from being interpreted
+          as HTML.
+        */
+
+        tokenRowsHtml += `
+          <div class="token-row">
+            <span class="token-name">
+              ${escapeHtml(info.symbol)}
+            </span>
+
+            <span class="token-balance">
+              ${escapeHtml(formatted)}
+            </span>
+          </div>
+        `;
+      }
+
+
+      /*
+        No token contracts were discovered.
+      */
+
+      if (!tokenRowsHtml) {
+
+        tokenRowsHtml = `
+          <div class="token-row">
+            <span class="token-name">
+              No ERC-20 token transfers were found
+              for this address through the configured
+              data source.
+            </span>
+          </div>
+        `;
+      }
+
+
+      /*
+        ============================================
+        DISPLAY RESULTS
+        ============================================
+      */
+
+      resultEl.innerHTML = `
+
+        <div class="card">
+
+          <div class="token-row">
+
+            <span class="token-name">
+              <strong>Sepolia ETH Balance</strong>
+            </span>
+
+            <span class="token-balance">
+              ${escapeHtml(ethBalance)} ETH
+            </span>
+
+          </div>
+
+          ${tokenRowsHtml}
+
+        </div>
+
+
+        <div class="warn">
+
+          <strong>This is the point:</strong>
+
+          The information shown here can be obtained
+          from public blockchain data associated with
+          a wallet address. Connecting a wallet can
+          reveal the selected public address to a
+          website, but it does not give that website
+          your private key.
+
+          <br><br>
+
+          This demo shows only a sample of publicly
+          observable information. A wallet address may
+          also have publicly visible transaction history,
+          contract interactions, approvals, token activity,
+          and other on-chain relationships.
+
+        </div>
+
+      `;
     }
 
-    resultEl.innerHTML = `
-      <div class="card">
-        <div class="token-row"><strong>ETH Balance</strong><span>${ethBalance} ETH</span></div>
-        ${tokenRowsHtml}
-      </div>
-      <div class="warn">
-        <strong>This is the point:</strong> everything shown above was retrieved using
-        only your public wallet address — no private key, no signature, nothing you
-        typed in. Anyone can look this up for any address, including someone deciding
-        what to target before ever showing you a fake "Approve" button.
-      </div>
-    `;
-  }
-</script>
+
+    /*
+      ============================================
+      HTML ESCAPING HELPER
+      ============================================
+
+      Prevents externally supplied text from being
+      inserted into the page as executable HTML.
+    */
+
+    function escapeHtml(value) {
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+  </script>
 
 </body>
 </html>
