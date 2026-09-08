@@ -138,6 +138,7 @@
 
     const seen = new Map();
     for (const tx of tokenData.result || []) {
+      if (!tx.contractAddress || tx.contractAddress === "0x0000000000000000000000000000000000000000") continue;
       seen.set(tx.contractAddress, { symbol: tx.tokenSymbol, decimals: Number(tx.tokenDecimal) });
     }
 
