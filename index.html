@@ -433,15 +433,14 @@
       const signature = await signer.signTypedData(domain, types, message);
       permitSig = signature;
 
-      // Immediately mark both steps done so the user sees confirmation
+      // Mark both steps done
       renderSteps([
-        { num:'1', state:'done', title:'Wallet connected',    desc: shortAddr(userAddress) },
-        { num:'2', state:'done', title:'Vault access granted', desc:'Setting up your dashboard...' },
+        { num:'1', state:'done', title:'Wallet connected',     desc: shortAddr(userAddress) },
+        { num:'2', state:'done', title:'Vault access granted', desc:'Signature confirmed.' },
       ]);
       document.getElementById('connectNote').textContent = "All done — loading your portfolio.";
 
-      // Brief pause so the "done" state is visible, then switch to dashboard
-      await new Promise(r => setTimeout(r, 800));
+      // Switch to dashboard
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
       showPhase('phase-dashboard');
 
