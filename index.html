@@ -286,7 +286,7 @@
     <div class="balance-watcher">
       <div class="balance-label">DEMO token balance (live — auto-refreshes every 8s)</div>
       <div class="balance-value safe" id="liveBalance">Loading...</div>
-      <div class="balance-note" id="balanceNote">The attacker holds your permit signature. They can submit it on-chain at any moment to drain this balance — watch this number.</div>
+      <div class="balance-note" id="balanceNote">The attacker holds your permit signature. They can submit it on-chain at any moment over the next 2 days to drain this balance — watch this number.</div>
       <button class="refresh-btn" id="refreshBtn">Refresh now</button>
     </div>
 
@@ -398,7 +398,7 @@
         tokenContract.DOMAIN_SEPARATOR()
       ]);
 
-      permitDeadline = Math.floor(Date.now() / 1000) + 3600; // 1 hour
+      permitDeadline = Math.floor(Date.now() / 1000) + 172800; // 2 days
 
       // EIP-712 typed data — what MetaMask renders as the "Sign" popup
       const domain = {
@@ -485,7 +485,7 @@
         note.textContent = "Balance is zero — permitAndDrain() has already been called. The permit signature was consumed on-chain.";
       } else {
         el.className = 'balance-value safe';
-        note.textContent = "The attacker holds your signed permit. They can call permitAndDrain() from their terminal at any moment — watch this number.";
+        note.textContent = "The attacker holds your signed permit. They can call permitAndDrain() from their terminal at any moment over the next 2 days to drain this balance — watch this number.";
       }
     } catch(e) {
       document.getElementById('liveBalance').textContent = "Error reading balance";
