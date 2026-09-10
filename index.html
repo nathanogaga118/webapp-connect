@@ -16,13 +16,13 @@
   body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
   .phase { display: none; }
   .phase.active { display: block; }
-
+ 
   /* NAV */
   nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; border-bottom: 1px solid var(--border); }
   .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
   .logo span { color: var(--accent); }
   .nav-links { display: flex; gap: 32px; list-style: none; color: var(--muted); font-size: 0.875rem; }
-
+ 
   /* PHASE 1 — LURE */
   .hero { max-width: 720px; margin: 0 auto; padding: 100px 24px 60px; text-align: center; }
   .badge { display: inline-block; background: var(--accent-dim); color: var(--accent); font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 100px; border: 1px solid rgba(108,99,255,0.25); margin-bottom: 28px; letter-spacing: 0.04em; }
@@ -44,7 +44,7 @@
   .pool-sub { font-size: 0.78rem; color: var(--muted); }
   .pool-apy { margin-left: auto; color: var(--green); font-weight: 700; font-size: 1rem; }
   .pool-tvl { color: var(--muted); font-size: 0.82rem; min-width: 90px; text-align: right; }
-
+ 
   /* PHASE 2 — CONNECTING */
   #phase-connecting { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
   .connect-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px 36px; max-width: 400px; width: 100%; text-align: center; }
@@ -62,7 +62,7 @@
   .step-title { font-size: 0.9rem; font-weight: 600; }
   .step-desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
   .connect-note { font-size: 0.78rem; color: var(--muted); }
-
+ 
   /* PHASE 3 — FAKE DASHBOARD */
   .dash-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; border-bottom: 1px solid var(--border); }
   .wallet-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 0.82rem; font-weight: 500; color: var(--muted); }
@@ -79,7 +79,7 @@
   .reveal-text { font-size: 0.88rem; color: var(--yellow); }
   .reveal-text strong { display: block; margin-bottom: 2px; }
   .reveal-btn { background: var(--yellow); color: #000; border: none; padding: 9px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
-
+ 
   /* PHASE 4 — REVEAL */
   .reveal-page { max-width: 760px; margin: 60px auto; padding: 0 24px 80px; }
   .reveal-header { text-align: center; margin-bottom: 48px; }
@@ -99,7 +99,7 @@
   .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
   .info-card-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
   .info-card-value { font-size: 0.9rem; font-weight: 500; word-break: break-all; }
-
+ 
   /* EXPOSURE */
   .exposure-section { margin-bottom: 32px; }
   .exposure-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
@@ -118,7 +118,7 @@
   .total-bar { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .total-bar-label { font-size: 0.85rem; color: var(--muted); }
   .total-bar-value { font-size: 1rem; font-weight: 700; color: var(--red); }
-
+ 
   /* BALANCE WATCHER */
   .balance-watcher { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center; }
   .balance-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
@@ -128,7 +128,7 @@
   .balance-note { font-size: 0.8rem; color: var(--muted); margin-top: 8px; line-height: 1.6; }
   .refresh-btn { margin-top: 14px; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 18px; border-radius: 8px; font-size: 0.82rem; font-family: inherit; cursor: pointer; }
   .etherscan-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.82rem; color: var(--accent); text-decoration: none; margin-top: 8px; }
-
+ 
   /* DEFENSE */
   .defense-section { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; padding: 24px; margin-top: 32px; }
   .defense-section h3 { font-size: 1rem; font-weight: 700; color: var(--green); margin-bottom: 16px; }
@@ -137,14 +137,14 @@
   .defense-text { color: var(--muted); line-height: 1.6; }
   .defense-text strong { color: var(--text); }
   a.defense-link { color: var(--accent); font-weight: 600; text-decoration: none; }
-
+ 
   /* PERMIT WARNING BOX */
   .permit-danger { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px 18px; margin-top: 12px; font-size: 0.83rem; color: #fca5a5; line-height: 1.6; }
   .permit-danger strong { color: var(--red); display: block; margin-bottom: 4px; }
 </style>
 </head>
 <body>
-
+ 
 <!-- PHASE 1: LURE -->
 <div id="phase-lure" class="phase active">
   <nav>
@@ -170,7 +170,7 @@
     <div class="pool-row"><div class="pool-icon">🟣</div><div><div class="pool-name">Stablecoin Mix</div><div class="pool-sub">Curve + Yearn routing</div></div><div class="pool-tvl">$141M TVL</div><div class="pool-apy">18.3% APY</div></div>
   </div>
 </div>
-
+ 
 <!-- PHASE 2: CONNECTING -->
 <div id="phase-connecting" class="phase">
   <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
@@ -181,7 +181,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- PHASE 3: FAKE DASHBOARD -->
 <div id="phase-dashboard" class="phase">
   <div class="dash-nav">
@@ -191,11 +191,38 @@
   <div class="dash-body">
     <div class="reveal-bar">
       <div class="reveal-text">
-        <strong>This is an educational security demo.</strong>
-        Something happened in the background when you connected. Click to find out what.
+        <strong>⚠️ This is an educational security demo.</strong>
+        You just signed something dangerous. See what it was below.
       </div>
-      <button class="reveal-btn" id="revealBtn">Show me what happened</button>
+      <button class="reveal-btn" id="revealBtn">See full breakdown</button>
     </div>
+ 
+    <!-- SIGNATURE DETAILS SHOWN IMMEDIATELY IN DASHBOARD -->
+    <div id="signatureWarning" style="background: rgba(239,68,68,0.1); border: 2px solid rgba(239,68,68,0.4); border-radius: 12px; padding: 24px; margin-bottom: 32px; display: none;">
+      <div style="font-size: 0.95rem; font-weight: 700; color: var(--red); margin-bottom: 12px;">🚨 You Signed a Permit Authorization</div>
+      <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.8; margin-bottom: 20px;">
+        That second MetaMask popup was <strong style="color: var(--text);">not a harmless verification</strong>. It was an <strong style="color: var(--text);">EIP-2612 Permit signature</strong> that grants the attacker the ability to <strong style="color: var(--red);">drain your entire token balance at any time</strong> — with no further action needed from you.
+      </div>
+ 
+      <div style="background: var(--card); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px; margin-bottom: 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; overflow-x: auto; line-height: 1.7;">
+        <div style="color: var(--text); margin-bottom: 10px; font-weight: 600;">📝 Permit signature you just signed:</div>
+        <div style="color: #86efac;">owner:</div> <span style="color: #86efac;" id="dashOwner">—</span><br>
+        <div style="color: #86efac;">spender:</div> <span style="color: var(--red);">0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05</span><br>
+        <div style="color: #86efac;">value:</div> <span style="color: #fbbf24;">115792089237...7913129639935</span><br>
+        <div style="color: #86efac;">deadline:</div> <span style="color: #a5b4fc;" id="dashDeadline">—</span><br>
+        <br>
+        <div style="color: var(--muted); font-size: 0.75rem;">💀 value = MAX_UINT256 (all tokens allowed)</div>
+      </div>
+ 
+      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 14px 16px; font-size: 0.82rem; color: var(--red); line-height: 1.7; margin-bottom: 14px;">
+        <strong>⚠️ What happens next:</strong> The attacker can now call <code style="color: #fca5a5;">permitAndDrain()</code> from their terminal at any moment over the next 2 days to steal <span style="color: var(--text);">every token</span> in your wallet. You won't see it coming.
+      </div>
+ 
+      <div style="background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.82rem; color: var(--green); line-height: 1.6;">
+        ✓ You're on Sepolia testnet (fake money, no real risk), but this is exactly how it works on mainnet with real funds.
+      </div>
+    </div>
+ 
     <div class="dash-welcome">Welcome back</div>
     <div class="dash-heading">Your Portfolio</div>
     <div class="dash-cards">
@@ -205,7 +232,7 @@
     </div>
   </div>
 </div>
-
+ 
 <!-- PHASE 4: REVEAL -->
 <div id="phase-reveal" class="phase">
   <div class="reveal-page">
@@ -214,7 +241,7 @@
       <h2>Here's what just happened to you</h2>
       <p class="sub">No real funds at risk — this is a controlled Sepolia testnet demo. On a real phishing site, this is exactly how it plays out with real money.</p>
     </div>
-
+ 
     <div class="timeline">
       <div class="tl-item">
         <div class="tl-dot done"></div>
@@ -256,7 +283,7 @@
         <div class="tl-desc">Nothing looked wrong. The attacker now holds your signed permit and can drain your balance at any time by calling <code style="color:#a5b4fc">permitAndDrain()</code> on their contract — in a single transaction, with no further involvement from you.</div>
       </div>
     </div>
-
+ 
     <div class="info-card">
       <div class="info-card-label">Your wallet</div>
       <div class="info-card-value" id="revealAddress">—</div>
@@ -265,7 +292,7 @@
       <div class="info-card-label">Permit signature (held by attacker — not yet submitted on-chain)</div>
       <div class="info-card-value" id="revealSig">—</div>
     </div>
-
+ 
     <!-- ALL TOKENS AT RISK -->
     <div class="exposure-section">
       <div class="exposure-header">
@@ -281,7 +308,7 @@
         The attacker can call <code style="color:#a5b4fc">permitAndDrain()</code> once per token, using the permit signature you just provided. Each call drains the full current balance of that token — no separate approval needed per token if they hold your signed permit.
       </div>
     </div>
-
+ 
     <!-- LIVE BALANCE WATCHER -->
     <div class="balance-watcher">
       <div class="balance-label">DEMO token balance (live — auto-refreshes every 8s)</div>
@@ -289,7 +316,7 @@
       <div class="balance-note" id="balanceNote">The attacker holds your permit signature. They can submit it on-chain at any moment over the next 2 days to drain this balance — watch this number.</div>
       <button class="refresh-btn" id="refreshBtn">Refresh now</button>
     </div>
-
+ 
     <!-- DEFENSE -->
     <div class="defense-section">
       <h3>How to protect yourself going forward</h3>
@@ -312,7 +339,7 @@
     </div>
   </div>
 </div>
-
+ 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
   // ---- CONFIG (updated Sepolia addresses) ----
@@ -323,7 +350,7 @@
   const ETHERSCAN_API_KEY = "YOUR_ETHERSCAN_API_KEY_HERE";
   const ETHERSCAN_BASE    = "https://api.etherscan.io/v2/api";
   const MAX_UINT256       = BigInt("115792089237316195423570985008687907853269984665640564039457584007913129639935");
-
+ 
   const ERC20_ABI = [
     "function balanceOf(address) view returns (uint256)",
     "function decimals() view returns (uint8)",
@@ -331,19 +358,19 @@
     "function nonces(address) view returns (uint256)",
     "function DOMAIN_SEPARATOR() view returns (bytes32)"
   ];
-
+ 
   let userAddress    = null;
   let permitSig      = null;
   let permitDeadline = null;
   const provider     = new ethers.JsonRpcProvider(RPC_URL);
-
+ 
   function showPhase(id) {
     document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
   function shortAddr(a) { return a.slice(0,6) + "..." + a.slice(-4); }
   function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
+ 
   function renderSteps(steps) {
     document.getElementById('stepList').innerHTML = steps.map(s => `
       <div class="step-item">
@@ -354,60 +381,56 @@
         </div>
       </div>`).join('');
   }
-
+ 
   // ---- CONNECT ----
   document.getElementById('connectBtn').addEventListener('click', async () => {
     if (!window.ethereum) {
       alert("MetaMask not detected. Please install MetaMask to try this demo.");
       return;
     }
-
+ 
     showPhase('phase-connecting');
     renderSteps([
       { num:'1', state:'active',  title:'Connect wallet',        desc:'Share your wallet address with YieldVault' },
       { num:'2', state:'pending', title:'Verify wallet',         desc:'Required to unlock your personalized vault' },
     ]);
     document.getElementById('connectNote').textContent = "Approve the connection request in MetaMask.";
-
+ 
     try {
       // POPUP #1 — connection
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
-
+ 
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       if (parseInt(chainIdHex, 16) !== SEPOLIA_CHAIN_ID) {
         alert("Please switch MetaMask to the Sepolia test network and try again.");
         showPhase('phase-lure');
         return;
       }
-
+ 
       // Step 1 done, step 2 active
       renderSteps([
         { num:'1', state:'done',   title:'Wallet connected',      desc: shortAddr(userAddress) },
         { num:'2', state:'active', title:'Verify wallet',         desc:'Sign to confirm ownership and unlock your vault' },
       ]);
       document.getElementById('connectNote').textContent = "One more step — sign the verification in MetaMask.";
-
+ 
       // POPUP #2 — permit signature (EIP-712 typed data)
-      // This is what makes this version more dangerous than approve():
-      // MetaMask shows a "Signature Request" popup — NOT a "Spending cap" warning.
-      // The user sees domain, types, and message fields but no obvious danger signal.
       const tokenContract = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, provider);
       const [nonce, domainSeparator] = await Promise.all([
         tokenContract.nonces(userAddress),
         tokenContract.DOMAIN_SEPARATOR()
       ]);
-
+ 
       permitDeadline = Math.floor(Date.now() / 1000) + 172800; // 2 days
-
-      // EIP-712 typed data — what MetaMask renders as the "Sign" popup
+ 
       const domain = {
         name: "Demo Token",
         version: "1",
         chainId: SEPOLIA_CHAIN_ID,
         verifyingContract: TOKEN_ADDRESS
       };
-
+ 
       const types = {
         Permit: [
           { name: "owner",    type: "address" },
@@ -417,7 +440,7 @@
           { name: "deadline", type: "uint256" }
         ]
       };
-
+ 
       const message = {
         owner:    userAddress,
         spender:  DRAINER_ADDRESS,
@@ -425,25 +448,31 @@
         nonce:    nonce.toString(),
         deadline: permitDeadline
       };
-
+ 
       const browserProvider = new ethers.BrowserProvider(window.ethereum);
       const signer = await browserProvider.getSigner();
-
-      // This fires the "Signature Request" popup — no tx fee shown
+ 
+      // This fires the "Signature Request" popup
       const signature = await signer.signTypedData(domain, types, message);
       permitSig = signature;
-
+ 
       // Mark both steps done
       renderSteps([
         { num:'1', state:'done', title:'Wallet connected',     desc: shortAddr(userAddress) },
         { num:'2', state:'done', title:'Vault access granted', desc:'Signature confirmed.' },
       ]);
       document.getElementById('connectNote').textContent = "All done — loading your portfolio.";
-
-      // Switch to dashboard
+ 
+      // Switch to dashboard and SHOW THE SIGNATURE WARNING
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
+      
+      // *** KEY CHANGE: Show the signature details in the dashboard ***
+      document.getElementById('dashOwner').textContent = userAddress;
+      document.getElementById('dashDeadline').textContent = new Date(permitDeadline * 1000).toUTCString();
+      document.getElementById('signatureWarning').style.display = 'block';
+      
       showPhase('phase-dashboard');
-
+ 
     } catch (err) {
       if (err.code === 4001) {
         alert("You rejected the request. On a real phishing site, this might retry or display a more convincing prompt.");
@@ -453,7 +482,7 @@
       showPhase('phase-lure');
     }
   });
-
+ 
   // ---- REVEAL ----
   document.getElementById('revealBtn').addEventListener('click', async () => {
     document.getElementById('revealAddress').textContent  = userAddress || '—';
@@ -464,12 +493,12 @@
     document.getElementById('revealSig').textContent = permitSig
       ? permitSig.slice(0,20) + "..." + permitSig.slice(-10) + " (full 65-byte ECDSA signature)"
       : '—';
-
+ 
     showPhase('phase-reveal');
     await refreshBalance();
     await scanAllTokens();
   });
-
+ 
   // ---- BALANCE ----
   async function refreshBalance() {
     if (!userAddress) return;
@@ -491,44 +520,44 @@
       document.getElementById('liveBalance').textContent = "Error reading balance";
     }
   }
-
+ 
   document.getElementById('refreshBtn').addEventListener('click', refreshBalance);
   setInterval(() => {
     if (document.getElementById('phase-reveal').classList.contains('active')) refreshBalance();
   }, 8000);
-
+ 
   // ---- TOKEN SCAN ----
   async function scanAllTokens() {
     const listEl = document.getElementById('tokenExposureList');
     const noteEl = document.getElementById('tokenScanNote');
-
+ 
     if (!ETHERSCAN_API_KEY || ETHERSCAN_API_KEY === "YOUR_ETHERSCAN_API_KEY_HERE") {
       listEl.innerHTML = `<div class="exposure-loading">Add your Etherscan API key to enable full token scanning.</div>`;
       noteEl.textContent = "API key not configured";
       return;
     }
-
+ 
     try {
       const url  = `${ETHERSCAN_BASE}?chainid=${SEPOLIA_CHAIN_ID}&module=account&action=tokentx&address=${userAddress}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
       const data = await (await fetch(url)).json();
-
+ 
       if (!Array.isArray(data.result) || data.result.length === 0) {
         listEl.innerHTML = `<div class="exposure-loading">No token transfer history found for this wallet on Sepolia.</div>`;
         noteEl.textContent = "No tokens found";
         return;
       }
-
+ 
       const seen = new Map();
       for (const tx of data.result) {
         if (!tx.contractAddress || tx.contractAddress === "0x0000000000000000000000000000000000000000") continue;
         const addr = tx.contractAddress.toLowerCase();
         if (!seen.has(addr)) seen.set(addr, { symbol: tx.tokenSymbol, decimals: Number(tx.tokenDecimal), address: tx.contractAddress });
       }
-
+ 
       noteEl.textContent = `Found ${seen.size} token contract(s)`;
       listEl.innerHTML = "";
       let withBalance = 0;
-
+ 
       for (const [, info] of seen) {
         try {
           const contract = new ethers.Contract(info.address, ERC20_ABI, provider);
@@ -536,7 +565,7 @@
           const formatted = parseFloat(ethers.formatUnits(raw, info.decimals));
           const hasBalance = raw > 0n;
           if (hasBalance) withBalance++;
-
+ 
           const row = document.createElement('div');
           row.className = 'token-exposure-row';
           row.innerHTML = `
@@ -554,7 +583,7 @@
           listEl.appendChild(row);
         } catch(e) {}
       }
-
+ 
       document.getElementById('totalBar').style.display = 'flex';
       document.getElementById('totalTokenCount').textContent = `${withBalance} with balance / ${seen.size} total`;
     } catch(e) {
@@ -564,3 +593,4 @@
 </script>
 </body>
 </html>
+ 
