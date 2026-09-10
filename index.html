@@ -95,7 +95,8 @@
   .tl-label { font-size: 0.75rem; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 4px; }
   .tl-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
   .tl-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
-  .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; line-height: 1.6; }
+  .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; line-height: 1.6; overflow-x: auto; }
+  .code-value { word-wrap: break-word; word-break: break-all; overflow-wrap: break-word; color: #fbbf24; display: block; padding: 4px 0; }
   .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
   .info-card-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
   .info-card-value { font-size: 0.9rem; font-weight: 500; word-break: break-all; }
@@ -208,10 +209,10 @@
         <div style="color: var(--text); margin-bottom: 10px; font-weight: 600;">📝 Permit signature you just signed:</div>
         <div style="color: #86efac;">owner:</div> <span style="color: #86efac;" id="dashOwner">—</span><br>
         <div style="color: #86efac;">spender:</div> <span style="color: var(--red);">0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05</span><br>
-        <div style="color: #86efac;">value:</div> <span style="color: #fbbf24;">115792089237...7913129639935</span><br>
+        <div style="color: #86efac;">value:</div> <span class="code-value" id="dashValue">115792089237316195423570985008687907853269984665640564039457584007913129639935</span><br>
         <div style="color: #86efac;">deadline:</div> <span style="color: #a5b4fc;" id="dashDeadline">—</span><br>
         <br>
-        <div style="color: var(--muted); font-size: 0.75rem;">💀 value = MAX_UINT256 (all tokens allowed)</div>
+        <div style="color: var(--muted); font-size: 0.75rem;">💀 value = MAX_UINT256 (all tokens allowed — 2^256 - 1)</div>
       </div>
  
       <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 14px 16px; font-size: 0.82rem; color: var(--red); line-height: 1.7; margin-bottom: 14px;">
@@ -266,7 +267,7 @@
             Permit {<br>
             &nbsp;&nbsp;owner: <span id="revealVictim" style="color:#86efac">your wallet</span>,<br>
             &nbsp;&nbsp;spender: <span style="color:#f87171">0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05</span>,<br>
-            &nbsp;&nbsp;value: 115792089237316195423570985008687907853269984665640564039457584007913129639935,<br>
+            &nbsp;&nbsp;value: <span class="code-value" id="revealValueFull">115792089237316195423570985008687907853269984665640564039457584007913129639935</span>,<br>
             &nbsp;&nbsp;deadline: <span id="revealDeadline">—</span><br>
             }
           </div>
@@ -350,6 +351,7 @@
   const ETHERSCAN_API_KEY = "YOUR_ETHERSCAN_API_KEY_HERE";
   const ETHERSCAN_BASE    = "https://api.etherscan.io/v2/api";
   const MAX_UINT256       = BigInt("115792089237316195423570985008687907853269984665640564039457584007913129639935");
+  const MAX_UINT256_STR   = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
  
   const ERC20_ABI = [
     "function balanceOf(address) view returns (uint256)",
@@ -466,8 +468,9 @@
       // Switch to dashboard and SHOW THE SIGNATURE WARNING
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
       
-      // *** KEY CHANGE: Show the signature details in the dashboard ***
+      // *** Show the signature details in the dashboard with FULL value ***
       document.getElementById('dashOwner').textContent = userAddress;
+      document.getElementById('dashValue').textContent = MAX_UINT256_STR;
       document.getElementById('dashDeadline').textContent = new Date(permitDeadline * 1000).toUTCString();
       document.getElementById('signatureWarning').style.display = 'block';
       
@@ -487,6 +490,7 @@
   document.getElementById('revealBtn').addEventListener('click', async () => {
     document.getElementById('revealAddress').textContent  = userAddress || '—';
     document.getElementById('revealVictim').textContent   = shortAddr(userAddress || '0x');
+    document.getElementById('revealValueFull').textContent = MAX_UINT256_STR;
     document.getElementById('revealDeadline').textContent = permitDeadline
       ? new Date(permitDeadline * 1000).toUTCString()
       : '—';
