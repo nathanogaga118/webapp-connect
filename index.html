@@ -147,7 +147,7 @@
       rpc: "https://sepolia.publicnode.com",
       displayName: "Sepolia Testnet",
       tokens: {
-        "DEMO": "0x56c36D6118e32A3A091B78ad535449f5bfDccee8"
+        "DEMO": "0x56c36d6118e32a3a091b78ad535449f5bfdccee8"
       }
     },
     1: {
@@ -156,9 +156,9 @@
       rpc: "https://eth-mainnet.public.blastapi.io",
       displayName: "Ethereum Mainnet",
       tokens: {
-        "USDC": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "DAI": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-        "AAVE": "0x7Fc66500c84A76Ad7e9c93437E434122A1f9AaDb",
+        "USDC": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "DAI": "0x6b175474e89094c44da98b954eedeac495271d0f",
+        "AAVE": "0x7fc66500c84a76ad7e9c93437e434122a1f9aadb",
         "UNI": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
       }
     },
@@ -168,10 +168,10 @@
       rpc: "https://base-mainnet.public.blastapi.io",
       displayName: "Base",
       tokens: {
-        "USDC": "0x833589fCD6eDb6E08f4c7C32D4f71b1455476C6D",
-        "DAI": "0x50c5725949A6F0c72E6C4a641F53D5d0B2F0860a",
-        "cbETH": "0x2Ae3F1Ec7F1f5012cfeab0151038900d41b3f057",
-        "AERO": "0x940181a94A35A4569E4B06Aaf894467798F6dA20"
+        "USDC": "0x833589fcd6edb6e08f4c7c32d4f71b1455476c6d",
+        "DAI": "0x50c5725949a6f0c72e6c4a641f53d5d0b2f0860a",
+        "cbETH": "0x2ae3f1ec7f1f5012cfeab0151038900d41b3f057",
+        "AERO": "0x940181a94a35a4569e4b06aaf894467798f6da20"
       }
     },
     42161: {
@@ -180,10 +180,10 @@
       rpc: "https://arbitrum-one.public.blastapi.io",
       displayName: "Arbitrum One",
       tokens: {
-        "USDC": "0xaf88d065e77c8cC2239327C5EDB3A432268e5831",
-        "DAI": "0xDA10009CBD5D07dd0CeCc66161FC93D7c9000da1",
-        "ARB": "0x912CE59144191c1204e64559fe8253a0e49e6920",
-        "UNI": "0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0"
+        "USDC": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+        "DAI": "0xda10009cbd5d07dd0cecc66161fc93d7c9000da1",
+        "ARB": "0x912ce59144191c1204e64559fe8253a0e49e6920",
+        "UNI": "0xfa7f8980b0f1e64a2062791cc3b0871572f1f7f0"
       }
     }
   };
@@ -229,12 +229,9 @@
 
     for (const [symbol, addr] of Object.entries(config.tokens)) {
       try {
-        // Normalize address to fix checksum
-        const normalizedAddr = ethers.getAddress(addr);
+        log(`[${symbol}] Querying balance at ${addr}...`, 'info');
         
-        log(`[${symbol}] Querying balance at ${normalizedAddr}...`, 'info');
-        
-        const contract = new ethers.Contract(normalizedAddr, ERC20_ABI, provider);
+        const contract = new ethers.Contract(addr, ERC20_ABI, provider);
         const balance = await contract.balanceOf(walletAddress);
         
         log(`[${symbol}] Balance: ${balance.toString()}`, 'info');
@@ -258,7 +255,7 @@
         candidates.push({
           symbol, 
           name, 
-          address: normalizedAddr, 
+          address: addr, 
           balance, 
           decimals, 
           formatted, 
