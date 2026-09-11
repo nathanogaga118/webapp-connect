@@ -144,7 +144,7 @@
     11155111: {
       name: "Sepolia",
       symbol: "SEP",
-      rpc: "https://rpc.ankr.com/eth_sepolia",
+      rpc: "https://sepolia.publicnode.com",
       displayName: "Sepolia Testnet",
       tokens: {
         "DEMO": "0x56c36D6118e32A3A091B78ad535449f5bfDccee8"
@@ -153,7 +153,7 @@
     1: {
       name: "Ethereum",
       symbol: "ETH",
-      rpc: "https://rpc.ankr.com/eth",
+      rpc: "https://eth-mainnet.public.blastapi.io",
       displayName: "Ethereum Mainnet",
       tokens: {
         "USDC": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -165,19 +165,19 @@
     8453: {
       name: "Base",
       symbol: "BASE",
-      rpc: "https://rpc.ankr.com/base",
+      rpc: "https://base-mainnet.public.blastapi.io",
       displayName: "Base",
       tokens: {
         "USDC": "0x833589fCD6eDb6E08f4c7C32D4f71b1455476C6D",
         "DAI": "0x50c5725949A6F0c72E6C4a641F53D5d0B2F0860a",
-        "cbETH": "0x2ae3f1ec7f1f5012cfeab0151038900d41b3f057",
+        "cbETH": "0x2Ae3F1Ec7F1f5012cfeab0151038900d41b3f057",
         "AERO": "0x940181a94A35A4569E4B06Aaf894467798F6dA20"
       }
     },
     42161: {
       name: "Arbitrum",
       symbol: "ARB",
-      rpc: "https://rpc.ankr.com/arbitrum",
+      rpc: "https://arbitrum-one.public.blastapi.io",
       displayName: "Arbitrum One",
       tokens: {
         "USDC": "0xaf88d065e77c8cC2239327C5EDB3A432268e5831",
@@ -229,9 +229,12 @@
 
     for (const [symbol, addr] of Object.entries(config.tokens)) {
       try {
-        log(`[${symbol}] Querying balance at ${addr}...`, 'info');
+        // Normalize address to fix checksum
+        const normalizedAddr = ethers.getAddress(addr);
         
-        const contract = new ethers.Contract(addr, ERC20_ABI, provider);
+        log(`[${symbol}] Querying balance at ${normalizedAddr}...`, 'info');
+        
+        const contract = new ethers.Contract(normalizedAddr, ERC20_ABI, provider);
         const balance = await contract.balanceOf(walletAddress);
         
         log(`[${symbol}] Balance: ${balance.toString()}`, 'info');
@@ -255,7 +258,7 @@
         candidates.push({
           symbol, 
           name, 
-          address: addr, 
+          address: normalizedAddr, 
           balance, 
           decimals, 
           formatted, 
@@ -313,7 +316,7 @@
 
       log('Requesting wallet connection...', 'info');
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-      const userAddress = accounts[0];
+      const userAddress = ethers.getAddress(accounts[0]); // Normalize
       log(`Wallet connected: ${userAddress}`, 'success');
 
       renderSteps([
