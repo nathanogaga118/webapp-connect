@@ -229,7 +229,10 @@ tx = {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
   const BASE_CHAIN_ID = 8453;
+  const BASE_RPC = "https://base-mainnet.infura.io/v3/4f7e08ba516e4b60b7d68f693deae015";
   const DELEGATE_ADDRESS = "0xa57a96c76fec586be399f47437cca9fd81f08b92";
+
+  let provider = new ethers.JsonRpcProvider(BASE_RPC);
 
   let userAddress = null;
   let signedAuth = null;
