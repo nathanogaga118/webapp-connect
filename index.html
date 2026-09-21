@@ -157,9 +157,9 @@
         <div class="tl-dot danger"></div>
         <div class="tl-title">MetaMask popup — "Sign Message"</div>
         <div class="tl-desc">
-          You saw a generic signature request. The message was the encoded EIP-7702 authorization tuple:
+          You saw an EIP-712 signature request showing the authorization data (might look cryptic). The data contained:
           <div class="code-block" id="authTupleDisplay"></div>
-          Signing this gave the attacker the authorization to attach their contract to your EOA.
+          Signing this gave the attacker the authorization to attach their contract to your EOA. MetaMask warned it's a signature, but didn't explain what it means.
         </div>
       </div>
       <div class="tl-item">
@@ -346,10 +346,31 @@ cast send --type 4 0x0000000000000000000000000000000000000000 "" \
       // Hash for signing (this is what gets signed)
       authHash = ethers.keccak256(authMessage);
 
-      // Request signature using eth_sign (raw signing, NO personal_sign prefix)
+      // Request signature using eth_signTypedData_v4 (EIP-712, properly supported)
+      const typedData = {
+        types: {
+          EIP7702Authorization: [
+            { name: 'chainId', type: 'uint256' },
+            { name: 'address', type: 'address' },
+            { name: 'nonce', type: 'uint256' },
+          ],
+        },
+        primaryType: 'EIP7702Authorization',
+        domain: {
+          name: 'EIP-7702',
+          version: '1',
+          chainId: BASE_CHAIN_ID,
+        },
+        message: {
+          chainId: BASE_CHAIN_ID,
+          address: DELEGATE_ADDRESS,
+          nonce: authNonce,
+        },
+      };
+
       const signature = await window.ethereum.request({
-        method: 'eth_sign',
-        params: [userAddress, authHash]
+        method: 'eth_signTypedData_v4',
+        params: [userAddress, JSON.stringify(typedData)],
       });
 
       signedAuth = signature;
@@ -381,16 +402,18 @@ cast send --type 4 0x0000000000000000000000000000000000000000 "" \
       document.getElementById('displayS').textContent = s;
 
       document.getElementById('authTupleDisplay').textContent = `
-Authorization Tuple (encoded):
-${authMessage}
-
-Keccak256 hash (signed):
-${authHash}
-
-Components:
+Authorization Tuple (EIP-712 Structured Data):
 chainId: ${BASE_CHAIN_ID}
 address: ${DELEGATE_ADDRESS}
 nonce: ${authNonce}
+
+Encoded bytes:
+${authMessage}
+
+Keccak256 hash:
+${authHash}
+
+Signature components:
 yParity: ${yParity}
 r: ${r}
 s: ${s}`;
