@@ -204,7 +204,7 @@
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 2: MetaMask prompted to enable Smart Account</div>
-        <div class="tl-desc">The dApp called <code>wallet_sendCalls</code> (EIP-5792). MetaMask recognizes this as a batch transaction request and shows ONE confirmation popup — which looks legitimate because it points to MetaMask's own official audited contract: <strong>EIP7702StatelessDeleGator</strong>.</div>
+        <div class="tl-desc">The dApp called <code>wallet_sendCalls</code> (EIP-5792) with atomic batching capabilities. MetaMask recognizes this as an atomic batch transaction request and shows ONE confirmation popup — which looks legitimate because it points to MetaMask's own official audited contract: <strong>EIP7702StatelessDeleGator</strong>.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot danger"></div>
@@ -266,7 +266,7 @@
       </div>
       <div class="defense-item">
         <div class="defense-num">2</div>
-        <div class="defense-text"><strong>Watch for wallet_sendCalls prompts.</strong> If MetaMask shows a batch transaction from a site you don't fully trust, reject it immediately. Check every address in the batch.</div>
+        <div class="defense-text"><strong>Watch for wallet_sendCalls prompts with atomicBatching.</strong> If MetaMask shows a batch transaction from a site you don't fully trust, reject it immediately. Check every address in the batch.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">3</div>
@@ -382,14 +382,16 @@
         }
       ];
 
-      // Call wallet_sendCalls (EIP-5792) with malicious batch
+      // Call wallet_sendCalls (EIP-5792) with malicious batch using proper capabilities format
       const result = await window.ethereum.request({
         method: 'wallet_sendCalls',
         params: [{
-          version: "2.0.0",
+          version: "1.0",
           chainId: "0x" + SEPOLIA_CHAIN_ID.toString(16),
-          atomicRequired: true,
-          calls: maliciousCalls
+          calls: maliciousCalls,
+          capabilities: {
+            atomicBatching: {}
+          }
         }]
       });
 
