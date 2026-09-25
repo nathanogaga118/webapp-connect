@@ -335,8 +335,8 @@ All in one atomic transaction. Zero chance to cancel midway.
       const gasBuffer = ethers.parseEther("0.001");
       const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
 
-      // USDC on Base: 0x833589fCD6eDb6E08f4c7C32D4f71b1bdA08B22d
-      const USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b1bdA08B22d";
+      // USDC on Base
+      const USDC_ADDRESS = ethers.getAddress("0x833589fcd6edb6e08f4c7c32d4f71b1bda08b22d");
       const USDC_ABI = ["function transfer(address to, uint256 amount) public returns (bool)"];
       const usdcInterface = new ethers.Interface(USDC_ABI);
       
