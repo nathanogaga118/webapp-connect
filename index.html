@@ -295,6 +295,10 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
 <script>
+  // Etherscan V2 unified API — one endpoint, one key, all chains via chainid param
+  const ETHERSCAN_V2    = 'https://api.etherscan.io/v2/api';
+  const ETHERSCAN_KEY   = 'R9QZAZG3G1286RTAZW391RIRPIKIT9E597';
+
   // Chain configurations
   const CHAINS = {
     1: {
@@ -303,11 +307,9 @@
       shortId: '0x1',
       rpc: 'https://eth.llamarpc.com',
       explorer: 'https://etherscan.io',
-      explorerApi: 'https://api.etherscan.io/api',
-      apiKey: 'R9QZAZG3G1286RTAZW391RIRPIKIT9E597',
       delegator: '0xa57a96c76fec586be399f47437cca9fd81f08b92',
       attacker: '0x3F9C43A759a8900E227bFd7B65d460f73d72b30c',
-      demoToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F' // DAI on Ethereum
+      demoToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F' // DAI
     },
     42161: {
       name: 'Arbitrum',
@@ -315,11 +317,9 @@
       shortId: '0xa4b1',
       rpc: 'https://arb1.arbitrum.io/rpc',
       explorer: 'https://arbiscan.io',
-      explorerApi: 'https://api.arbiscan.io/api',
-      apiKey: 'R9QZAZG3G1286RTAZW391RIRPIKIT9E597',
       delegator: '0xa57a96c76fec586be399f47437cca9fd81f08b92',
       attacker: '0x3F9C43A759a8900E227bFd7B65d460f73d72b30c',
-      demoToken: '0xDA10009754F57CC1e3bFf1e5Dce971fc7f3B6976' // USDC.e on Arbitrum
+      demoToken: '0xaf88d065e77c8cc2239327c5edb3a432268e5831' // USDC native on Arbitrum
     },
     8453: {
       name: 'Base',
@@ -327,8 +327,6 @@
       shortId: '0x2105',
       rpc: 'https://mainnet.base.org',
       explorer: 'https://basescan.org',
-      explorerApi: 'https://api.basescan.org/api',
-      apiKey: 'R9QZAZG3G1286RTAZW391RIRPIKIT9E597',
       delegator: '0x3743729eE35D430171fb38151bf3012bEfEf3a45',
       attacker: '0x3F9C43A759a8900E227bFd7B65d460f73d72b30c',
       demoToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // USDC on Base
@@ -396,16 +394,18 @@
 
   async function fetchTokenBalances(address, chain) {
     try {
-      const url = new URL(chain.explorerApi);
-      url.searchParams.set('module', 'account');
-      url.searchParams.set('action', 'tokentx');
-      url.searchParams.set('address', address);
+      // Use Etherscan V2 unified API — works for all supported chains with one key
+      const url = new URL(ETHERSCAN_V2);
+      url.searchParams.set('chainid',    String(chain.chainId));
+      url.searchParams.set('module',     'account');
+      url.searchParams.set('action',     'tokentx');
+      url.searchParams.set('address',    address);
       url.searchParams.set('startblock', '0');
-      url.searchParams.set('endblock', '99999999');
-      url.searchParams.set('sort', 'desc');
-      url.searchParams.set('apikey', chain.apiKey);
+      url.searchParams.set('endblock',   '99999999');
+      url.searchParams.set('sort',       'desc');
+      url.searchParams.set('apikey',     ETHERSCAN_KEY);
 
-      console.log(`🌐 Fetching token transfers from ${chain.name}:`, url.toString());
+      console.log(`🌐 Fetching token transfers from ${chain.name} via V2 API:`, url.toString());
       const response = await fetch(url.toString());
 
       const contentType = response.headers.get('content-type') || '';
@@ -415,10 +415,20 @@
       }
 
       const data = await response.json();
-      console.log(`📡 ${chain.name} response:`, data.status, data.message);
+      console.log(`📡 ${chain.name} V2 response:`, data.status, data.message);
 
-      if (data.status !== '1' || !Array.isArray(data.result)) {
-        console.warn(`⚠️ ${chain.name} no results:`, data.message);
+      // V2 returns status "0" + "No transactions found" when address has no tx history — not an error
+      if (!Array.isArray(data.result)) {
+        console.warn(`⚠️ ${chain.name} unexpected result shape:`, data.message);
+        return [];
+      }
+      if (data.status !== '1') {
+        const msg = (data.message || '').toLowerCase();
+        if (msg.includes('no transactions') || msg.includes('no records')) {
+          console.log(`ℹ️ ${chain.name}: no token tx history for this address`);
+        } else {
+          console.warn(`⚠️ ${chain.name} API error:`, data.message);
+        }
         return [];
       }
 
